@@ -14,37 +14,41 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  password      String
-  name          String?
-  // role          Role      @relation(fields: [roleId], references: [id])
-  // roleId        String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  // bookings      Booking[]
-  // transactions  Transaction[]
-  // referralId    String? 
-  // referrer      User?     @relation("Referrals", fields: [referrerId], references: [id])
-  // referrerId    String?
-  // referrals     User[]    @relation("Referrals")
-  isActive      Boolean   @default(true)
-  meta          Json?
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  isActive  Boolean  @default(true)
+  isAdmin   Boolean  @default(false)
+  roleId    String? // nullable for customers
+  role      Role?    @relation(fields: [roleId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-// model Role {
-//   id          String       @id @default(uuid())
-//   name        String       @unique
-//   permissions Permission[] @relation("RolePermissions")
-//   users       User[]
-// }
+model Role {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  permissions Permission[] @relation("RolePermissions")
+  users       User[]
+}
 
-// model Permission {
-//   id   String @id @default(uuid())
-//   key  String @unique
-//   name String
-//   roles Role[] @relation("RolePermissions")
-// }
+model Permission {
+  id    String @id @default(uuid())
+  name  String @unique
+  roles Role[] @relation("RolePermissions")
+}
+
+model Page {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  content     Json // store blocks/sections (Elementor-like structure)
+  meta        Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isPublished Boolean  @default(false)
+}
 
 // model Destination {
 //   id          String   @id @default(uuid())
@@ -74,49 +78,4 @@ model User {
 //   createdAt     DateTime  @default(now())
 //   updatedAt     DateTime  @updatedAt
 //   isPublished   Boolean   @default(false)
-// }
-
-model Page {
-  id          String    @id @default(uuid())
-  title       String
-  slug        String    @unique
-  content     Json      // store blocks/sections (Elementor-like structure)
-  meta        Json?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  isPublished Boolean   @default(false)
-}
-
-model Media {
-  id        String   @id @default(uuid())
-  url       String
-  type      String
-  alt       String?
-  ownerId   String?
-  ownerType String?  // e.g., "Tour", "Destination", etc.
-  createdAt DateTime @default(now())
-}
-
-// model Booking {
-//   id        String   @id @default(uuid())
-//   user      User     @relation(fields: [userId], references: [id])
-//   userId    String
-//   tour      Tour     @relation(fields: [tourId], references: [id])
-//   tourId    String
-//   guests    Int
-//   total     Float
-//   status    String   @default("pending") // pending, confirmed, cancelled
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-// }
-
-// model Transaction {
-//   id        String   @id @default(uuid())
-//   user      User     @relation(fields: [userId], references: [id])
-//   userId    String
-//   amount    Float
-//   type      String   // debit, credit
-//   reason    String?
-//   meta      Json?
-//   createdAt DateTime @default(now())
 // }
