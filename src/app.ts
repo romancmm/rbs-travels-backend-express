@@ -4,10 +4,8 @@ import cors from 'cors'
 import compression from 'compression'
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
-
-import customerAuthRoutes from '@/routes/auth/customerAuth.route'
-import adminAuthRoutes from '@/routes/auth/adminAuth.route'
 import { errorHandler } from '@/middlewares/error.middleware'
+import routes from '@/routes'
 
 const app = express()
 app.use(express.json()) // <--- must be before routes
@@ -26,15 +24,7 @@ const limiter = rateLimit({
 app.use(limiter)
 
 // routes
-
-app.use('/api/v1/auth', customerAuthRoutes)
-app.use('/api/v1/auth/admin', adminAuthRoutes)
-// app.use('/api/v1/auth', authRoutes)
-// app.use('/api/v1/tours', toursRoutes)
-// app.use('/api/v1/pages', pagesRoutes)
-
-// health
-app.get('/health', (_, res) => res.json({ ok: true }))
+app.use('/api/v1', routes)
 
 // error handler (last)
 app.use(errorHandler)
