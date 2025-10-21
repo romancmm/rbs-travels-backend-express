@@ -1,0 +1,32 @@
+paths:
+  /customers:
+    get:
+      tags: [Customers - Public]
+      summary: List customers
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: isActive
+          schema: { type: boolean }
+      responses:
+        '200': { description: Customers fetched }
+  /customers/{id}:
+    get:
+      tags: [Customers - Public]
+      summary: Get customer by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Customer fetched }
+        '404': { description: Not found }

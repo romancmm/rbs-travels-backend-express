@@ -6,6 +6,8 @@ import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
 import { errorHandler } from '@/middlewares/error.middleware'
 import routes from '@/routes'
+import swaggerUi from 'swagger-ui-express'
+import swaggerSpec from '@/docs/openapi'
 
 const app = express()
 app.use(express.json()) // <--- must be before routes
@@ -27,6 +29,9 @@ app.use(limiter)
 app.use('/api/v1', routes)
 
 // error handler (last)
+// Swagger UI & JSON spec
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.get('/docs.json', (_req, res) => res.json(swaggerSpec))
 app.use(errorHandler)
 
 export default app

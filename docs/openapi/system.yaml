@@ -1,0 +1,15 @@
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /:
+    get:
+      tags: [System]
+      summary: Root endpoint
+      responses:
+        '200':
+          description: API running message

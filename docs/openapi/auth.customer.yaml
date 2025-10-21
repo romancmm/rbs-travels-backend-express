@@ -1,0 +1,100 @@
+paths:
+  /auth/register:
+    post:
+      tags: [Auth - Customer]
+      summary: Register a new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200': { description: Registered }
+        '409': { description: Email exists }
+  /auth/login:
+    post:
+      tags: [Auth - Customer]
+      summary: Login customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200': { description: Login success }
+        '400': { description: Invalid credentials }
+  /auth/me:
+    get:
+      tags: [Auth - Customer]
+      summary: Current user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: Profile }
+        '401': { description: Unauthorized }
+  /auth/refresh:
+    post:
+      tags: [Auth - Customer]
+      summary: Refresh tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200': { description: Tokens refreshed }
+  /auth/logout:
+    post:
+      tags: [Auth - Customer]
+      summary: Logout (stateless)
+      responses:
+        '200': { description: Logged out }
+  /auth/reset-password:
+    post:
+      tags: [Auth - Customer]
+      summary: Reset password by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, newPassword]
+              properties:
+                email: { type: string, format: email }
+                newPassword: { type: string }
+      responses:
+        '200': { description: Password reset }
+  /auth/change-password:
+    post:
+      tags: [Auth - Customer]
+      summary: Change password (auth)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [oldPassword, newPassword]
+              properties:
+                oldPassword: { type: string }
+                newPassword: { type: string }
+      responses:
+        '200': { description: Password changed }
