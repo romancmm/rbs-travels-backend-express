@@ -1,0 +1,90 @@
+paths:
+  /admin/role:
+    get:
+      tags: [Roles - Admin]
+      summary: List roles (RBAC admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200': { description: Roles fetched }
+        '403': { description: Forbidden - requires role.read permission }
+    post:
+      tags: [Roles - Admin]
+      summary: Create role
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                permissionIds: { type: array, items: { type: string } }
+      responses:
+        '200': { description: Role created }
+        '403': { description: Forbidden - requires role.create permission }
+  /admin/role/{id}:
+    get:
+      tags: [Roles - Admin]
+      summary: Get role by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Role fetched }
+        '404': { description: Not found }
+        '403': { description: Forbidden - requires role.read permission }
+    patch:
+      tags: [Roles - Admin]
+      summary: Update role
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                permissionIds: { type: array, items: { type: string } }
+      responses:
+        '200': { description: Role updated }
+        '404': { description: Not found }
+        '403': { description: Forbidden - requires role.update permission }
+    delete:
+      tags: [Roles - Admin]
+      summary: Delete role
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Role deleted }
+        '404': { description: Not found }
+        '403': { description: Forbidden - requires role.delete permission }
