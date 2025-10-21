@@ -7,6 +7,7 @@ const router = Router()
 router.post('/register', CustomerAuth.register)
 router.post('/login', CustomerAuth.login)
 router.get('/me', authenticateToken, CustomerAuth.me)
+
 router.post('/refresh', CustomerAuth.refresh)
 router.post('/logout', CustomerAuth.logout)
 router.post('/reset-password', CustomerAuth.resetPassword)

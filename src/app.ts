@@ -23,7 +23,7 @@ const limiter = rateLimit({
 })
 app.use(limiter)
 
-// routes
+// API ROUTES
 app.use('/api/v1', routes)
 
 // error handler (last)
