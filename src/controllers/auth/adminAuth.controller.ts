@@ -1,5 +1,5 @@
 import { success, error } from '../../utils/response'
-import * as AdminAuthService from '../../services/auth/adminAuth.service'
+import * as AdminAuthService from '../../services/auth/AdminAuth.service'
 import type { RequestHandler } from 'express'
 
 export const register: RequestHandler = async (req, res) => {

@@ -1,11 +1,20 @@
-export const success = (res: any, data: any, message = 'Success') => {
- return res.status(200).json({ success: true, message, data })
+import type { Response } from 'express'
+
+export const success = (res: Response, data: any, message = 'Success') => {
+ return res.status(200).json({
+  success: true,
+  message,
+  data,
+ })
 }
 
 export const error = (
- res: any,
- message = 'Something went wrong',
- code = 400,
+ res: Response,
+ message = 'Error',
+ status: number = 400,
 ) => {
- return res.status(code).json({ success: false, message })
+ return res.status(status).json({
+  success: false,
+  message,
+ })
 }

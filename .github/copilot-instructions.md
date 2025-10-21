@@ -1,8 +1,8 @@
-# Travel Agency Backend (Express.js, Bun, MVC)
+# Copilot Instructions for Travel Agency Backend (Express.js, MVC)
 
-## Overview
+## Project Overview
 
-This backend is built with Express.js (TypeScript) and follows a professional MVC pattern inspired by Laravel/Next.js. Bun is used for package management and scripts. Swagger UI is integrated for API documentation.
+This project is a full-stack travel agency website backend built with Express.js (Node.js/TypeScript). The backend follows a professional MVC pattern inspired by Laravel and Next.js, with clear separation of concerns. Swagger UI is integrated for API documentation.
 
 ## Folder Structure
 
@@ -14,6 +14,7 @@ This backend is built with Express.js (TypeScript) and follows a professional MV
 - `src/middlewares/` — Custom middleware functions
 - `src/config/` — Configuration files (env, db, etc.)
 - `docs/` — API documentation and Swagger files
+- `.github/` — Copilot instructions and workflow files
 
 ## Setup Steps
 
@@ -36,6 +37,4 @@ This backend is built with Express.js (TypeScript) and follows a professional MV
 
 ---
 
-Refer to this README for setup and usage instructions.
-
-# rbs-travels-backend
+Refer to README.md for more details and usage instructions.
