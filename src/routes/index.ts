@@ -9,6 +9,10 @@ import roleAdminRoutes from '@/routes/role/role.admin.route'
 import permissionAdminRoutes from '@/routes/permission/permission.admin.route'
 import blogPublicRoutes from '@/routes/blog/blog.public.route'
 import blogAdminRoutes from '@/routes/blog/blog.admin.route'
+import servicePublicRoutes from '@/routes/service/service.public.route'
+import serviceAdminRoutes from '@/routes/service/service.admin.route'
+import projectPublicRoutes from '@/routes/project/project.public.route'
+import projectAdminRoutes from '@/routes/project/project.admin.route'
 
 const routes = Router()
 
@@ -26,5 +30,9 @@ routes.use('/admin/role', roleAdminRoutes)
 routes.use('/admin/permission', permissionAdminRoutes)
 routes.use('/blog', blogPublicRoutes)
 routes.use('/admin/blog', blogAdminRoutes)
+routes.use('/services', servicePublicRoutes)
+routes.use('/admin/service', serviceAdminRoutes)
+routes.use('/projects', projectPublicRoutes)
+routes.use('/admin/project', projectAdminRoutes)
 
 export default routes

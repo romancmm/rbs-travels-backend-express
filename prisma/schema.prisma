@@ -79,7 +79,40 @@ model Category {
   updatedAt   DateTime @updatedAt
 }
 
+model Service {
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  description   String?
+  content       String
+  icon          String?
+  featuredImage String?
+  features      String[] @default([])
+  price         Float?
+  isPublished   Boolean  @default(false)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
 
+model Project {
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  description   String?
+  content       String
+  client        String?
+  category      String?
+  tags          String[] @default([])
+  featuredImage String?
+  images        String[] @default([])
+  completedAt   DateTime?
+  isPublished   Boolean  @default(false)
+  isFeatured    Boolean  @default(false)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
 
 // model Destination {
 //   id          String   @id @default(uuid())

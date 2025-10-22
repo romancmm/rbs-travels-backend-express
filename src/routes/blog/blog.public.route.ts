@@ -4,8 +4,8 @@ import * as CategoryController from '@/controllers/blog/Category.controller'
 
 const router = Router()
 
-// Posts - public read-only
-router.get('/posts', PostController.list)
+// Posts - public read-only (published only)
+router.get('/posts', PostController.listPublished)
 router.get('/posts/:id', PostController.getById)
 router.get('/posts/slug/:slug', PostController.getBySlug)
 

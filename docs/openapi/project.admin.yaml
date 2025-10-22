@@ -1,0 +1,137 @@
+paths:
+  /admin/project/projects:
+    get:
+      tags: [Projects - Admin]
+      summary: List projects (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: tag
+          schema: { type: string }
+        - in: query
+          name: isPublished
+          schema: { type: boolean }
+        - in: query
+          name: isFeatured
+          schema: { type: boolean }
+      responses:
+        '200': { description: Projects fetched }
+    post:
+      tags: [Projects - Admin]
+      summary: Create project
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, slug, content]
+              properties:
+                title: { type: string }
+                slug: { type: string }
+                description: { type: string }
+                content: { type: string }
+                client: { type: string }
+                category: { type: string }
+                tags:
+                  oneOf:
+                    - type: string
+                      description: Comma-separated tags
+                    - type: array
+                      items: { type: string }
+                featuredImage: { type: string }
+                images:
+                  oneOf:
+                    - type: string
+                      description: Comma-separated image URLs
+                    - type: array
+                      items: { type: string }
+                completedAt: { type: string, format: date-time }
+                isPublished: { type: boolean }
+                isFeatured: { type: boolean }
+                order: { type: integer }
+      responses:
+        '200': { description: Project created }
+  /admin/project/projects/{id}:
+    get:
+      tags: [Projects - Admin]
+      summary: Get project by ID (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Project fetched }
+        '404': { description: Not found }
+    put:
+      tags: [Projects - Admin]
+      summary: Update project
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                slug: { type: string }
+                description: { type: string }
+                content: { type: string }
+                client: { type: string }
+                category: { type: string }
+                tags:
+                  oneOf:
+                    - type: string
+                      description: Comma-separated tags
+                    - type: array
+                      items: { type: string }
+                featuredImage: { type: string }
+                images:
+                  oneOf:
+                    - type: string
+                      description: Comma-separated image URLs
+                    - type: array
+                      items: { type: string }
+                completedAt: { type: string, format: date-time }
+                isPublished: { type: boolean }
+                isFeatured: { type: boolean }
+                order: { type: integer }
+      responses:
+        '200': { description: Project updated }
+    delete:
+      tags: [Projects - Admin]
+      summary: Delete project
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Project deleted }

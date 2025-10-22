@@ -1,0 +1,54 @@
+paths:
+  /projects/projects:
+    get:
+      tags: [Projects - Public]
+      summary: List published projects
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search in title, description, content, and client
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: tag
+          schema: { type: string }
+        - in: query
+          name: isPublished
+          schema: { type: boolean }
+        - in: query
+          name: isFeatured
+          schema: { type: boolean }
+      responses:
+        '200': { description: Projects fetched }
+  /projects/projects/{id}:
+    get:
+      tags: [Projects - Public]
+      summary: Get project by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Project fetched }
+        '404': { description: Not found }
+  /projects/projects/slug/{slug}:
+    get:
+      tags: [Projects - Public]
+      summary: Get project by slug
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Project fetched }
+        '404': { description: Not found }
