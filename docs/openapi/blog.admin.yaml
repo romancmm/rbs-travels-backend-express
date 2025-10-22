@@ -1,0 +1,207 @@
+paths:
+  /admin/blog/posts:
+    get:
+      tags: [Blog - Admin]
+      summary: List posts (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search in title, excerpt, and content
+        - in: query
+          name: categoryId
+          schema: { type: string }
+        - in: query
+          name: tag
+          schema: { type: string }
+          description: Filter by tag name
+        - in: query
+          name: authorId
+          schema: { type: string }
+        - in: query
+          name: isPublished
+          schema: { type: boolean }
+      responses:
+        '200': { description: Posts fetched }
+    post:
+      tags: [Blog - Admin]
+      summary: Create post
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, slug, content]
+              properties:
+                title: { type: string }
+                slug: { type: string }
+                excerpt: { type: string }
+                content: { type: string }
+                featuredImage: { type: string }
+                categoryId: { type: string }
+                tags:
+                  oneOf:
+                    - type: string
+                      description: Comma-separated tag names
+                    - type: array
+                      items: { type: string }
+                      description: Array of tag names
+                isPublished: { type: boolean }
+                publishedAt: { type: string, format: date-time }
+      responses:
+        '200': { description: Post created }
+  /admin/blog/posts/{id}:
+    get:
+      tags: [Blog - Admin]
+      summary: Get post by ID (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Post fetched }
+        '404': { description: Not found }
+    put:
+      tags: [Blog - Admin]
+      summary: Update post
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                slug: { type: string }
+                excerpt: { type: string }
+                content: { type: string }
+                featuredImage: { type: string }
+                categoryId: { type: string }
+                tags:
+                  oneOf:
+                    - type: string
+                      description: Comma-separated tag names
+                    - type: array
+                      items: { type: string }
+                      description: Array of tag names
+                isPublished: { type: boolean }
+                publishedAt: { type: string, format: date-time }
+      responses:
+        '200': { description: Post updated }
+    delete:
+      tags: [Blog - Admin]
+      summary: Delete post
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Post deleted }
+  /admin/blog/categories:
+    get:
+      tags: [Blog - Admin]
+      summary: List categories (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200': { description: Categories fetched }
+    post:
+      tags: [Blog - Admin]
+      summary: Create category
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                description: { type: string }
+      responses:
+        '200': { description: Category created }
+  /admin/blog/categories/{id}:
+    get:
+      tags: [Blog - Admin]
+      summary: Get category by ID (admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Category fetched }
+        '404': { description: Not found }
+    put:
+      tags: [Blog - Admin]
+      summary: Update category
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                description: { type: string }
+      responses:
+        '200': { description: Category updated }
+    delete:
+      tags: [Blog - Admin]
+      summary: Delete category
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Category deleted }

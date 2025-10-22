@@ -1,0 +1,87 @@
+paths:
+  /blog/posts:
+    get:
+      tags: [Blog - Public]
+      summary: List published posts
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search in title, excerpt, and content
+        - in: query
+          name: categoryId
+          schema: { type: string }
+          description: Filter by category ID
+        - in: query
+          name: tag
+          schema: { type: string }
+          description: Filter by tag name
+        - in: query
+          name: authorId
+          schema: { type: string }
+          description: Filter by author ID
+        - in: query
+          name: isPublished
+          schema: { type: boolean }
+          description: Filter by published status
+      responses:
+        '200': { description: Posts fetched }
+  /blog/posts/{id}:
+    get:
+      tags: [Blog - Public]
+      summary: Get post by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Post fetched }
+        '404': { description: Not found }
+  /blog/posts/slug/{slug}:
+    get:
+      tags: [Blog - Public]
+      summary: Get post by slug
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Post fetched }
+        '404': { description: Not found }
+  /blog/categories:
+    get:
+      tags: [Blog - Public]
+      summary: List categories
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search by category name
+      responses:
+        '200': { description: Categories fetched }
+  /blog/categories/{id}:
+    get:
+      tags: [Blog - Public]
+      summary: Get category by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Category fetched }
+        '404': { description: Not found }

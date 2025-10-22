@@ -7,6 +7,8 @@ import pagePublicRoutes from '@/routes/page/page.public.route'
 import pageAdminRoutes from '@/routes/page/page.admin.route'
 import roleAdminRoutes from '@/routes/role/role.admin.route'
 import permissionAdminRoutes from '@/routes/permission/permission.admin.route'
+import blogPublicRoutes from '@/routes/blog/blog.public.route'
+import blogAdminRoutes from '@/routes/blog/blog.admin.route'
 
 const routes = Router()
 
@@ -22,5 +24,7 @@ routes.use('/pages', pagePublicRoutes)
 routes.use('/admin/page', pageAdminRoutes)
 routes.use('/admin/role', roleAdminRoutes)
 routes.use('/admin/permission', permissionAdminRoutes)
+routes.use('/blog', blogPublicRoutes)
+routes.use('/admin/blog', blogAdminRoutes)
 
 export default routes

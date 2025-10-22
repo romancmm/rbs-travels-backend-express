@@ -1,0 +1,106 @@
+paths:
+  /auth/admin/register:
+    post:
+      tags: [Auth - Admin]
+      summary: Register a new admin (requires admin auth)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, roleId]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+                roleId: { type: string, description: 'Role ID to assign to admin' }
+      responses:
+        '200': { description: Admin registered }
+        '409': { description: Email exists }
+        '401': { description: Unauthorized }
+  /auth/admin/login:
+    post:
+      tags: [Auth - Admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200': { description: Login success with tokens and admin user }
+        '400': { description: Invalid credentials }
+  /auth/admin/me:
+    get:
+      tags: [Auth - Admin]
+      summary: Current admin profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200': { description: Admin profile with role and permissions }
+        '401': { description: Unauthorized }
+  /auth/admin/refresh:
+    post:
+      tags: [Auth - Admin]
+      summary: Refresh admin tokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200': { description: Tokens refreshed }
+        '400': { description: Invalid refresh token }
+  /auth/admin/logout:
+    post:
+      tags: [Auth - Admin]
+      summary: Admin logout (stateless)
+      responses:
+        '200': { description: Logged out }
+  /auth/admin/reset-password:
+    post:
+      tags: [Auth - Admin]
+      summary: Reset admin password by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, newPassword]
+              properties:
+                email: { type: string, format: email }
+                newPassword: { type: string }
+      responses:
+        '200': { description: Password reset }
+  /auth/admin/change-password:
+    post:
+      tags: [Auth - Admin]
+      summary: Change admin password (authenticated)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [oldPassword, newPassword]
+              properties:
+                oldPassword: { type: string }
+                newPassword: { type: string }
+      responses:
+        '200': { description: Password changed }
+        '401': { description: Unauthorized }
