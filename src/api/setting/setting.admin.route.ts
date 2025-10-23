@@ -5,9 +5,6 @@ import { requirePermission } from '@/middlewares/rbac.middleware'
 
 const router = Router()
 
-// All admin setting routes require authentication
-router.use(adminAuthMiddleware)
-
 // Settings - admin CRUD
 router.get('/settings', requirePermission('setting.read'), SettingController.list)
 router.get('/settings/id/:id', requirePermission('setting.read'), SettingController.getById)

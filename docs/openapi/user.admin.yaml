@@ -1,0 +1,171 @@
+paths:
+  /admin/user/admins:
+    get:
+      tags: [Admin Users - Admin]
+      summary: List admin users
+      description: List all admin/staff users (not customers, merchants, vendors, etc.)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search by name or email
+        - in: query
+          name: isActive
+          schema: { type: boolean }
+          description: Filter by active status
+        - in: query
+          name: isAdmin
+          schema: { type: boolean }
+          description: Filter by admin status
+        - in: query
+          name: roleId
+          schema: { type: string }
+          description: Filter by role ID
+      responses:
+        '200': { description: Admin users fetched }
+    post:
+      tags: [Admin Users - Admin]
+      summary: Create admin user
+      description: Create a new admin/staff user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: 
+                  type: string
+                  example: John Doe
+                email: 
+                  type: string
+                  format: email
+                  example: john@example.com
+                password: 
+                  type: string
+                  format: password
+                  example: SecurePass123
+                isActive: 
+                  type: boolean
+                  default: true
+                isAdmin: 
+                  type: boolean
+                  default: false
+                roleId: 
+                  type: string
+                  description: Role ID to assign
+      responses:
+        '200': { description: Admin user created }
+        '409': { description: Email already exists }
+        '422': { description: Validation error }
+  /admin/user/admins/{id}:
+    get:
+      tags: [Admin Users - Admin]
+      summary: Get admin user by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Admin user fetched }
+        '404': { description: Not found }
+    put:
+      tags: [Admin Users - Admin]
+      summary: Update admin user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: 
+                  type: string
+                  format: password
+                  description: Leave empty to keep current password
+                isActive: { type: boolean }
+                isAdmin: { type: boolean }
+                roleId: 
+                  type: string
+                  description: Role ID to assign (null to remove role)
+      responses:
+        '200': { description: Admin user updated }
+        '404': { description: Not found }
+        '409': { description: Email already exists }
+    delete:
+      tags: [Admin Users - Admin]
+      summary: Delete admin user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Admin user deleted }
+        '404': { description: Not found }
+  /admin/user/admins/{id}/toggle-status:
+    patch:
+      tags: [Admin Users - Admin]
+      summary: Toggle admin user active status
+      description: Activate or deactivate an admin user account
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Admin user status toggled }
+        '404': { description: Not found }
+  /admin/user/admins/{id}/assign-role:
+    post:
+      tags: [Admin Users - Admin]
+      summary: Assign role to admin user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roleId]
+              properties:
+                roleId: 
+                  type: string
+                  description: Role ID to assign to the admin user
+      responses:
+        '200': { description: Role assigned }
+        '404': { description: Admin user or role not found }
+        '422': { description: roleId is required }
