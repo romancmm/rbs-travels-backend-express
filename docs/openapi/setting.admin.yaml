@@ -1,0 +1,240 @@
+paths:
+  /admin/setting/settings:
+    get:
+      tags: [Settings - Admin]
+      summary: List settings
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search by key or description
+        - in: query
+          name: group
+          schema: { type: string }
+          description: Filter by group
+        - in: query
+          name: isPublic
+          schema: { type: boolean }
+      responses:
+        '200': { description: Settings fetched }
+    post:
+      tags: [Settings - Admin]
+      summary: Create setting
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, value]
+              properties:
+                key: 
+                  type: string
+                  example: site_title
+                value:
+                  oneOf:
+                    - type: string
+                    - type: number
+                    - type: boolean
+                    - type: object
+                    - type: array
+                  example: My Travel Agency
+                description: 
+                  type: string
+                  example: Website title shown in header
+                group: 
+                  type: string
+                  example: general
+                isPublic: 
+                  type: boolean
+                  example: true
+      responses:
+        '200': { description: Setting created }
+  /admin/setting/settings/id/{id}:
+    get:
+      tags: [Settings - Admin]
+      summary: Get setting by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Setting fetched }
+        '404': { description: Not found }
+    put:
+      tags: [Settings - Admin]
+      summary: Update setting by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key: { type: string }
+                value: 
+                  oneOf:
+                    - type: string
+                    - type: number
+                    - type: boolean
+                    - type: object
+                    - type: array
+                description: { type: string }
+                group: { type: string }
+                isPublic: { type: boolean }
+      responses:
+        '200': { description: Setting updated }
+  /admin/setting/settings/{id}:
+    delete:
+      tags: [Settings - Admin]
+      summary: Delete setting
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Setting deleted }
+  /admin/setting/settings/key/{key}:
+    get:
+      tags: [Settings - Admin]
+      summary: Get setting by key
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: key
+          required: true
+          schema: { type: string }
+          example: site_title
+      responses:
+        '200': { description: Setting fetched }
+        '404': { description: Not found }
+    put:
+      tags: [Settings - Admin]
+      summary: Update setting value by key
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: key
+          required: true
+          schema: { type: string }
+          example: site_title
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [value]
+              properties:
+                value:
+                  oneOf:
+                    - type: string
+                    - type: number
+                    - type: boolean
+                    - type: object
+                    - type: array
+                  example: New Travel Agency
+      responses:
+        '200': { description: Setting updated }
+  /admin/setting/settings/group/{group}:
+    get:
+      tags: [Settings - Admin]
+      summary: Get all settings in a group
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: group
+          required: true
+          schema: { type: string }
+          example: general
+      responses:
+        '200': { description: Settings fetched }
+  /admin/setting/settings/keys:
+    post:
+      tags: [Settings - Admin]
+      summary: Get multiple settings by keys
+      description: Returns settings as key-value object
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [keys]
+              properties:
+                keys:
+                  type: array
+                  items: { type: string }
+                  example: [site_title, site_description, contact_email]
+      responses:
+        '200': 
+          description: Settings fetched
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /admin/setting/settings/bulk:
+    post:
+      tags: [Settings - Admin]
+      summary: Bulk update settings
+      description: Create or update multiple settings at once
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [settings]
+              properties:
+                settings:
+                  type: array
+                  items:
+                    type: object
+                    required: [key, value]
+                    properties:
+                      key: { type: string }
+                      value: 
+                        oneOf:
+                          - type: string
+                          - type: number
+                          - type: boolean
+                          - type: object
+                          - type: array
+                  example:
+                    - key: site_title
+                      value: My Travel Agency
+                    - key: contact_email
+                      value: info@travel.com
+      responses:
+        '200': { description: Settings updated }

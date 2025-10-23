@@ -13,6 +13,8 @@ import servicePublicRoutes from '@/routes/service/service.public.route'
 import serviceAdminRoutes from '@/routes/service/service.admin.route'
 import projectPublicRoutes from '@/routes/project/project.public.route'
 import projectAdminRoutes from '@/routes/project/project.admin.route'
+import settingPublicRoutes from '@/routes/setting/setting.public.route'
+import settingAdminRoutes from '@/routes/setting/setting.admin.route'
 
 const routes = Router()
 
@@ -34,5 +36,7 @@ routes.use('/services', servicePublicRoutes)
 routes.use('/admin/service', serviceAdminRoutes)
 routes.use('/projects', projectPublicRoutes)
 routes.use('/admin/project', projectAdminRoutes)
+routes.use('/settings', settingPublicRoutes)
+routes.use('/admin/setting', settingAdminRoutes)
 
 export default routes

@@ -1,0 +1,16 @@
+paths:
+  /settings/public:
+    get:
+      tags: [Settings - Public]
+      summary: Get all public settings
+      description: Returns public settings grouped by category (no auth required)
+      responses:
+        '200':
+          description: Public settings fetched
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties: true

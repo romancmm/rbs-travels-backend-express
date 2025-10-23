@@ -114,6 +114,17 @@ model Project {
   updatedAt     DateTime @updatedAt
 }
 
+model Setting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  group       String?  // e.g., 'general', 'seo', 'social', 'email', etc.
+  isPublic    Boolean  @default(false) // if true, can be accessed without auth
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 // model Destination {
 //   id          String   @id @default(uuid())
 //   title       String
