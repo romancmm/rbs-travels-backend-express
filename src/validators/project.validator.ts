@@ -90,6 +90,7 @@ export const projectQuerySchema = paginationQuerySchema.extend({
   isFeatured: booleanQuerySchema.optional(),
   category: z.string().optional(),
   tag: z.string().optional(),
+  q: z.string().optional(),
 })
 
 /**

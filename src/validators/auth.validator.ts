@@ -23,9 +23,10 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, 'Refresh token is required'),
 })
 
-// Reset password request schema
+// Reset password request schema (direct reset by email + new password)
 export const resetPasswordRequestSchema = z.object({
   email: emailSchema,
+  newPassword: passwordSchema,
 })
 
 // Reset password schema (with token)
@@ -37,7 +38,7 @@ export const resetPasswordSchema = z.object({
 // Change password schema (authenticated user)
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
+    oldPassword: z.string().min(1, 'Old password is required'),
     newPassword: passwordSchema,
     confirmPassword: z.string().min(1, 'Password confirmation is required'),
   })

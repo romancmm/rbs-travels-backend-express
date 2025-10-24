@@ -85,7 +85,7 @@ export const updateCategorySchema = z.object({
 
 // Category query params schema
 export const categoryQuerySchema = paginationQuerySchema.extend({
-  // Add any specific category filters here
+  q: z.string().optional(),
 })
 
 /**

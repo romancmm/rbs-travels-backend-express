@@ -61,6 +61,7 @@ export const updateServiceSchema = z.object({
 // Service query params schema
 export const serviceQuerySchema = paginationQuerySchema.extend({
   isPublished: booleanQuerySchema.optional(),
+  q: z.string().optional(),
 })
 
 /**
