@@ -1,13 +1,13 @@
-import express from 'express'
-import helmet from 'helmet'
-import cors from 'cors'
-import compression from 'compression'
-import morgan from 'morgan'
-import rateLimit from 'express-rate-limit'
+import swaggerSpec from '@/docs/openapi'
 import { errorHandler } from '@/middlewares/error.middleware'
 import routes from '@/routes'
+import compression from 'compression'
+import cors from 'cors'
+import express from 'express'
+import rateLimit from 'express-rate-limit'
+import helmet from 'helmet'
+import morgan from 'morgan'
 import swaggerUi from 'swagger-ui-express'
-import swaggerSpec from '@/docs/openapi'
 
 const app = express()
 app.use(express.json()) // <--- must be before routes
@@ -20,8 +20,8 @@ app.use(express.urlencoded({ extended: true }))
 app.use(morgan('combined'))
 
 const limiter = rateLimit({
- windowMs: 15 * 60 * 1000,
- max: 200,
+  windowMs: 15 * 60 * 1000,
+  max: 200,
 })
 app.use(limiter)
 
