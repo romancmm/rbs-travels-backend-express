@@ -12,13 +12,25 @@ export const validate = (schema: ZodSchema, source: 'body' | 'query' | 'params' 
     try {
       const dataToValidate = req[source]
       const validated = await schema.parseAsync(dataToValidate)
-      ;(req as any)[source] = validated
+      // In Express 5, req.query/req.params are getters; do not reassign the property.
+      // Instead, mutate the existing object so downstream reads get validated values.
+      if (source === 'query' || source === 'params') {
+        const target = (req as any)[source] || {}
+        // Clear existing keys to avoid stale values, then assign validated
+        for (const k of Object.keys(target)) delete target[k]
+        Object.assign(target, validated)
+      } else {
+        // body is safe to replace
+        ;(req as any).body = validated
+      }
       next()
     } catch (err) {
+      console.log('err :>> ', err)
       if (err instanceof ZodError) {
         const errorMessage = err.issues
           .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
           .join(', ')
+
         return res.status(422).json({
           success: false,
           message: 'Validation failed',
@@ -41,13 +53,20 @@ export const validateMultiple = (schemas: {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (schemas.body) {
-        req.body = await schemas.body.parseAsync(req.body)
+        const bodyValidated = await schemas.body.parseAsync(req.body)
+        ;(req as any).body = bodyValidated
       }
       if (schemas.query) {
-        ;(req as any).query = await schemas.query.parseAsync(req.query)
+        const qValidated = await schemas.query.parseAsync(req.query)
+        const target = (req as any).query || {}
+        for (const k of Object.keys(target)) delete target[k]
+        Object.assign(target, qValidated)
       }
       if (schemas.params) {
-        ;(req as any).params = await schemas.params.parseAsync(req.params)
+        const pValidated = await schemas.params.parseAsync(req.params)
+        const target = (req as any).params || {}
+        for (const k of Object.keys(target)) delete target[k]
+        Object.assign(target, pValidated)
       }
       next()
     } catch (err) {

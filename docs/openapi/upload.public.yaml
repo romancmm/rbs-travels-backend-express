@@ -1,0 +1,27 @@
+paths:
+  /upload/auth:
+    get:
+      tags: [Upload - Public]
+      summary: Get ImageKit authentication parameters
+      description: Returns signature, token, and expire for client-side uploads via ImageKit SDK.
+      responses:
+        '200':
+          description: Authentication parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  signature:
+                    type: string
+                  token:
+                    type: string
+                  expire:
+                    type: integer
+                required: [signature, token, expire]
+              examples:
+                default:
+                  value:
+                    signature: 'a1b2c3d4e5f6...'
+                    token: 'public_token_123'
+                    expire: 1739999999

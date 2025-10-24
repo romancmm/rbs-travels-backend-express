@@ -1,0 +1,49 @@
+paths:
+  /admin/upload:
+    post:
+      tags: [Upload - Admin]
+      summary: Upload a file to ImageKit
+      description: Server-side upload using ImageKit SDK. Requires media.create permission.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload
+                folder:
+                  type: string
+                  description: Optional folder path in ImageKit
+              required: [file]
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fileId:
+                    type: string
+                  name:
+                    type: string
+                  url:
+                    type: string
+                  thumbnailUrl:
+                    type: string
+                required: [fileId, name, url]
+              examples:
+                default:
+                  value:
+                    fileId: '6719a9cb4f...'
+                    name: 'banner.jpg'
+                    url: 'https://ik.imagekit.io/po5udmmiz/uploads/banner.jpg'
+                    thumbnailUrl: 'https://ik.imagekit.io/po5udmmiz/tr:n-ik_ml_thumbnail/uploads/banner.jpg'
+        '401': { description: Unauthorized }
+        '403': { description: Forbidden }
