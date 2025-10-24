@@ -4,7 +4,7 @@ import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 
 const router = Router()
 
-router.post('/register', adminAuthMiddleware, AdminAuth.register)
+// router.post('/register', adminAuthMiddleware, AdminAuth.register)
 router.post('/login', AdminAuth.login)
 router.get('/me', adminAuthMiddleware, (req, res) =>
  res.json((req as any).user),
