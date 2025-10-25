@@ -1,0 +1,64 @@
+paths:
+  /admin/media:
+    get:
+      tags: [Media - Admin]
+      summary: List media files in a folder
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: path
+          schema: { type: string }
+          description: Folder path (default "/")
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - in: query
+          name: fileType
+          schema:
+            type: string
+            enum: [all, image, video, audio, raw]
+            default: all
+      responses:
+        '200': { description: Media list }
+  /admin/media/folder:
+    post:
+      tags: [Media - Admin]
+      summary: Create a folder
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                path: { type: string }
+              required: [path]
+      responses:
+        '201': { description: Folder created }
+    delete:
+      tags: [Media - Admin]
+      summary: Delete a folder
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Folder deleted }
+  /admin/media/file/{fileId}:
+    delete:
+      tags: [Media - Admin]
+      summary: Delete a file
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: File deleted }
