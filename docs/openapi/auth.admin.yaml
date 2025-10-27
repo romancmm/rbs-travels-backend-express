@@ -36,7 +36,18 @@ paths:
                 email: { type: string, format: email }
                 password: { type: string, format: password }
       responses:
-        '200': { description: Login success with tokens and admin user }
+        '200':
+          description: Login success with tokens and admin user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  refreshToken: { type: string }
+                  user:
+                    $ref: '#/components/schemas/AdminUser'
+                required: [accessToken, refreshToken, user]
         '400': { description: Invalid credentials }
   /auth/admin/me:
     get:
@@ -45,7 +56,12 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200': { description: Admin profile with role and permissions }
+        '200':
+          description: Admin profile with role and permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
         '401': { description: Unauthorized }
   /auth/admin/refresh:
     post:
@@ -104,3 +120,42 @@ paths:
       responses:
         '200': { description: Password changed }
         '401': { description: Unauthorized }
+
+components:
+  schemas:
+    AdminPermission:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+      required: [id, name]
+    AdminRole:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        permissions:
+          type: array
+          items: { $ref: '#/components/schemas/AdminPermission' }
+      required: [id, name]
+    AdminUser:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        isActive: { type: boolean }
+        isAdmin: { type: boolean }
+        role:
+          $ref: '#/components/schemas/AdminRole'
+        roles:
+          type: array
+          description: Optional multiple roles array if enabled in schema
+          items: { $ref: '#/components/schemas/AdminRole' }
+        permissions:
+          type: array
+          items: { type: string }
+        isSuperAdmin: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, name, email, isActive, isAdmin]
