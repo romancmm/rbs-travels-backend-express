@@ -20,6 +20,7 @@ router.get(
   validate(permissionQuerySchema, 'query'),
   Permission.list
 )
+
 router.get(
   '/:id',
   adminAuthMiddleware,
@@ -27,6 +28,7 @@ router.get(
   validate(idParamSchema, 'params'),
   Permission.get
 )
+
 router.post(
   '/',
   adminAuthMiddleware,

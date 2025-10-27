@@ -29,5 +29,16 @@ export const loginAdminService = async (data: AdminLoginInput) => {
   if (!valid) throw new Error('Invalid credentials')
 
   const tokens = generateTokens({ id: user.id, isAdmin: true })
-  return { user, ...tokens }
+  // Compute roles array and permissions list (supports current single-role schema)
+  const roles = user.role ? [user.role] : (user as any).roles || []
+  const permissions = Array.from(
+    new Set(
+      roles.flatMap((r: any) =>
+        Array.isArray(r.permissions) ? r.permissions.map((p: any) => p.name) : []
+      )
+    )
+  )
+  const isSuperAdmin = user.email === 'admin@gmail.com'
+  const responseUser = { ...user, roles, permissions, isSuperAdmin }
+  return { user: responseUser, ...tokens }
 }

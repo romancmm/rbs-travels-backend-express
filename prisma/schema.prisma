@@ -20,7 +20,7 @@ model User {
   password  String
   isActive  Boolean  @default(true)
   isAdmin   Boolean  @default(false)
-  roleId    String? // nullable for customers
+  roleId    String? // nullable for customers 
   role      Role?    @relation(fields: [roleId], references: [id])
   posts     Post[]
   createdAt DateTime @default(now())
