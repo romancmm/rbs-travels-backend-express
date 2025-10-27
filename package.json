@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
+    "check": "bun tsc --noEmit --skipLibCheck",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
