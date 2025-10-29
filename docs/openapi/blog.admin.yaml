@@ -42,22 +42,32 @@ paths:
           application/json:
             schema:
               type: object
-              required: [title, slug, content]
+              required: [title, slug, excerpt, content, seo]
               properties:
-                title: { type: string }
+                title: { type: string, maxLength: 200 }
                 slug: { type: string }
-                excerpt: { type: string }
+                excerpt: { type: string, minLength: 1 }
                 content: { type: string }
-                featuredImage: { type: string }
-                categoryId: { type: string }
-                tags:
-                  oneOf:
-                    - type: string
-                      description: Comma-separated tag names
-                    - type: array
+                thumbnail: { type: string, format: uri }
+                gallery:
+                  type: array
+                  items: { type: string, format: uri }
+                  description: Array of image URLs
+                seo:
+                  type: object
+                  required: [title, description, keywords]
+                  properties:
+                    title: { type: string, maxLength: 60 }
+                    description: { type: string, maxLength: 160 }
+                    keywords:
+                      type: array
                       items: { type: string }
-                      description: Array of tag names
-                isPublished: { type: boolean }
+                categoryId: { type: string, format: uuid }
+                tags:
+                  type: array
+                  items: { type: string }
+                  default: []
+                isPublished: { type: boolean, default: false }
                 publishedAt: { type: string, format: date-time }
       responses:
         '200': { description: Post created }
@@ -92,19 +102,27 @@ paths:
             schema:
               type: object
               properties:
-                title: { type: string }
+                title: { type: string, maxLength: 200 }
                 slug: { type: string }
                 excerpt: { type: string }
                 content: { type: string }
-                featuredImage: { type: string }
-                categoryId: { type: string }
-                tags:
-                  oneOf:
-                    - type: string
-                      description: Comma-separated tag names
-                    - type: array
+                thumbnail: { type: string, format: uri }
+                gallery:
+                  type: array
+                  items: { type: string, format: uri }
+                  description: Array of image URLs
+                seo:
+                  type: object
+                  properties:
+                    title: { type: string, maxLength: 60 }
+                    description: { type: string, maxLength: 160 }
+                    keywords:
+                      type: array
                       items: { type: string }
-                      description: Array of tag names
+                categoryId: { type: string, format: uuid }
+                tags:
+                  type: array
+                  items: { type: string }
                 isPublished: { type: boolean }
                 publishedAt: { type: string, format: date-time }
       responses:

@@ -1,3 +1,45 @@
+components:
+  schemas:
+    BlogSeo:
+      type: object
+      properties:
+        title: { type: string, maxLength: 60 }
+        description: { type: string, maxLength: 160 }
+        keywords:
+          type: array
+          items: { type: string }
+    BlogPost:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        slug: { type: string }
+        excerpt: { type: string }
+        content: { type: string }
+        thumbnail: { type: string, format: uri }
+        gallery:
+          type: array
+          items: { type: string, format: uri }
+        seo: { $ref: '#/components/schemas/BlogSeo' }
+        authorId: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        tags:
+          type: array
+          items: { type: string }
+        isPublished: { type: boolean }
+        publishedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    BlogCategory:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
 paths:
   /blog/posts:
     get:
@@ -31,7 +73,19 @@ paths:
           schema: { type: boolean }
           description: Filter by published status
       responses:
-        '200': { description: Posts fetched }
+        '200':
+          description: Posts fetched
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/BlogPost' }
+                  page: { type: integer }
+                  perPage: { type: integer }
+                  total: { type: integer }
   /blog/posts/{id}:
     get:
       tags: [Blog - Public]
@@ -42,7 +96,11 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Post fetched }
+        '200':
+          description: Post fetched
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BlogPost' }
         '404': { description: Not found }
   /blog/posts/slug/{slug}:
     get:
@@ -54,7 +112,11 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Post fetched }
+        '200':
+          description: Post fetched
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BlogPost' }
         '404': { description: Not found }
   /blog/categories:
     get:
@@ -72,7 +134,19 @@ paths:
           schema: { type: string }
           description: Search by category name
       responses:
-        '200': { description: Categories fetched }
+        '200':
+          description: Categories fetched
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/BlogCategory' }
+                  page: { type: integer }
+                  perPage: { type: integer }
+                  total: { type: integer }
   /blog/categories/{id}:
     get:
       tags: [Blog - Public]
@@ -83,5 +157,9 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        '200': { description: Category fetched }
+        '200':
+          description: Category fetched
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BlogCategory' }
         '404': { description: Not found }

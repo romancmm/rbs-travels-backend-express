@@ -57,7 +57,9 @@ model Post {
   slug          String     @unique
   excerpt       String?
   content       String
-  featuredImage String?
+  thumbnail     String?
+  gallery       String[]   @default([])
+  seo           Json?
   authorId      String
   author        User       @relation(fields: [authorId], references: [id])
   categoryId    String?
