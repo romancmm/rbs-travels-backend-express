@@ -33,7 +33,7 @@ export const createPostSchema = z.object({
     .min(1, 'Excerpt is required')
     .max(500, 'Excerpt must be less than 500 characters'),
   content: z.string().min(1, 'Content is required'),
-  featuredImage: imageUrlSchema,
+  thumbnail: imageUrlSchema,
   gallery: z.array(z.string()).default([]),
   categoryId: uuidSchema.optional().nullable(),
   tags: z
@@ -58,7 +58,7 @@ export const updatePostSchema = z.object({
   slug: slugSchema.optional(),
   excerpt: z.string().min(1).max(500).optional(),
   content: z.string().min(1).optional(),
-  featuredImage: imageUrlSchema,
+  thumbnail: imageUrlSchema,
   gallery: z.array(z.string()).optional(),
   categoryId: uuidSchema.optional().nullable(),
   tags: z

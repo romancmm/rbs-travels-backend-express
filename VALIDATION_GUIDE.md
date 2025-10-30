@@ -265,17 +265,8 @@ export const create: RequestHandler = async (req, res) => {
 ```typescript
 // src/services/blog/Post.service.ts
 export const createPostService = async (data: any, authorId: string) => {
-  const {
-    title,
-    slug,
-    excerpt,
-    content,
-    featuredImage,
-    categoryId,
-    tags,
-    isPublished,
-    publishedAt,
-  } = data || {}
+  const { title, slug, excerpt, content, thumbnail, categoryId, tags, isPublished, publishedAt } =
+    data || {}
   if (!title || !slug || !content) throw new Error('Required fields missing')
   // ...
 }

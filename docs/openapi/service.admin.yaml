@@ -38,7 +38,7 @@ paths:
                 description: { type: string }
                 content: { type: string }
                 icon: { type: string }
-                featuredImage: { type: string }
+                thumbnail: { type: string }
                 features:
                   oneOf:
                     - type: string
@@ -86,7 +86,7 @@ paths:
                 description: { type: string }
                 content: { type: string }
                 icon: { type: string }
-                featuredImage: { type: string }
+                thumbnail: { type: string }
                 features:
                   oneOf:
                     - type: string

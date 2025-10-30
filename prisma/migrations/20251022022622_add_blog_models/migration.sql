@@ -5,7 +5,7 @@ CREATE TABLE "Post" (
     "slug" TEXT NOT NULL,
     "excerpt" TEXT,
     "content" TEXT NOT NULL,
-    "featuredImage" TEXT,
+    "thumbnail" TEXT,
     "authorId" TEXT NOT NULL,
     "categoryId" TEXT,
     "isPublished" BOOLEAN NOT NULL DEFAULT false,

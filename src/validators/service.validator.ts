@@ -17,7 +17,7 @@ export const createServiceSchema = z.object({
   description: z.string().max(500).optional().nullable(),
   content: z.string().min(1, 'Content is required'),
   icon: z.string().optional().nullable(),
-  featuredImage: imageUrlSchema,
+  thumbnail: imageUrlSchema,
   features: z
     .union([
       z.array(z.string()),
@@ -41,7 +41,7 @@ export const updateServiceSchema = z.object({
   description: z.string().max(500).optional().nullable(),
   content: z.string().min(1).optional(),
   icon: z.string().optional().nullable(),
-  featuredImage: imageUrlSchema,
+  thumbnail: imageUrlSchema,
   features: z
     .union([
       z.array(z.string()),

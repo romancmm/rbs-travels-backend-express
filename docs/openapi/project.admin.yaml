@@ -54,7 +54,7 @@ paths:
                       description: Comma-separated tags
                     - type: array
                       items: { type: string }
-                featuredImage: { type: string }
+                thumbnail: { type: string }
                 images:
                   oneOf:
                     - type: string
@@ -110,7 +110,7 @@ paths:
                       description: Comma-separated tags
                     - type: array
                       items: { type: string }
-                featuredImage: { type: string }
+                thumbnail: { type: string }
                 images:
                   oneOf:
                     - type: string

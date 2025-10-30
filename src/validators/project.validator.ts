@@ -29,7 +29,7 @@ export const createProjectSchema = z.object({
       ),
     ])
     .optional(),
-  featuredImage: imageUrlSchema,
+  thumbnail: imageUrlSchema,
   images: z
     .union([
       z.array(z.string().url()),
@@ -66,7 +66,7 @@ export const updateProjectSchema = z.object({
       ),
     ])
     .optional(),
-  featuredImage: imageUrlSchema,
+  thumbnail: imageUrlSchema,
   images: z
     .union([
       z.array(z.string().url()),
