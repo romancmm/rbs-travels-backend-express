@@ -1,5 +1,10 @@
 import { z } from 'zod'
-import { booleanQuerySchema, emailSchema, paginationQuerySchema } from './common.validator'
+import {
+  booleanQuerySchema,
+  emailSchema,
+  imageUrlSchema,
+  paginationQuerySchema,
+} from './common.validator'
 
 /**
  * Customer Validation Schemas
@@ -10,6 +15,7 @@ export const createCustomerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: emailSchema,
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  avatar: imageUrlSchema.optional(),
   isActive: z.boolean().default(true).optional(),
 })
 
@@ -17,6 +23,7 @@ export const createCustomerSchema = z.object({
 export const updateCustomerSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   email: emailSchema.optional(),
+  avatar: imageUrlSchema.optional(),
   isActive: z.boolean().optional(),
 })
 
@@ -24,6 +31,7 @@ export const updateCustomerSchema = z.object({
 export const updateCustomerProfileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   email: emailSchema.optional(),
+  avatar: imageUrlSchema.optional(),
 })
 
 // Customer query params schema

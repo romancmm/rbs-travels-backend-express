@@ -1,0 +1,221 @@
+# Admin Profile Management API
+paths:
+  /api/v1/admin/profile:
+    put:
+      tags:
+        - Admin Profile
+      summary: Update admin profile
+      description: Update the authenticated admin's profile information
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Admin's display name
+                  minLength: 2
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                  description: Admin's email address
+                avatar:
+                  type: string
+                  format: uri
+                  nullable: true
+                  description: URL to admin's profile picture
+              example:
+                name: 'John Admin'
+                email: 'john@admin.com'
+                avatar: 'https://imagekit.io/uploads/avatar.jpg'
+      responses:
+        200:
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Profile updated successfully'
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/AdminUser'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        409:
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: 'Email already exists'
+
+  /api/v1/admin/profile/avatar:
+    post:
+      tags:
+        - Admin Profile
+      summary: Upload admin avatar
+      description: Update the authenticated admin's profile picture
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - avatarUrl
+              properties:
+                avatarUrl:
+                  type: string
+                  format: uri
+                  description: URL to the uploaded avatar image
+              example:
+                avatarUrl: 'https://imagekit.io/uploads/new-avatar.jpg'
+      responses:
+        200:
+          description: Avatar uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Avatar uploaded successfully'
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/AdminUser'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      tags:
+        - Admin Profile
+      summary: Remove admin avatar
+      description: Remove the authenticated admin's profile picture
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Avatar removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Avatar removed successfully'
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: '#/components/schemas/AdminUser'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: User's display name
+        email:
+          type: string
+          format: email
+          description: User's email address
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to user's profile picture
+        isActive:
+          type: boolean
+          description: Whether the user account is active
+        isAdmin:
+          type: boolean
+          description: Whether the user has admin privileges
+        roleId:
+          type: string
+          format: uuid
+          nullable: true
+          description: ID of the user's role
+        role:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            permissions:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+      example:
+        id: '123e4567-e89b-12d3-a456-426614174000'
+        name: 'John Admin'
+        email: 'john@admin.com'
+        avatar: 'https://imagekit.io/uploads/avatar.jpg'
+        isActive: true
+        isAdmin: true
+        roleId: '456e7890-e89b-12d3-a456-426614174001'
+        role:
+          id: '456e7890-e89b-12d3-a456-426614174001'
+          name: 'Super Admin'
+          permissions:
+            - id: '789e1234-e89b-12d3-a456-426614174002'
+              name: 'user.create'
+            - id: '789e1234-e89b-12d3-a456-426614174003'
+              name: 'user.read'
+        createdAt: '2024-01-15T10:30:00Z'
+        updatedAt: '2024-01-15T10:30:00Z'

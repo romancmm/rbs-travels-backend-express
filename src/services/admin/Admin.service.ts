@@ -29,6 +29,7 @@ export const listAdminsService = async (params: UserQueryParams = {}) => {
         id: true,
         name: true,
         email: true,
+        avatar: true,
         isActive: true,
         isAdmin: true,
         roleId: true,
@@ -55,6 +56,7 @@ export const getAdminByIdService = async (id: string) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       isActive: true,
       isAdmin: true,
       roleId: true,
@@ -74,7 +76,8 @@ export const getAdminByIdService = async (id: string) => {
 }
 
 export const createAdminService = async (data: CreateUserInput) => {
-  const { name, email, password, isActive, isAdmin, roleId } = data || ({} as CreateUserInput)
+  const { name, email, password, avatar, isActive, isAdmin, roleId } =
+    data || ({} as CreateUserInput)
 
   // Check if email already exists
   const existingUser = await prisma.user.findUnique({ where: { email } })
@@ -89,6 +92,7 @@ export const createAdminService = async (data: CreateUserInput) => {
     password: hashedPassword,
   }
 
+  if (avatar !== undefined) payload.avatar = avatar
   if (typeof isActive === 'boolean') payload.isActive = isActive
   if (typeof isAdmin === 'boolean') payload.isAdmin = isAdmin
   if (roleId) payload.roleId = roleId
@@ -99,6 +103,7 @@ export const createAdminService = async (data: CreateUserInput) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       isActive: true,
       isAdmin: true,
       roleId: true,
@@ -117,7 +122,8 @@ export const createAdminService = async (data: CreateUserInput) => {
 }
 
 export const updateAdminService = async (id: string, data: UpdateUserInput) => {
-  const { name, email, password, isActive, isAdmin, roleId } = data || ({} as UpdateUserInput)
+  const { name, email, password, avatar, isActive, isAdmin, roleId } =
+    data || ({} as UpdateUserInput)
   const payload: any = {}
 
   if (name !== undefined) payload.name = name
@@ -132,6 +138,7 @@ export const updateAdminService = async (id: string, data: UpdateUserInput) => {
   if (password !== undefined) {
     payload.password = await hashPassword(password)
   }
+  if (avatar !== undefined) payload.avatar = avatar
   if (typeof isActive === 'boolean') payload.isActive = isActive
   if (typeof isAdmin === 'boolean') payload.isAdmin = isAdmin
   if (roleId !== undefined) payload.roleId = roleId
@@ -143,6 +150,7 @@ export const updateAdminService = async (id: string, data: UpdateUserInput) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       isActive: true,
       isAdmin: true,
       roleId: true,
@@ -176,6 +184,7 @@ export const toggleAdminStatusService = async (id: string) => {
       id: true,
       name: true,
       email: true,
+      avatar: true,
       isActive: true,
       isAdmin: true,
       roleId: true,
@@ -194,6 +203,7 @@ export const assignRoleToAdminService = async (userId: string, roleId: string) =
       id: true,
       name: true,
       email: true,
+      avatar: true,
       isActive: true,
       isAdmin: true,
       roleId: true,

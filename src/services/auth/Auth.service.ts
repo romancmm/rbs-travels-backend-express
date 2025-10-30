@@ -10,13 +10,13 @@ import type {
 } from '@/validators/auth.validator'
 
 export const registerCustomerService = async (data: RegisterInput) => {
-  const { name, email, password } = data
+  const { name, email, password, avatar } = data
   const exists = await prisma.user.findUnique({ where: { email } })
   if (exists) throw new Error('Email already exists')
 
   const hashed = await hashPassword(password)
   const user = await prisma.user.create({
-    data: { name, email, password: hashed, isAdmin: false },
+    data: { name, email, password: hashed, avatar, isAdmin: false },
   })
   const tokens = generateTokens({ id: user.id, isAdmin: false })
   return { user, ...tokens }

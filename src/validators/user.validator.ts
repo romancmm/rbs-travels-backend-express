@@ -2,6 +2,7 @@ import { z } from 'zod'
 import {
   booleanQuerySchema,
   emailSchema,
+  imageUrlSchema,
   paginationQuerySchema,
   passwordSchema,
   uuidSchema,
@@ -16,6 +17,7 @@ export const createUserSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: emailSchema,
   password: passwordSchema,
+  avatar: imageUrlSchema.optional(),
   isActive: z.boolean().default(true).optional(),
   isAdmin: z.boolean().default(false).optional(),
   roleId: uuidSchema.optional().nullable(),
@@ -26,6 +28,7 @@ export const updateUserSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   email: emailSchema.optional(),
   password: passwordSchema.optional(),
+  avatar: imageUrlSchema.optional(),
   isActive: z.boolean().optional(),
   isAdmin: z.boolean().optional(),
   roleId: uuidSchema.optional().nullable(),
@@ -42,6 +45,7 @@ export const userQuerySchema = paginationQuerySchema.extend({
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   email: emailSchema.optional(),
+  avatar: imageUrlSchema.optional(),
 })
 
 /**

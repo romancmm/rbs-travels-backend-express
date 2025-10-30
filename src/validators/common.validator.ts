@@ -58,6 +58,11 @@ export const urlSchema = z.string().url({ message: 'Invalid URL format' }).optio
 // Image URL validation
 export const imageUrlSchema = z.string().url().optional().nullable()
 
+// Avatar upload schema
+export const avatarUploadSchema = z.object({
+  avatarUrl: z.string().url({ message: 'Invalid avatar URL format' }),
+})
+
 // JSON validation (for flexible JSON fields)
 export const jsonSchema = z.union([z.record(z.string(), z.any()), z.array(z.any()), z.null()])
 

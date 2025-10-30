@@ -37,12 +37,12 @@ export const getCustomerByIdService = async (id: string) => {
 }
 
 export const createCustomerService = async (data: CreateCustomerInput) => {
-  const { name, email, password } = data || ({} as CreateCustomerInput)
+  const { name, email, password, avatar } = data || ({} as CreateCustomerInput)
   if (!name || !email || !password)
     throw Object.assign(new Error('name, email, password are required'), { status: 422 })
   const hashed = await hashPassword(password)
   const user = await prisma.user.create({
-    data: { name, email, password: hashed, isAdmin: false },
+    data: { name, email, password: hashed, avatar, isAdmin: false },
   })
   const { password: _p, ...safe } = user as any
   return safe
@@ -52,6 +52,7 @@ export const updateCustomerService = async (id: string, data: UpdateCustomerInpu
   const payload: any = {}
   if (data.name !== undefined) payload.name = data.name
   if (data.email !== undefined) payload.email = data.email
+  if (data.avatar !== undefined) payload.avatar = data.avatar
   if (data.isActive !== undefined) payload.isActive = data.isActive
 
   const user = await prisma.user.update({ where: { id }, data: payload })

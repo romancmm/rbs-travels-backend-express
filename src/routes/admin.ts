@@ -1,4 +1,5 @@
 import userAdminRoutes from '@/api/admin'
+import adminProfileRoutes from '@/api/admin/adminProfile.route'
 import blogAdminRoutes from '@/api/blog/blog.admin.route'
 import customerAdminRoutes from '@/api/customer/route'
 import mediaAdminRoutes from '@/api/media/media.admin.route'
@@ -28,5 +29,6 @@ routes.use('/setting', settingAdminRoutes)
 routes.use('/user', userAdminRoutes)
 routes.use('/upload', uploadAdminRoutes)
 routes.use('/media', mediaAdminRoutes)
+routes.use('/', adminProfileRoutes)
 
 export default routes

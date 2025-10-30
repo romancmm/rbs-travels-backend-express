@@ -1,8 +1,8 @@
-// import { Router } from 'express'
+import customerProfileRoutes from '@/api/customer/customerProfile.route'
+import { Router } from 'express'
 
-// const routes = Router()
+const routes = Router()
 
-// routes.use('/orders', customerOrderRoutes)
-// routes.use('/profile', customerProfileRoutes)
+routes.use('/', customerProfileRoutes)
 
-// export default routes
+export default routes
