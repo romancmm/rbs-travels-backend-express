@@ -3,12 +3,13 @@ import prisma from '@/utils/prisma'
 import type { CreatePostInput, PostQueryParams, UpdatePostInput } from '@/validators/blog.validator'
 
 export const listPostsService = async (params: PostQueryParams = {}) => {
-  const { page = 1, perPage = 10, q, categoryId, tag, isPublished, authorId } = params
+  const { page = 1, perPage = 10, q, categoryId, categorySlug, tag, isPublished, authorId } = params
   const { skip, take } = paginate(page, perPage)
   const where: any = {}
 
   if (typeof isPublished === 'boolean') where.isPublished = isPublished
   if (categoryId) where.categoryId = categoryId
+  if (categorySlug) where.category = { slug: categorySlug }
   if (authorId) where.authorId = authorId
   if (tag) where.tags = { has: tag }
   if (q) {

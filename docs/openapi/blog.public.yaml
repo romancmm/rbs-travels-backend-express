@@ -61,6 +61,10 @@ paths:
           schema: { type: string }
           description: Filter by category ID
         - in: query
+          name: categorySlug
+          schema: { type: string }
+          description: Filter by category Slug
+        - in: query
           name: tag
           schema: { type: string }
           description: Filter by tag name
