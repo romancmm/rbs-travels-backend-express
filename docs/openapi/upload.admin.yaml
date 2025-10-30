@@ -2,12 +2,20 @@ paths:
   /admin/upload:
     post:
       tags: [Upload - Admin]
-      summary: Upload a file to ImageKit
-      description: Server-side upload using ImageKit SDK. Requires media.create permission.
+      summary: Upload single or multiple files to ImageKit
+      description: |
+        Unified upload endpoint supporting both single and multiple file uploads with:
+        - Single file upload using 'file' field
+        - Multiple file upload using 'files[]' field
+        - Preserving existing URLs with 'existing' parameter
+        - Deleting specified files with 'deletes' parameter
+        - Optional folder organization
+
+        Requires media.create permission. Matches Next.js upload utility pattern.
       security:
         - bearerAuth: []
       requestBody:
-        required: true
+        required: false
         content:
           multipart/form-data:
             schema:
@@ -16,34 +24,82 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: The file to upload
+                  description: Single file to upload (use this OR files[])
+                files[]:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Array of files to upload (use this OR file)
                 folder:
                   type: string
                   description: Optional folder path in ImageKit
-              required: [file]
+                existing:
+                  type: string
+                  description:
+                    JSON array of existing URLs to preserve (sent as string from FormData)
+                  example: '["https://ik.imagekit.io/po5udmmiz/uploads/image1.jpg"]'
+                deletes:
+                  type: string
+                  description: JSON array of URLs to delete (sent as string from FormData)
+                  example: '["https://ik.imagekit.io/po5udmmiz/uploads/old.jpg"]'
       responses:
         '201':
-          description: File uploaded successfully
+          description: Files uploaded successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  fileId:
-                    type: string
-                  name:
-                    type: string
-                  url:
-                    type: string
-                  thumbnailUrl:
-                    type: string
-                required: [fileId, name, url]
+                  success:
+                    type: boolean
+                  urls:
+                    type: array
+                    items:
+                      type: string
+                    description: Combined array of existing + newly uploaded URLs
+                  uploaded:
+                    type: integer
+                    description: Number of files uploaded
+                  deleted:
+                    type: integer
+                    description: Number of files deleted
+                required: [success, urls, uploaded, deleted]
               examples:
-                default:
+                singleFile:
+                  summary: Single file upload
                   value:
-                    fileId: '6719a9cb4f...'
-                    name: 'banner.jpg'
-                    url: 'https://ik.imagekit.io/po5udmmiz/uploads/banner.jpg'
-                    thumbnailUrl: 'https://ik.imagekit.io/po5udmmiz/tr:n-ik_ml_thumbnail/uploads/banner.jpg'
+                    success: true
+                    urls:
+                      - 'https://ik.imagekit.io/po5udmmiz/uploads/banner.jpg'
+                    uploaded: 1
+                    deleted: 0
+                multipleFiles:
+                  summary: Multiple files with existing and deletes
+                  value:
+                    success: true
+                    urls:
+                      - 'https://ik.imagekit.io/po5udmmiz/uploads/existing.jpg'
+                      - 'https://ik.imagekit.io/po5udmmiz/uploads/new1.jpg'
+                      - 'https://ik.imagekit.io/po5udmmiz/uploads/new2.jpg'
+                    uploaded: 2
+                    deleted: 1
+        '400':
+          description: Bad request - no files provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  code:
+                    type: string
+              example:
+                success: false
+                message: 'At least one file is required'
+                code: 'FILE_REQUIRED'
         '401': { description: Unauthorized }
         '403': { description: Forbidden }
