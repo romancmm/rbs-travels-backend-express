@@ -3,6 +3,7 @@ paths:
     post:
       tags: [Auth - Admin]
       summary: Register a new admin (requires admin auth)
+      description: Register a new admin user with optional multiple roles
       security:
         - bearerAuth: []
       requestBody:
@@ -11,12 +12,17 @@ paths:
           application/json:
             schema:
               type: object
-              required: [name, email, password, roleId]
+              required: [name, email, password]
               properties:
                 name: { type: string }
                 email: { type: string, format: email }
                 password: { type: string, format: password }
-                roleId: { type: string, description: 'Role ID to assign to admin' }
+                roleIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Optional array of role IDs to assign to admin
+                  example: ['role-uuid-1', 'role-uuid-2']
       responses:
         '200': { description: Admin registered }
         '409': { description: Email exists }
@@ -129,6 +135,10 @@ components:
         id: { type: string }
         name: { type: string }
       required: [id, name]
+      example:
+        id: 'perm-uuid-123'
+        name: 'admin.create'
+
     AdminRole:
       type: object
       properties:
@@ -138,24 +148,77 @@ components:
           type: array
           items: { $ref: '#/components/schemas/AdminPermission' }
       required: [id, name]
+      example:
+        id: 'role-uuid-123'
+        name: 'admin'
+        permissions:
+          - id: 'perm-uuid-1'
+            name: 'admin.read'
+          - id: 'perm-uuid-2'
+            name: 'admin.create'
+
     AdminUser:
       type: object
+      description: |
+        Admin user object with multiple roles support.
+        - roles: Array of all assigned roles (only for isAdmin=true users)
+        - permissions: Flattened array of unique permission names from all roles
+        - isSuperAdmin: true for superadmin@gmail.com (bypasses all permission checks)
       properties:
         id: { type: string }
         name: { type: string }
         email: { type: string, format: email }
+        avatar: { type: string, nullable: true }
         isActive: { type: boolean }
         isAdmin: { type: boolean }
-        role:
-          $ref: '#/components/schemas/AdminRole'
         roles:
           type: array
-          description: Optional multiple roles array if enabled in schema
+          description: Array of assigned roles with their permissions (empty for non-admin users)
           items: { $ref: '#/components/schemas/AdminRole' }
         permissions:
           type: array
+          description: Flattened array of unique permission names combined from all roles
           items: { type: string }
-        isSuperAdmin: { type: boolean }
+          example: ['admin.read', 'admin.create', 'post.read', 'post.create']
+        isSuperAdmin:
+          type: boolean
+          description: True for superadmin@gmail.com (bypasses all permission checks)
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-      required: [id, name, email, isActive, isAdmin]
+      required: [id, name, email, isActive, isAdmin, roles, permissions, isSuperAdmin]
+      example:
+        id: 'user-uuid-123'
+        name: 'Admin User'
+        email: 'admin@gmail.com'
+        avatar: 'https://example.com/avatar.jpg'
+        isActive: true
+        isAdmin: true
+        roles:
+          - id: 'role-uuid-1'
+            name: 'admin'
+            permissions:
+              - id: 'perm-uuid-1'
+                name: 'admin.read'
+              - id: 'perm-uuid-2'
+                name: 'admin.create'
+              - id: 'perm-uuid-3'
+                name: 'admin.update'
+          - id: 'role-uuid-2'
+            name: 'editor'
+            permissions:
+              - id: 'perm-uuid-4'
+                name: 'post.read'
+              - id: 'perm-uuid-5'
+                name: 'post.create'
+              - id: 'perm-uuid-6'
+                name: 'post.update'
+        permissions:
+          - 'admin.read'
+          - 'admin.create'
+          - 'admin.update'
+          - 'post.read'
+          - 'post.create'
+          - 'post.update'
+        isSuperAdmin: false
+        createdAt: '2025-10-31T10:00:00Z'
+        updatedAt: '2025-10-31T10:00:00Z'

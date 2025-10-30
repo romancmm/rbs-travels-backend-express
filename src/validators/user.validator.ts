@@ -20,7 +20,7 @@ export const createUserSchema = z.object({
   avatar: imageUrlSchema.optional(),
   isActive: z.boolean().default(true).optional(),
   isAdmin: z.boolean().default(false).optional(),
-  roleId: uuidSchema.optional().nullable(),
+  roleIds: z.array(uuidSchema).optional().default([]), // Array of role IDs
 })
 
 // Update user schema
@@ -31,14 +31,14 @@ export const updateUserSchema = z.object({
   avatar: imageUrlSchema.optional(),
   isActive: z.boolean().optional(),
   isAdmin: z.boolean().optional(),
-  roleId: uuidSchema.optional().nullable(),
+  roleIds: z.array(uuidSchema).optional(), // Array of role IDs
 })
 
 // User query params schema
 export const userQuerySchema = paginationQuerySchema.extend({
   isActive: booleanQuerySchema.optional(),
   isAdmin: booleanQuerySchema.optional(),
-  roleId: uuidSchema.optional(),
+  roleId: uuidSchema.optional(), // Keep for backward compatibility in filtering
 })
 
 // Update user profile (for authenticated users updating themselves)

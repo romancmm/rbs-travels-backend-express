@@ -28,14 +28,20 @@ export const adminAuthMiddleware = async (req: Request, res: Response, next: Nex
     const decoded: any = verifyAccessToken(token)
     const admin = await prisma.user.findUnique({
       where: { id: decoded.id },
-      include: { role: { include: { permissions: true } } },
+      include: { roles: { include: { permissions: true } } },
     })
     if (!admin || !admin.isAdmin)
       return res.status(403).json({ message: 'Access denied: not admin' })
+
+    // Get all permissions from all assigned roles
+    const permissions = Array.from(
+      new Set(admin.roles.flatMap((r: any) => r.permissions.map((p: any) => p.name)))
+    )
+
     ;(req as any).user = {
       ...admin,
-      isSuperAdmin: admin.email === 'admin@gmail.com',
-      permissions: admin.role?.permissions?.map((p: any) => p.name) || [],
+      isSuperAdmin: admin.email === 'superadmin@gmail.com' || admin.email === 'admin@gmail.com',
+      permissions,
     }
     next()
   } catch {

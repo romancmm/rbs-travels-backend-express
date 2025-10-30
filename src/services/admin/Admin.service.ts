@@ -11,7 +11,10 @@ export const listAdminsService = async (params: UserQueryParams = {}) => {
 
   if (typeof isActive === 'boolean') where.isActive = isActive
   if (typeof isAdmin === 'boolean') where.isAdmin = isAdmin
-  if (roleId) where.roleId = roleId
+  if (roleId) {
+    // Filter users who have this specific role
+    where.roles = { some: { id: roleId } }
+  }
   if (q) {
     where.OR = [
       { name: { contains: q, mode: 'insensitive' } },
@@ -32,8 +35,7 @@ export const listAdminsService = async (params: UserQueryParams = {}) => {
         avatar: true,
         isActive: true,
         isAdmin: true,
-        roleId: true,
-        role: {
+        roles: {
           select: {
             id: true,
             name: true,
@@ -59,8 +61,7 @@ export const getAdminByIdService = async (id: string) => {
       avatar: true,
       isActive: true,
       isAdmin: true,
-      roleId: true,
-      role: {
+      roles: {
         select: {
           id: true,
           name: true,
@@ -76,7 +77,7 @@ export const getAdminByIdService = async (id: string) => {
 }
 
 export const createAdminService = async (data: CreateUserInput) => {
-  const { name, email, password, avatar, isActive, isAdmin, roleId } =
+  const { name, email, password, avatar, isActive, isAdmin, roleIds } =
     data || ({} as CreateUserInput)
 
   // Check if email already exists
@@ -95,7 +96,13 @@ export const createAdminService = async (data: CreateUserInput) => {
   if (avatar !== undefined) payload.avatar = avatar
   if (typeof isActive === 'boolean') payload.isActive = isActive
   if (typeof isAdmin === 'boolean') payload.isAdmin = isAdmin
-  if (roleId) payload.roleId = roleId
+
+  // Only assign roles if user is an admin (isAdmin = true)
+  if (isAdmin && roleIds && roleIds.length > 0) {
+    payload.roles = {
+      connect: roleIds.map((id) => ({ id })),
+    }
+  }
 
   const user = await prisma.user.create({
     data: payload,
@@ -106,8 +113,7 @@ export const createAdminService = async (data: CreateUserInput) => {
       avatar: true,
       isActive: true,
       isAdmin: true,
-      roleId: true,
-      role: {
+      roles: {
         select: {
           id: true,
           name: true,
@@ -122,7 +128,7 @@ export const createAdminService = async (data: CreateUserInput) => {
 }
 
 export const updateAdminService = async (id: string, data: UpdateUserInput) => {
-  const { name, email, password, avatar, isActive, isAdmin, roleId } =
+  const { name, email, password, avatar, isActive, isAdmin, roleIds } =
     data || ({} as UpdateUserInput)
   const payload: any = {}
 
@@ -141,7 +147,21 @@ export const updateAdminService = async (id: string, data: UpdateUserInput) => {
   if (avatar !== undefined) payload.avatar = avatar
   if (typeof isActive === 'boolean') payload.isActive = isActive
   if (typeof isAdmin === 'boolean') payload.isAdmin = isAdmin
-  if (roleId !== undefined) payload.roleId = roleId
+
+  // Get current user to check if they're an admin
+  const currentUser = await prisma.user.findUnique({ where: { id } })
+  if (!currentUser) throw Object.assign(new Error('User not found'), { status: 404 })
+
+  // Only update roles if user is/will be an admin
+  const willBeAdmin = isAdmin !== undefined ? isAdmin : currentUser.isAdmin
+  if (willBeAdmin && roleIds !== undefined) {
+    payload.roles = {
+      set: roleIds.map((roleId) => ({ id: roleId })),
+    }
+  } else if (!willBeAdmin && roleIds !== undefined) {
+    // If user is being demoted from admin, clear all roles
+    payload.roles = { set: [] }
+  }
 
   const user = await prisma.user.update({
     where: { id },
@@ -153,8 +173,7 @@ export const updateAdminService = async (id: string, data: UpdateUserInput) => {
       avatar: true,
       isActive: true,
       isAdmin: true,
-      roleId: true,
-      role: {
+      roles: {
         select: {
           id: true,
           name: true,
@@ -187,7 +206,13 @@ export const toggleAdminStatusService = async (id: string) => {
       avatar: true,
       isActive: true,
       isAdmin: true,
-      roleId: true,
+      roles: {
+        select: {
+          id: true,
+          name: true,
+          permissions: { select: { id: true, name: true } },
+        },
+      },
       createdAt: true,
       updatedAt: true,
     },
@@ -195,10 +220,14 @@ export const toggleAdminStatusService = async (id: string) => {
   return updated
 }
 
-export const assignRoleToAdminService = async (userId: string, roleId: string) => {
+export const assignRolesToAdminService = async (userId: string, roleIds: string[]) => {
   const user = await prisma.user.update({
     where: { id: userId },
-    data: { roleId },
+    data: {
+      roles: {
+        set: roleIds.map((id) => ({ id })),
+      },
+    },
     select: {
       id: true,
       name: true,
@@ -206,8 +235,7 @@ export const assignRoleToAdminService = async (userId: string, roleId: string) =
       avatar: true,
       isActive: true,
       isAdmin: true,
-      roleId: true,
-      role: {
+      roles: {
         select: {
           id: true,
           name: true,

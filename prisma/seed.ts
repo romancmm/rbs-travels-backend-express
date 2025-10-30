@@ -118,30 +118,38 @@ async function main() {
   const superAdminPass = await hashPassword('supersecret')
   await prisma.user.upsert({
     where: { email: superAdminEmail },
-    update: { roleId: superAdminRole.id, isAdmin: true, isActive: true },
+    update: {
+      isAdmin: true,
+      isActive: true,
+      roles: { set: [{ id: superAdminRole.id }] },
+    },
     create: {
       email: superAdminEmail,
       password: superAdminPass,
       name: 'Super Admin',
       isActive: true,
       isAdmin: true,
-      roleId: superAdminRole.id,
+      roles: { connect: [{ id: superAdminRole.id }] },
     },
   })
 
-  // Create admin user
+  // Create admin user with multiple roles (superadmin and admin)
   const adminEmail = 'admin@gmail.com'
   const adminPass = await hashPassword('secret')
   await prisma.user.upsert({
     where: { email: adminEmail },
-    update: { roleId: adminRole.id, isAdmin: true, isActive: true },
+    update: {
+      isAdmin: true,
+      isActive: true,
+      roles: { set: [{ id: adminRole.id }, { id: editorRole.id }] },
+    },
     create: {
       email: adminEmail,
       password: adminPass,
       name: 'Admin',
       isActive: true,
       isAdmin: true,
-      roleId: adminRole.id,
+      roles: { connect: [{ id: adminRole.id }, { id: editorRole.id }] },
     },
   })
 }

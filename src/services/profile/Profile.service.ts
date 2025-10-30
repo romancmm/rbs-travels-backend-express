@@ -27,8 +27,7 @@ export const updateProfileService = async (userId: string, data: UpdateProfileIn
       avatar: true,
       isActive: true,
       isAdmin: true,
-      roleId: true,
-      role: {
+      roles: {
         select: {
           id: true,
           name: true,

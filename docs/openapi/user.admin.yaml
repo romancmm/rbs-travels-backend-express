@@ -34,7 +34,9 @@ paths:
     post:
       tags: [Admin Users - Admin]
       summary: Create admin user
-      description: Create a new admin/staff user
+      description: |
+        Create a new admin/staff user. Only users with isAdmin=true can be assigned roles.
+        Regular users (isAdmin=false) will not have roles assigned even if roleIds is provided.
       security:
         - bearerAuth: []
       requestBody:
@@ -45,28 +47,37 @@ paths:
               type: object
               required: [name, email, password]
               properties:
-                name: 
+                name:
                   type: string
                   example: John Doe
-                email: 
+                email:
                   type: string
                   format: email
                   example: john@example.com
-                password: 
+                password:
                   type: string
                   format: password
                   example: SecurePass123
-                isActive: 
+                isActive:
                   type: boolean
                   default: true
-                isAdmin: 
+                isAdmin:
                   type: boolean
                   default: false
-                roleId: 
-                  type: string
-                  description: Role ID to assign
+                  description: Only admin users (isAdmin=true) can be assigned roles
+                roleIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of role IDs to assign (only applied if isAdmin=true)
+                  example: ['role-uuid-1', 'role-uuid-2']
       responses:
-        '200': { description: Admin user created }
+        '200':
+          description: Admin user created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
         '409': { description: Email already exists }
         '422': { description: Validation error }
   /admin/user/admins/{id}:
@@ -86,6 +97,9 @@ paths:
     put:
       tags: [Admin Users - Admin]
       summary: Update admin user
+      description: |
+        Update admin user. Roles can only be assigned/updated if user is/will be admin (isAdmin=true).
+        If user is demoted from admin (isAdmin=false), all roles will be automatically removed.
       security:
         - bearerAuth: []
       parameters:
@@ -102,17 +116,29 @@ paths:
               properties:
                 name: { type: string }
                 email: { type: string, format: email }
-                password: 
+                password:
                   type: string
                   format: password
                   description: Leave empty to keep current password
                 isActive: { type: boolean }
-                isAdmin: { type: boolean }
-                roleId: 
-                  type: string
-                  description: Role ID to assign (null to remove role)
+                isAdmin:
+                  type: boolean
+                  description: If set to false, all assigned roles will be removed
+                roleIds:
+                  type: array
+                  items:
+                    type: string
+                  description:
+                    Array of role IDs to assign (replaces existing roles, only applied if
+                    isAdmin=true)
+                  example: ['role-uuid-1', 'role-uuid-2']
       responses:
-        '200': { description: Admin user updated }
+        '200':
+          description: Admin user updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
         '404': { description: Not found }
         '409': { description: Email already exists }
     delete:
@@ -146,7 +172,10 @@ paths:
   /admin/user/admins/{id}/assign-role:
     post:
       tags: [Admin Users - Admin]
-      summary: Assign role to admin user
+      summary: Assign multiple roles to admin user
+      description: |
+        Assign one or more roles to an admin user. This replaces all existing role assignments.
+        User must have isAdmin=true to receive role assignments.
       security:
         - bearerAuth: []
       parameters:
@@ -160,12 +189,73 @@ paths:
           application/json:
             schema:
               type: object
-              required: [roleId]
+              required: [roleIds]
               properties:
-                roleId: 
-                  type: string
-                  description: Role ID to assign to the admin user
+                roleIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of role IDs to assign (replaces all existing roles)
+                  example: ['role-uuid-1', 'role-uuid-2']
       responses:
-        '200': { description: Role assigned }
+        '200':
+          description: Roles assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
         '404': { description: Admin user or role not found }
-        '422': { description: roleId is required }
+        '422': { description: roleIds array is required }
+
+components:
+  schemas:
+    AdminUserResponse:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        avatar: { type: string, nullable: true }
+        isActive: { type: boolean }
+        isAdmin: { type: boolean }
+        roles:
+          type: array
+          description: Array of assigned roles (only for isAdmin=true users)
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              name: { type: string }
+              permissions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: string }
+                    name: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      example:
+        id: 'user-uuid-123'
+        name: 'John Doe'
+        email: 'john@example.com'
+        avatar: 'https://example.com/avatar.jpg'
+        isActive: true
+        isAdmin: true
+        roles:
+          - id: 'role-uuid-1'
+            name: 'admin'
+            permissions:
+              - id: 'perm-uuid-1'
+                name: 'admin.read'
+              - id: 'perm-uuid-2'
+                name: 'admin.create'
+          - id: 'role-uuid-2'
+            name: 'editor'
+            permissions:
+              - id: 'perm-uuid-3'
+                name: 'post.read'
+              - id: 'perm-uuid-4'
+                name: 'post.create'
+        createdAt: '2025-10-31T10:00:00Z'
+        updatedAt: '2025-10-31T10:00:00Z'

@@ -3,7 +3,7 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+ 
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,8 +21,7 @@ model User {
   avatar    String?  // User profile avatar image URL
   isActive  Boolean  @default(true)
   isAdmin   Boolean  @default(false)
-  roleId    String? // nullable for customers 
-  role      Role?    @relation(fields: [roleId], references: [id])
+  roles     Role[]   @relation("UserRoles") // Many-to-many: user can have multiple roles
   posts     Post[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -32,7 +31,7 @@ model Role {
   id          String       @id @default(uuid())
   name        String       @unique
   permissions Permission[] @relation("RolePermissions")
-  users       User[]
+  users       User[]       @relation("UserRoles") // Many-to-many: role can be assigned to multiple users
 }
 
 model Permission {
