@@ -1,32 +1,148 @@
+components:
+  schemas:
+    MediaFile:
+      type: object
+      properties:
+        fileId: { type: string }
+        name: { type: string }
+        url: { type: string, format: uri }
+        filePath: { type: string }
+        size: { type: integer }
+        fileType: { type: string }
+        type: { type: string, enum: [file] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        tags:
+          type: array
+          items: { type: string }
+    MediaFolder:
+      type: object
+      properties:
+        folderId: { type: string }
+        name: { type: string }
+        folderPath: { type: string }
+        type: { type: string, enum: [folder] }
+        createdAt: { type: string, format: date-time }
+    MediaLibraryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/MediaFile'
+              - $ref: '#/components/schemas/MediaFolder'
+        folders:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFolder' }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFile' }
+        page: { type: integer }
+        perPage: { type: integer }
+        hasMore: { type: boolean }
+        totalEstimate: { type: integer }
+        currentPath: { type: string }
+    MediaStructureResponse:
+      type: object
+      properties:
+        totalFiles: { type: integer }
+        totalFolders: { type: integer }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFile' }
+        folders:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFolder' }
+        structure:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/MediaFile'
+              - $ref: '#/components/schemas/MediaFolder'
+    SuccessResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+    FolderCreateResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            folder: { $ref: '#/components/schemas/MediaFolder' }
+            path: { type: string }
+    FileUpdateResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            file: { $ref: '#/components/schemas/MediaFile' }
+    DeleteResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            deletedFiles: { type: integer }
+            deletedFolders: { type: integer }
+
 paths:
   /admin/media:
     get:
       tags: [Media - Admin]
-      summary: List media files in a folder
+      summary: List media files and folders
+      description: Get paginated list of files and folders with filtering options
       security: [{ bearerAuth: [] }]
       parameters:
         - in: query
           name: path
-          schema: { type: string }
-          description: Folder path (default "/")
+          schema: { type: string, default: '/' }
+          description: Folder path to browse
         - in: query
           name: page
-          schema: { type: integer, minimum: 1 }
+          schema: { type: integer, minimum: 1, default: 1 }
+          description: Page number for pagination
         - in: query
           name: perPage
-          schema: { type: integer, minimum: 1, maximum: 100 }
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+          description: Number of items per page
         - in: query
           name: fileType
           schema:
             type: string
             enum: [all, image, video, audio, raw]
             default: all
+          description: Filter by file type
       responses:
-        '200': { description: Media list }
+        '200':
+          description: Media library content retrieved successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaLibraryResponse' }
+        '400': { description: Invalid request parameters }
+        '401': { description: Unauthorized }
+        '500': { description: Server error }
+
+  /admin/media/structure:
+    get:
+      tags: [Media - Admin]
+      summary: Get complete media library structure
+      description: Returns overview of entire media library with counts and structure
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Media library structure retrieved successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaStructureResponse' }
+        '401': { description: Unauthorized }
+        '500': { description: Server error }
+
   /admin/media/folder:
     post:
       tags: [Media - Admin]
-      summary: Create a folder
+      summary: Create a new folder
+      description: Create a new folder with unique name validation
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -35,30 +151,188 @@ paths:
             schema:
               type: object
               properties:
-                path: { type: string }
-              required: [path]
+                folderName:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  description: Name of the folder to create
+                  example: 'vacation-photos'
+                parentPath:
+                  type: string
+                  default: '/'
+                  description: Parent directory path
+                  example: '/albums'
+              required: [folderName]
+            examples:
+              rootFolder:
+                summary: Create folder in root
+                value:
+                  folderName: 'documents'
+              nestedFolder:
+                summary: Create nested folder
+                value:
+                  folderName: 'vacation-photos'
+                  parentPath: '/albums'
       responses:
-        '201': { description: Folder created }
+        '201':
+          description: Folder created successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FolderCreateResponse' }
+        '400': { description: Invalid request or folder already exists }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '500': { description: Server error }
     delete:
       tags: [Media - Admin]
       summary: Delete a folder
+      description: Delete a folder (empty folders only, unless force=true)
       security: [{ bearerAuth: [] }]
       parameters:
         - in: query
           name: path
           required: true
           schema: { type: string }
+          description: Full path of folder to delete
+          example: '/albums/old-photos'
+        - in: query
+          name: force
+          schema: { type: string, enum: ['true', 'false'] }
+          description: Force delete folder with all contents
+          example: 'true'
       responses:
-        '200': { description: Folder deleted }
-  /admin/media/file/{fileId}:
-    delete:
+        '200':
+          description: Folder deleted successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeleteResponse' }
+        '400': { description: Invalid path or folder not empty }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '404': { description: Folder not found }
+        '500': { description: Server error }
+
+  /admin/media/folder/rename:
+    put:
       tags: [Media - Admin]
-      summary: Delete a file
+      summary: Rename a folder
+      description: Rename a folder with unique name validation
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                oldPath:
+                  type: string
+                  description: Current full path of the folder
+                  example: '/albums/vacation-photos'
+                newFolderName:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  description: New name for the folder
+                  example: 'summer-vacation'
+              required: [oldPath, newFolderName]
+      responses:
+        '200':
+          description: Folder renamed successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      oldPath: { type: string }
+                      newPath: { type: string }
+        '400': { description: Invalid request or name conflict }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '404': { description: Folder not found }
+        '500': { description: Server error }
+
+  /admin/media/file/{fileId}:
+    put:
+      tags: [Media - Admin]
+      summary: Update file details
+      description: Update file metadata like name and tags
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
           name: fileId
           required: true
           schema: { type: string }
+          description: Unique identifier of the file
+          example: 'abc123def456'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New name for the file
+                  example: 'updated-filename'
+                tags:
+                  type: array
+                  items: { type: string }
+                  description: Tags to associate with the file
+                  example: ['nature', 'landscape', 'photography']
+            examples:
+              updateName:
+                summary: Update file name only
+                value:
+                  name: 'new-filename'
+              updateTags:
+                summary: Update tags only
+                value:
+                  tags: ['nature', 'landscape']
+              updateBoth:
+                summary: Update name and tags
+                value:
+                  name: 'mountain-view'
+                  tags: ['nature', 'mountain', 'landscape']
       responses:
-        '200': { description: File deleted }
+        '200':
+          description: File updated successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FileUpdateResponse' }
+        '400': { description: Invalid request parameters }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '404': { description: File not found }
+        '500': { description: Server error }
+    delete:
+      tags: [Media - Admin]
+      summary: Delete a file
+      description: Permanently delete a media file from the library
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema: { type: string }
+          description: Unique identifier of the file to delete
+          example: 'abc123def456'
+      responses:
+        '200':
+          description: File deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      fileId: { type: string }
+                      fileName: { type: string }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '404': { description: File not found }
+        '500': { description: Server error }

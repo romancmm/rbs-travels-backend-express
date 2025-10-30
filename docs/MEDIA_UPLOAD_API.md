@@ -285,3 +285,19 @@ API documentation is available at:
 - **Public endpoints**: http://localhost:3000/docs/public
 
 Look for the "Upload - Admin" tag in the Swagger UI.
+
+## Related Documentation
+
+For comprehensive media library management including folder operations, file organization, and CRUD
+operations, see:
+
+📁 **[Media Management API Documentation](./MEDIA_MANAGEMENT_API.md)** - Complete guide for managing
+files and folders
+
+The Media Management API provides additional functionality beyond uploads:
+
+- Create, rename, and delete folders with unique name validation
+- Update file metadata and tags
+- Browse media library with pagination and filtering
+- Get complete library structure overview
+- Force delete folders with contents

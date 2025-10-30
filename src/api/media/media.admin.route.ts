@@ -6,6 +6,8 @@ import {
   deleteFileParamsSchema,
   deleteFolderQuerySchema,
   mediaListQuerySchema,
+  renameFolderSchema,
+  updateFileSchema,
 } from '@/validators/media.validator'
 import { Router } from 'express'
 
@@ -17,12 +19,34 @@ router.get(
   validate(mediaListQuerySchema, 'query'),
   MediaController.list
 )
+
+router.get(
+  '/structure',
+  // requirePermission('media.read'),
+  MediaController.getLibraryStructure
+)
+
 router.post(
   '/folder',
   requirePermission('media.create'),
   validate(createFolderSchema),
   MediaController.createFolder
 )
+
+router.put(
+  '/folder/rename',
+  requirePermission('media.update'),
+  validate(renameFolderSchema),
+  MediaController.renameFolder
+)
+
+router.put(
+  '/file/:fileId',
+  requirePermission('media.update'),
+  validate(updateFileSchema),
+  MediaController.updateFile
+)
+
 router.delete(
   '/file/:fileId',
   requirePermission('media.delete'),
