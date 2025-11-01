@@ -3,7 +3,7 @@ tags:
     description: Public menu endpoints
 
 paths:
-  /api/menus:
+  /menus:
     get:
       tags:
         - Menu (Public)
@@ -28,7 +28,7 @@ paths:
         200:
           description: Menus retrieved successfully
 
-  /api/menus/{identifier}:
+  /menus/{identifier}:
     get:
       tags:
         - Menu (Public)

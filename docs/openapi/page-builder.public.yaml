@@ -3,7 +3,7 @@ tags:
     description: Public page builder endpoints
 
 paths:
-  /api/pages:
+  /pages:
     get:
       tags:
         - Page Builder (Public)
@@ -27,7 +27,7 @@ paths:
         200:
           description: Pages retrieved successfully
 
-  /api/pages/{identifier}:
+  /pages/{identifier}:
     get:
       tags:
         - Page Builder (Public)
