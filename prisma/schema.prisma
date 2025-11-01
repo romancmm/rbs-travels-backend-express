@@ -127,131 +127,80 @@ model Setting {
   updatedAt   DateTime @updatedAt
 }
 
-// Menu Management Models
+// ============================================
+// OPTIMIZED MENU MANAGEMENT (JSON-based)
+// Performance: Single query to fetch entire menu tree
+// ============================================
 model Menu {
-  id          String     @id @default(uuid())
-  name        String     // e.g., "Main Menu", "Footer Menu"
-  slug        String     @unique // e.g., "main-menu", "footer-menu"
-  position    String?    // e.g., "header", "footer", "sidebar"
+  id          String   @id @default(uuid())
+  name        String   // e.g., "Main Menu", "Footer Menu"
+  slug        String   @unique // e.g., "main-menu", "footer-menu"
+  position    String?  // e.g., "header", "footer", "sidebar"
   description String?
-  items       MenuItem[]
-  isPublished Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  
+  // JSON structure for entire menu tree (better performance)
+  items       Json     // Array of menu items with nested children
+  
+  // Publishing & Performance
+  isPublished Boolean  @default(false)
+  version     Int      @default(1)
+  
+  // Caching metadata (for Redis/CDN integration)
+  cacheKey    String?  @unique // e.g., "menu:main-menu:v1"
+  lastCached  DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([slug])
   @@index([position])
+  @@index([isPublished])
+  @@index([cacheKey])
 }
 
-model MenuItem {
-  id       String  @id @default(uuid())
-  menuId   String
-  menu     Menu    @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  
-  title    String
-  type     String  // 'custom-link', 'category-blogs', 'custom-page', 'article'
-  link     String  // URL or slug
-  icon     String?
-  target   String  @default("_self") // '_blank' or '_self'
-  cssClass String?
-  
-  parentId String?
-  parent   MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children MenuItem[] @relation("MenuItemChildren")
-  
-  order       Int     @default(0)
-  isPublished Boolean @default(true)
-  meta        Json?   // Additional metadata
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([menuId])
-  @@index([parentId])
-  @@index([order])
-}
-
-// Page Builder Models
+// ============================================
+// OPTIMIZED PAGE BUILDER (JSON-based)
+// Performance: Single query for entire page structure
+// Scalability: Easy versioning, drafts, and caching
+// ============================================
 model PageBuilder {
   id          String    @id @default(uuid())
   title       String
   slug        String    @unique
   description String?
-  sections    Section[]
-  seo         Json?     // SEO metadata (title, description, keywords, og tags)
+  
+  // JSON structure for entire page (sections -> rows -> columns -> components)
+  content     Json      // Complete page structure in single field
+  
+  // SEO & Metadata
+  seo         Json?     // {title, description, keywords, ogTags, canonical, etc.}
+  
+  // Publishing & Versioning
   isPublished Boolean   @default(false)
+  isDraft     Boolean   @default(true)
   publishedAt DateTime?
+  version     Int       @default(1)
+  
+  // Draft/Published content separation for better performance
+  draftContent     Json? // Working draft content
+  publishedContent Json? // Last published version (cached for public API)
+  
+  // Caching metadata (for Redis/CDN integration)
+  cacheKey    String?   @unique // e.g., "page:home:v2"
+  lastCached  DateTime?
+  
+  // Analytics & Performance tracking
+  viewCount   Int       @default(0)
+  lastViewed  DateTime?
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([slug])
   @@index([isPublished])
-}
-
-model Section {
-  id            String      @id @default(uuid())
-  pageId        String
-  page          PageBuilder @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  
-  name          String      // e.g., "Hero Section", "Products Section"
-  order         Int         @default(0)
-  settings      Json?       // backgroundColor, backgroundImage, padding, margin, etc.
-  rows          Row[]
-  
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  @@index([pageId])
-  @@index([order])
-}
-
-model Row {
-  id        String   @id @default(uuid())
-  sectionId String
-  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  
-  order     Int      @default(0)
-  settings  Json?    // columnsGap, background, etc.
-  columns   Column[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([sectionId])
-  @@index([order])
-}
-
-model Column {
-  id         String      @id @default(uuid())
-  rowId      String
-  row        Row         @relation(fields: [rowId], references: [id], onDelete: Cascade)
-  
-  width      Int         @default(12) // Bootstrap-style grid (1-12)
-  order      Int         @default(0)
-  settings   Json?       // alignment, padding, etc.
-  components Component[]
-  
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-
-  @@index([rowId])
-  @@index([order])
-}
-
-model Component {
-  id        String   @id @default(uuid())
-  columnId  String
-  column    Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  
-  type      String   // 'text', 'image', 'rich-text', 'gallery', 'banner', 'carousel', 'product-card', etc.
-  order     Int      @default(0)
-  props     Json     // Component-specific configuration and data
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([columnId])
-  @@index([order])
+  @@index([isDraft])
+  @@index([cacheKey])
+  @@index([publishedAt])
 }
 
 // model Destination {
