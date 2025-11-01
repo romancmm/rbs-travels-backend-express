@@ -7,16 +7,9 @@ import type { RequestHandler } from 'express'
  */
 export const listMenus: RequestHandler = async (req, res) => {
   try {
-    const { page, limit, position, isPublished } = req.query
+    const { page, limit } = req.query
 
-    const data = await menuService.getAllMenus(
-      page ? Number(page) : 1,
-      limit ? Number(limit) : 10,
-      {
-        position: position as string,
-        isPublished: isPublished === 'true' ? true : isPublished === 'false' ? false : undefined,
-      }
-    )
+    const data = await menuService.getAllMenus(page ? Number(page) : 1, limit ? Number(limit) : 10)
 
     return success(res, data, 'Menus fetched successfully')
   } catch (err: any) {
@@ -35,7 +28,7 @@ export const getMenu: RequestHandler = async (req, res) => {
       return error(res, 'Menu identifier is required', 400)
     }
 
-    const data = await menuService.getMenu(identifier, true)
+    const data = await menuService.getMenu(identifier)
 
     if (!data) {
       return error(res, 'Menu not found', 404)
@@ -107,7 +100,7 @@ export const createMenuItem: RequestHandler = async (req, res) => {
       return error(res, 'Menu ID is required', 400)
     }
 
-    const data = await menuService.createMenuItem(menuId, req.body)
+    const data = await menuService.addMenuItem(menuId, req.body)
     res.status(201)
     return success(res, data, 'Menu item created successfully')
   } catch (err: any) {

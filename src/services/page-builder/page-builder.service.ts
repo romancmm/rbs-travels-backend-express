@@ -2,15 +2,28 @@ import { Prisma } from '@prisma/client'
 import prisma from '../../config/db'
 import { paginate } from '../../utils/paginator'
 
+/**
+ * ============================================
+ * OPTIMIZED PAGE BUILDER SERVICE (JSON-based)
+ * ============================================
+ * Performance: Single query for entire page structure
+ * - No joins or nested queries needed
+ * - Draft/published content separation
+ * - Built-in versioning and analytics
+ * ============================================
+ */
+
 export class PageBuilderService {
   /**
    * Get all pages with pagination and filters
+   * Performance: Simple query without relations
    */
   async getAllPages(
     page: number = 1,
     perPage: number = 10,
     filters?: {
       isPublished?: boolean
+      isDraft?: boolean
       search?: string
     }
   ) {
@@ -19,6 +32,10 @@ export class PageBuilderService {
 
     if (filters?.isPublished !== undefined) {
       where.isPublished = filters.isPublished
+    }
+
+    if (filters?.isDraft !== undefined) {
+      where.isDraft = filters.isDraft
     }
 
     if (filters?.search) {
@@ -34,25 +51,18 @@ export class PageBuilderService {
         where,
         skip,
         take,
-        include: {
-          sections: {
-            orderBy: { order: 'asc' },
-            include: {
-              rows: {
-                orderBy: { order: 'asc' },
-                include: {
-                  columns: {
-                    orderBy: { order: 'asc' },
-                    include: {
-                      components: {
-                        orderBy: { order: 'asc' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          description: true,
+          isPublished: true,
+          isDraft: true,
+          publishedAt: true,
+          version: true,
+          viewCount: true,
+          createdAt: true,
+          updatedAt: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -63,58 +73,73 @@ export class PageBuilderService {
   }
 
   /**
-   * Get page by ID or slug
+   * Get page by ID or slug (Public API - optimized)
+   * Returns published content only
+   * Performance: Single query, uses publishedContent cache
    */
-  async getPage(identifier: string, includeUnpublished: boolean = false) {
+  async getPublishedPage(identifier: string) {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      identifier
+    )
+
+    const where: Prisma.PageBuilderWhereInput = {
+      isPublished: true,
+      ...(isUUID ? { id: identifier } : { slug: identifier }),
+    }
+
+    const pageData = await prisma.pageBuilder.findFirst({
+      where,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        publishedContent: true,
+        seo: true,
+        publishedAt: true,
+        version: true,
+        cacheKey: true,
+      },
+    })
+
+    if (!pageData) return null
+
+    this.incrementViewCount(pageData.id).catch(() => {})
+
+    return {
+      ...pageData,
+      content: pageData.publishedContent,
+      publishedContent: undefined,
+    }
+  }
+
+  /**
+   * Get page by ID or slug (Admin API)
+   * Returns draft content for editing
+   * Performance: Single query, no joins
+   */
+  async getPage(identifier: string) {
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       identifier
     )
 
     const where: Prisma.PageBuilderWhereInput = isUUID ? { id: identifier } : { slug: identifier }
 
-    if (!includeUnpublished) {
-      where.isPublished = true
-    }
-
-    const pageData = await prisma.pageBuilder.findFirst({
-      where,
-      include: {
-        sections: {
-          orderBy: { order: 'asc' },
-          include: {
-            rows: {
-              orderBy: { order: 'asc' },
-              include: {
-                columns: {
-                  orderBy: { order: 'asc' },
-                  include: {
-                    components: {
-                      orderBy: { order: 'asc' },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    })
-
-    return pageData
+    return await prisma.pageBuilder.findFirst({ where })
   }
 
   /**
    * Create a new page
+   * Performance: Single insert operation
    */
   async createPage(data: {
     title: string
     slug: string
     description?: string
-    sections?: any[]
+    content?: any
     seo?: any
     isPublished?: boolean
   }) {
-    // Check if slug already exists
     const existing = await prisma.pageBuilder.findUnique({
       where: { slug: data.slug },
     })
@@ -123,25 +148,25 @@ export class PageBuilderService {
       throw new Error(`Page with slug "${data.slug}" already exists`)
     }
 
-    const pageData = await prisma.pageBuilder.create({
+    const content = data.content ?? { sections: [] }
+    const cacheKey = `page:${data.slug}:v1`
+
+    return await prisma.pageBuilder.create({
       data: {
         title: data.title,
         slug: data.slug,
         description: data.description,
+        content,
+        draftContent: content,
         seo: data.seo ?? {},
         isPublished: data.isPublished ?? false,
+        isDraft: true,
         publishedAt: data.isPublished ? new Date() : null,
+        publishedContent: data.isPublished ? content : null,
+        version: 1,
+        cacheKey,
       },
     })
-
-    // If sections are provided, create them
-    if (data.sections && data.sections.length > 0) {
-      for (const section of data.sections) {
-        await this.addSection(pageData.id, section)
-      }
-    }
-
-    return this.getPage(pageData.id, true)
   }
 
   /**
@@ -153,7 +178,7 @@ export class PageBuilderService {
       title?: string
       slug?: string
       description?: string
-      sections?: any[]
+      content?: any
       seo?: any
       isPublished?: boolean
     }
@@ -164,7 +189,6 @@ export class PageBuilderService {
       throw new Error('Page not found')
     }
 
-    // Check if new slug already exists
     if (data.slug && data.slug !== pageData.slug) {
       const existing = await prisma.pageBuilder.findUnique({
         where: { slug: data.slug },
@@ -175,39 +199,79 @@ export class PageBuilderService {
       }
     }
 
-    const updateData: any = {
-      title: data.title,
-      slug: data.slug,
-      description: data.description,
-      seo: data.seo,
-      isPublished: data.isPublished,
+    const updateData: Prisma.PageBuilderUpdateInput = {}
+
+    if (data.title) updateData.title = data.title
+    if (data.slug) updateData.slug = data.slug
+    if (data.description !== undefined) updateData.description = data.description
+    if (data.seo !== undefined) updateData.seo = data.seo
+
+    if (data.content !== undefined) {
+      updateData.content = data.content
+      updateData.draftContent = data.content
+      updateData.isDraft = true
     }
 
-    // Set publishedAt when publishing for first time
-    if (data.isPublished && !pageData.isPublished) {
-      updateData.publishedAt = new Date()
-    }
+    if (data.isPublished !== undefined) {
+      updateData.isPublished = data.isPublished
 
-    // Update page basic info
-    await prisma.pageBuilder.update({
-      where: { id },
-      data: updateData,
-    })
-
-    // If sections are provided, replace all sections
-    if (data.sections !== undefined) {
-      // Delete all existing sections (cascade will handle rows, columns, components)
-      await prisma.section.deleteMany({ where: { pageId: id } })
-
-      // Create new sections
-      if (data.sections.length > 0) {
-        for (const section of data.sections) {
-          await this.addSection(id, section)
-        }
+      if (data.isPublished && !pageData.isPublished) {
+        updateData.publishedAt = new Date()
       }
     }
 
-    return this.getPage(id, true)
+    if (data.slug && data.slug !== pageData.slug) {
+      updateData.cacheKey = `page:${data.slug}:v${pageData.version + 1}`
+      updateData.version = { increment: 1 }
+    }
+
+    return await prisma.pageBuilder.update({
+      where: { id },
+      data: updateData,
+    })
+  }
+
+  /**
+   * Publish page
+   */
+  async publishPage(id: string) {
+    const pageData = await prisma.pageBuilder.findUnique({ where: { id } })
+
+    if (!pageData) {
+      throw new Error('Page not found')
+    }
+
+    return await prisma.pageBuilder.update({
+      where: { id },
+      data: {
+        isPublished: true,
+        isDraft: false,
+        publishedAt: new Date(),
+        publishedContent: pageData.content as any,
+        version: { increment: 1 },
+        cacheKey: `page:${pageData.slug}:v${pageData.version + 1}`,
+        lastCached: null,
+      },
+    })
+  }
+
+  /**
+   * Unpublish page
+   */
+  async unpublishPage(id: string) {
+    const pageData = await prisma.pageBuilder.findUnique({ where: { id } })
+
+    if (!pageData) {
+      throw new Error('Page not found')
+    }
+
+    return await prisma.pageBuilder.update({
+      where: { id },
+      data: {
+        isPublished: false,
+        publishedAt: null,
+      },
+    })
   }
 
   /**
@@ -226,388 +290,98 @@ export class PageBuilderService {
   /**
    * Duplicate page
    */
-  async duplicatePage(id: string, newTitle: string, newSlug: string) {
-    const original = await this.getPage(id, true)
+  async duplicatePage(id: string, newTitle?: string, newSlug?: string) {
+    const original = await this.getPage(id)
 
     if (!original) {
       throw new Error('Page not found')
     }
 
-    // Check if new slug already exists
+    const title = newTitle ?? `${original.title} (Copy)`
+    const slug = newSlug ?? `${original.slug}-copy-${Date.now()}`
+
     const existing = await prisma.pageBuilder.findUnique({
-      where: { slug: newSlug },
+      where: { slug },
     })
 
     if (existing) {
-      throw new Error(`Page with slug "${newSlug}" already exists`)
+      throw new Error(`Page with slug "${slug}" already exists`)
     }
 
-    // Create duplicate with all sections
-    const duplicate = await this.createPage({
-      title: newTitle,
-      slug: newSlug,
+    return await this.createPage({
+      title,
+      slug,
       description: original.description ?? undefined,
+      content: original.content,
       seo: original.seo as any,
-      sections: original.sections.map((section) => ({
-        name: section.name,
-        order: section.order,
-        settings: section.settings,
-        rows: section.rows.map((row) => ({
-          order: row.order,
-          settings: row.settings,
-          columns: row.columns.map((column) => ({
-            width: column.width,
-            order: column.order,
-            settings: column.settings,
-            components: column.components.map((component) => ({
-              type: component.type,
-              order: component.order,
-              props: component.props,
-            })),
-          })),
-        })),
-      })),
       isPublished: false,
     })
-
-    return duplicate
   }
 
   /**
-   * Add section to page
+   * Update content
    */
-  async addSection(pageId: string, data: any) {
-    const pageData = await prisma.pageBuilder.findUnique({
-      where: { id: pageId },
-    })
+  async updateContent(id: string, content: any) {
+    const pageData = await prisma.pageBuilder.findUnique({ where: { id } })
 
     if (!pageData) {
       throw new Error('Page not found')
     }
 
-    const section = await prisma.section.create({
+    return await prisma.pageBuilder.update({
+      where: { id },
       data: {
-        pageId,
-        name: data.name,
-        order: data.order ?? 0,
-        settings: data.settings ?? {},
+        content,
+        draftContent: content,
+        isDraft: true,
       },
     })
-
-    // Create rows if provided
-    if (data.rows && data.rows.length > 0) {
-      for (const row of data.rows) {
-        await this.addRow(pageId, section.id, row)
-      }
-    }
-
-    return section
   }
 
   /**
-   * Update section
+   * Increment view count
    */
-  async updateSection(pageId: string, sectionId: string, data: any) {
-    const section = await prisma.section.findFirst({
-      where: { id: sectionId, pageId },
-    })
-
-    if (!section) {
-      throw new Error('Section not found')
-    }
-
-    const updated = await prisma.section.update({
-      where: { id: sectionId },
+  private async incrementViewCount(id: string) {
+    await prisma.pageBuilder.update({
+      where: { id },
       data: {
-        name: data.name,
-        order: data.order,
-        settings: data.settings,
+        viewCount: { increment: 1 },
+        lastViewed: new Date(),
       },
     })
-
-    // Update rows if provided
-    if (data.rows !== undefined) {
-      await prisma.row.deleteMany({ where: { sectionId } })
-
-      if (data.rows.length > 0) {
-        for (const row of data.rows) {
-          await this.addRow(pageId, sectionId, row)
-        }
-      }
-    }
-
-    return updated
   }
 
   /**
-   * Delete section
+   * Get analytics
    */
-  async deleteSection(pageId: string, sectionId: string) {
-    const section = await prisma.section.findFirst({
-      where: { id: sectionId, pageId },
-    })
-
-    if (!section) {
-      throw new Error('Section not found')
-    }
-
-    await prisma.section.delete({ where: { id: sectionId } })
-  }
-
-  /**
-   * Add row to section
-   */
-  async addRow(pageId: string, sectionId: string, data: any) {
-    const section = await prisma.section.findFirst({
-      where: { id: sectionId, pageId },
-    })
-
-    if (!section) {
-      throw new Error('Section not found')
-    }
-
-    const row = await prisma.row.create({
-      data: {
-        sectionId,
-        order: data.order ?? 0,
-        settings: data.settings ?? {},
+  async getPageAnalytics(id: string) {
+    return await prisma.pageBuilder.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        viewCount: true,
+        lastViewed: true,
+        createdAt: true,
+        updatedAt: true,
+        publishedAt: true,
+        version: true,
       },
     })
-
-    // Create columns if provided
-    if (data.columns && data.columns.length > 0) {
-      for (const column of data.columns) {
-        await this.addColumn(pageId, sectionId, row.id, column)
-      }
-    }
-
-    return row
   }
 
   /**
-   * Update row
+   * Update cache metadata
    */
-  async updateRow(pageId: string, sectionId: string, rowId: string, data: any) {
-    const row = await prisma.row.findFirst({
-      where: { id: rowId, sectionId },
-      include: { section: true },
-    })
-
-    if (!row || row.section.pageId !== pageId) {
-      throw new Error('Row not found')
-    }
-
-    const updated = await prisma.row.update({
-      where: { id: rowId },
+  async updateCacheMetadata(id: string, cacheKey: string) {
+    await prisma.pageBuilder.update({
+      where: { id },
       data: {
-        order: data.order,
-        settings: data.settings,
+        cacheKey,
+        lastCached: new Date(),
       },
     })
-
-    // Update columns if provided
-    if (data.columns !== undefined) {
-      await prisma.column.deleteMany({ where: { rowId } })
-
-      if (data.columns.length > 0) {
-        for (const column of data.columns) {
-          await this.addColumn(pageId, sectionId, rowId, column)
-        }
-      }
-    }
-
-    return updated
-  }
-
-  /**
-   * Delete row
-   */
-  async deleteRow(pageId: string, sectionId: string, rowId: string) {
-    const row = await prisma.row.findFirst({
-      where: { id: rowId, sectionId },
-      include: { section: true },
-    })
-
-    if (!row || row.section.pageId !== pageId) {
-      throw new Error('Row not found')
-    }
-
-    await prisma.row.delete({ where: { id: rowId } })
-  }
-
-  /**
-   * Add column to row
-   */
-  async addColumn(pageId: string, sectionId: string, rowId: string, data: any) {
-    const row = await prisma.row.findFirst({
-      where: { id: rowId, sectionId },
-      include: { section: true },
-    })
-
-    if (!row || row.section.pageId !== pageId) {
-      throw new Error('Row not found')
-    }
-
-    const column = await prisma.column.create({
-      data: {
-        rowId,
-        width: data.width ?? 12,
-        order: data.order ?? 0,
-        settings: data.settings ?? {},
-      },
-    })
-
-    // Create components if provided
-    if (data.components && data.components.length > 0) {
-      for (const component of data.components) {
-        await this.addComponent(pageId, sectionId, rowId, column.id, component)
-      }
-    }
-
-    return column
-  }
-
-  /**
-   * Update column
-   */
-  async updateColumn(
-    pageId: string,
-    sectionId: string,
-    rowId: string,
-    columnId: string,
-    data: any
-  ) {
-    const column = await prisma.column.findFirst({
-      where: { id: columnId, rowId },
-      include: { row: { include: { section: true } } },
-    })
-
-    if (!column || column.row.section.pageId !== pageId) {
-      throw new Error('Column not found')
-    }
-
-    const updated = await prisma.column.update({
-      where: { id: columnId },
-      data: {
-        width: data.width,
-        order: data.order,
-        settings: data.settings,
-      },
-    })
-
-    // Update components if provided
-    if (data.components !== undefined) {
-      await prisma.component.deleteMany({ where: { columnId } })
-
-      if (data.components.length > 0) {
-        for (const component of data.components) {
-          await this.addComponent(pageId, sectionId, rowId, columnId, component)
-        }
-      }
-    }
-
-    return updated
-  }
-
-  /**
-   * Delete column
-   */
-  async deleteColumn(pageId: string, sectionId: string, rowId: string, columnId: string) {
-    const column = await prisma.column.findFirst({
-      where: { id: columnId, rowId },
-      include: { row: { include: { section: true } } },
-    })
-
-    if (!column || column.row.section.pageId !== pageId) {
-      throw new Error('Column not found')
-    }
-
-    await prisma.column.delete({ where: { id: columnId } })
-  }
-
-  /**
-   * Add component to column
-   */
-  async addComponent(
-    pageId: string,
-    sectionId: string,
-    rowId: string,
-    columnId: string,
-    data: any
-  ) {
-    const column = await prisma.column.findFirst({
-      where: { id: columnId, rowId },
-      include: { row: { include: { section: true } } },
-    })
-
-    if (!column || column.row.section.pageId !== pageId) {
-      throw new Error('Column not found')
-    }
-
-    const component = await prisma.component.create({
-      data: {
-        columnId,
-        type: data.type,
-        order: data.order ?? 0,
-        props: data.props ?? {},
-      },
-    })
-
-    return component
-  }
-
-  /**
-   * Update component
-   */
-  async updateComponent(
-    pageId: string,
-    sectionId: string,
-    rowId: string,
-    columnId: string,
-    componentId: string,
-    data: any
-  ) {
-    const component = await prisma.component.findFirst({
-      where: { id: componentId, columnId },
-      include: { column: { include: { row: { include: { section: true } } } } },
-    })
-
-    if (!component || component.column.row.section.pageId !== pageId) {
-      throw new Error('Component not found')
-    }
-
-    const updated = await prisma.component.update({
-      where: { id: componentId },
-      data: {
-        type: data.type,
-        order: data.order,
-        props: data.props,
-      },
-    })
-
-    return updated
-  }
-
-  /**
-   * Delete component
-   */
-  async deleteComponent(
-    pageId: string,
-    sectionId: string,
-    rowId: string,
-    columnId: string,
-    componentId: string
-  ) {
-    const component = await prisma.component.findFirst({
-      where: { id: componentId, columnId },
-      include: { column: { include: { row: { include: { section: true } } } } },
-    })
-
-    if (!component || component.column.row.section.pageId !== pageId) {
-      throw new Error('Component not found')
-    }
-
-    await prisma.component.delete({ where: { id: componentId } })
   }
 }
 

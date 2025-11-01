@@ -79,7 +79,7 @@ export const updatePageBuilderBodySchema = z.object({
 // ==================== Params Schemas ====================
 
 export const pageIdParamsSchema = z.object({
-  pageId: z.string().uuid('Invalid page ID'),
+  id: z.string().uuid('Invalid page ID'),
 })
 
 export const identifierParamsSchema = z.object({
@@ -151,6 +151,12 @@ export const duplicatePageBodySchema = z.object({
     .string()
     .min(1, 'New slug is required')
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format'),
+})
+
+export const updateContentBodySchema = z.object({
+  content: z.object({
+    sections: z.array(sectionSchema).optional().default([]),
+  }),
 })
 
 // ==================== Type Exports ====================

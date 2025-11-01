@@ -3,19 +3,12 @@ import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { requirePermission } from '@/middlewares/rbac.middleware'
 import { validate, validateMultiple } from '@/middlewares/validation.middleware'
 import {
-  columnBodySchema,
-  columnParamsSchema,
-  componentBodySchema,
-  componentParamsSchema,
   createPageBuilderBodySchema,
   duplicatePageBodySchema,
   identifierParamsSchema,
   listPageBuildersQuerySchema,
   pageIdParamsSchema,
-  rowBodySchema,
-  rowParamsSchema,
-  sectionBodySchema,
-  sectionParamsSchema,
+  updateContentBodySchema,
   updatePageBuilderBodySchema,
 } from '@/validators/page-builder.validator'
 import { Router } from 'express'
@@ -68,92 +61,27 @@ router.post(
   PageBuilderController.duplicatePage
 )
 
-// Section Management
-router.post(
-  '/:pageId/sections',
-  requirePermission('page.update'),
-  validateMultiple({ params: pageIdParamsSchema, body: sectionBodySchema }),
-  PageBuilderController.addSection
-)
-
+// Content Management (JSON-based)
 router.put(
-  '/:pageId/sections/:sectionId',
+  '/:id/content',
   requirePermission('page.update'),
-  validateMultiple({ params: sectionParamsSchema, body: sectionBodySchema }),
-  PageBuilderController.updateSection
+  validateMultiple({ params: pageIdParamsSchema, body: updateContentBodySchema }),
+  PageBuilderController.updateContent
 )
 
-router.delete(
-  '/:pageId/sections/:sectionId',
-  requirePermission('page.delete'),
-  validate(sectionParamsSchema, 'params'),
-  PageBuilderController.deleteSection
-)
-
-// Row Management
+// Publish/Unpublish
 router.post(
-  '/:pageId/sections/:sectionId/rows',
+  '/:id/publish',
   requirePermission('page.update'),
-  validateMultiple({ params: sectionParamsSchema, body: rowBodySchema }),
-  PageBuilderController.addRow
+  validate(pageIdParamsSchema, 'params'),
+  PageBuilderController.publishPage
 )
 
-router.put(
-  '/:pageId/sections/:sectionId/rows/:rowId',
-  requirePermission('page.update'),
-  validateMultiple({ params: rowParamsSchema, body: rowBodySchema }),
-  PageBuilderController.updateRow
-)
-
-router.delete(
-  '/:pageId/sections/:sectionId/rows/:rowId',
-  requirePermission('page.delete'),
-  validate(rowParamsSchema, 'params'),
-  PageBuilderController.deleteRow
-)
-
-// Column Management
 router.post(
-  '/:pageId/sections/:sectionId/rows/:rowId/columns',
+  '/:id/unpublish',
   requirePermission('page.update'),
-  validateMultiple({ params: rowParamsSchema, body: columnBodySchema }),
-  PageBuilderController.addColumn
-)
-
-router.put(
-  '/:pageId/sections/:sectionId/rows/:rowId/columns/:columnId',
-  requirePermission('page.update'),
-  validateMultiple({ params: columnParamsSchema, body: columnBodySchema }),
-  PageBuilderController.updateColumn
-)
-
-router.delete(
-  '/:pageId/sections/:sectionId/rows/:rowId/columns/:columnId',
-  requirePermission('page.delete'),
-  validate(columnParamsSchema, 'params'),
-  PageBuilderController.deleteColumn
-)
-
-// Component Management
-router.post(
-  '/:pageId/sections/:sectionId/rows/:rowId/columns/:columnId/components',
-  requirePermission('page.update'),
-  validateMultiple({ params: columnParamsSchema, body: componentBodySchema }),
-  PageBuilderController.addComponent
-)
-
-router.put(
-  '/:pageId/sections/:sectionId/rows/:rowId/columns/:columnId/components/:componentId',
-  requirePermission('page.update'),
-  validateMultiple({ params: componentParamsSchema, body: componentBodySchema }),
-  PageBuilderController.updateComponent
-)
-
-router.delete(
-  '/:pageId/sections/:sectionId/rows/:rowId/columns/:columnId/components/:componentId',
-  requirePermission('page.delete'),
-  validate(componentParamsSchema, 'params'),
-  PageBuilderController.deleteComponent
+  validate(pageIdParamsSchema, 'params'),
+  PageBuilderController.unpublishPage
 )
 
 export default router

@@ -35,7 +35,7 @@ export const getPage: RequestHandler = async (req, res) => {
       return error(res, 'Page identifier is required', 400)
     }
 
-    const data = await pageBuilderService.getPage(identifier, false) // Only published
+    const data = await pageBuilderService.getPublishedPage(identifier) // Uses cache
 
     if (!data) {
       return error(res, 'Page not found', 404)
