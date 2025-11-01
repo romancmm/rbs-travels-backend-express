@@ -22,7 +22,7 @@ routes.use(adminAuthMiddleware)
 
 routes.use('/page', pageAdminRoutes)
 routes.use('/menu', menuAdminRoutes)
-routes.use('/page-builder', pageBuilderAdminRoutes)
+routes.use('/pages', pageBuilderAdminRoutes)
 routes.use('/customer', customerAdminRoutes)
 routes.use('/role', roleAdminRoutes)
 routes.use('/permission', permissionAdminRoutes)

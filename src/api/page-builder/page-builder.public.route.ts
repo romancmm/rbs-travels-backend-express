@@ -9,14 +9,10 @@ import { Router } from 'express'
 const router = Router()
 
 // Public page builder routes - only show published pages
-router.get(
-  '/pages',
-  validate(listPageBuildersQuerySchema, 'query'),
-  PageBuilderController.listPages
-)
+router.get('/', validate(listPageBuildersQuerySchema, 'query'), PageBuilderController.listPages)
 
 router.get(
-  '/pages/:identifier',
+  '/:identifier',
   validate(identifierParamsSchema, 'params'),
   PageBuilderController.getPage
 )
