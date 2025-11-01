@@ -127,6 +127,133 @@ model Setting {
   updatedAt   DateTime @updatedAt
 }
 
+// Menu Management Models
+model Menu {
+  id          String     @id @default(uuid())
+  name        String     // e.g., "Main Menu", "Footer Menu"
+  slug        String     @unique // e.g., "main-menu", "footer-menu"
+  position    String?    // e.g., "header", "footer", "sidebar"
+  description String?
+  items       MenuItem[]
+  isPublished Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([slug])
+  @@index([position])
+}
+
+model MenuItem {
+  id       String  @id @default(uuid())
+  menuId   String
+  menu     Menu    @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  
+  title    String
+  type     String  // 'custom-link', 'category-blogs', 'custom-page', 'article'
+  link     String  // URL or slug
+  icon     String?
+  target   String  @default("_self") // '_blank' or '_self'
+  cssClass String?
+  
+  parentId String?
+  parent   MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children MenuItem[] @relation("MenuItemChildren")
+  
+  order       Int     @default(0)
+  isPublished Boolean @default(true)
+  meta        Json?   // Additional metadata
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([menuId])
+  @@index([parentId])
+  @@index([order])
+}
+
+// Page Builder Models
+model PageBuilder {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  description String?
+  sections    Section[]
+  seo         Json?     // SEO metadata (title, description, keywords, og tags)
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+}
+
+model Section {
+  id            String      @id @default(uuid())
+  pageId        String
+  page          PageBuilder @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  
+  name          String      // e.g., "Hero Section", "Products Section"
+  order         Int         @default(0)
+  settings      Json?       // backgroundColor, backgroundImage, padding, margin, etc.
+  rows          Row[]
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([pageId])
+  @@index([order])
+}
+
+model Row {
+  id        String   @id @default(uuid())
+  sectionId String
+  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  
+  order     Int      @default(0)
+  settings  Json?    // columnsGap, background, etc.
+  columns   Column[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sectionId])
+  @@index([order])
+}
+
+model Column {
+  id         String      @id @default(uuid())
+  rowId      String
+  row        Row         @relation(fields: [rowId], references: [id], onDelete: Cascade)
+  
+  width      Int         @default(12) // Bootstrap-style grid (1-12)
+  order      Int         @default(0)
+  settings   Json?       // alignment, padding, etc.
+  components Component[]
+  
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([rowId])
+  @@index([order])
+}
+
+model Component {
+  id        String   @id @default(uuid())
+  columnId  String
+  column    Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  
+  type      String   // 'text', 'image', 'rich-text', 'gallery', 'banner', 'carousel', 'product-card', etc.
+  order     Int      @default(0)
+  props     Json     // Component-specific configuration and data
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([columnId])
+  @@index([order])
+}
+
 // model Destination {
 //   id          String   @id @default(uuid())
 //   title       String

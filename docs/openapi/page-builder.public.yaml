@@ -1,0 +1,45 @@
+tags:
+  - name: Page Builder (Public)
+    description: Public page builder endpoints
+
+paths:
+  /api/pages:
+    get:
+      tags:
+        - Page Builder (Public)
+      summary: List published pages
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        200:
+          description: Pages retrieved successfully
+
+  /api/pages/{identifier}:
+    get:
+      tags:
+        - Page Builder (Public)
+      summary: Get published page by ID or slug
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Page retrieved successfully
+        404:
+          description: Page not found

@@ -1,0 +1,402 @@
+tags:
+  - name: Page Builder (Admin)
+    description: Page builder management for administrators
+
+paths:
+  /admin/pages:
+    get:
+      tags:
+        - Page Builder (Admin)
+      summary: List all pages
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: isPublished
+          schema:
+            type: boolean
+        - in: query
+          name: search
+          schema:
+            type: string
+      responses:
+        200:
+          description: Pages retrieved successfully
+        401:
+          description: Unauthorized
+    post:
+      tags:
+        - Page Builder (Admin)
+      summary: Create a new page
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - slug
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+                sections:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Section'
+                seo:
+                  $ref: '#/components/schemas/SEO'
+                isPublished:
+                  type: boolean
+      responses:
+        201:
+          description: Page created successfully
+        401:
+          description: Unauthorized
+
+  /admin/pages/{identifier}:
+    get:
+      tags:
+        - Page Builder (Admin)
+      summary: Get page by ID or slug
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Page retrieved successfully
+        404:
+          description: Page not found
+    put:
+      tags:
+        - Page Builder (Admin)
+      summary: Update page
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+                sections:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Section'
+                seo:
+                  $ref: '#/components/schemas/SEO'
+                isPublished:
+                  type: boolean
+      responses:
+        200:
+          description: Page updated successfully
+        404:
+          description: Page not found
+    delete:
+      tags:
+        - Page Builder (Admin)
+      summary: Delete page
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Page deleted successfully
+        404:
+          description: Page not found
+
+  /admin/pages/{id}/duplicate:
+    post:
+      tags:
+        - Page Builder (Admin)
+      summary: Duplicate page
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - slug
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+      responses:
+        201:
+          description: Page duplicated successfully
+        404:
+          description: Page not found
+
+  /admin/pages/{pageId}/sections:
+    post:
+      tags:
+        - Page Builder (Admin)
+      summary: Add section to page
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: pageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectionInput'
+      responses:
+        201:
+          description: Section added successfully
+
+  /admin/pages/{pageId}/sections/{sectionId}:
+    put:
+      tags:
+        - Page Builder (Admin)
+      summary: Update section
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: pageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: sectionId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SectionInput'
+      responses:
+        200:
+          description: Section updated successfully
+    delete:
+      tags:
+        - Page Builder (Admin)
+      summary: Delete section
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: pageId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: sectionId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Section deleted successfully
+
+components:
+  schemas:
+    Section:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        order:
+          type: integer
+        settings:
+          type: object
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Row'
+
+    SectionInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        order:
+          type: integer
+          default: 0
+        settings:
+          type: object
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/RowInput'
+
+    Row:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        order:
+          type: integer
+        settings:
+          type: object
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Column'
+
+    RowInput:
+      type: object
+      properties:
+        order:
+          type: integer
+          default: 0
+        settings:
+          type: object
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnInput'
+
+    Column:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        width:
+          type: integer
+          minimum: 1
+          maximum: 12
+          default: 12
+        order:
+          type: integer
+        settings:
+          type: object
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/Component'
+
+    ColumnInput:
+      type: object
+      properties:
+        width:
+          type: integer
+          minimum: 1
+          maximum: 12
+          default: 12
+        order:
+          type: integer
+          default: 0
+        settings:
+          type: object
+        components:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComponentInput'
+
+    Component:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+        order:
+          type: integer
+        props:
+          type: object
+
+    ComponentInput:
+      type: object
+      required:
+        - type
+        - props
+      properties:
+        type:
+          type: string
+        order:
+          type: integer
+          default: 0
+        props:
+          type: object
+
+    SEO:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        keywords:
+          type: array
+          items:
+            type: string
+        ogTitle:
+          type: string
+        ogDescription:
+          type: string
+        ogImage:
+          type: string
+        canonical:
+          type: string

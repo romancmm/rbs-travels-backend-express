@@ -49,6 +49,16 @@ async function main() {
     'media.read',
     'media.create',
     'media.delete',
+    // Menu
+    'menu.read',
+    'menu.create',
+    'menu.update',
+    'menu.delete',
+    // Page Builder
+    'page.read',
+    'page.create',
+    'page.update',
+    'page.delete',
   ]
 
   // Upsert all permissions
@@ -152,6 +162,279 @@ async function main() {
       roles: { connect: [{ id: adminRole.id }, { id: editorRole.id }] },
     },
   })
+
+  // Seed Sample Menus
+  const headerMenu = await prisma.menu.upsert({
+    where: { slug: 'header-menu' },
+    update: {},
+    create: {
+      name: 'Header Menu',
+      slug: 'header-menu',
+      position: 'header',
+      description: 'Main navigation menu',
+      isPublished: true,
+    },
+  })
+
+  const footerMenu = await prisma.menu.upsert({
+    where: { slug: 'footer-menu' },
+    update: {},
+    create: {
+      name: 'Footer Menu',
+      slug: 'footer-menu',
+      position: 'footer',
+      description: 'Footer navigation menu',
+      isPublished: true,
+    },
+  })
+
+  // Create menu items for header menu
+  await prisma.menuItem.createMany({
+    data: [
+      {
+        menuId: headerMenu.id,
+        title: 'Home',
+        type: 'custom-link',
+        link: '/',
+        order: 0,
+        isPublished: true,
+      },
+      {
+        menuId: headerMenu.id,
+        title: 'Services',
+        type: 'custom-link',
+        link: '/services',
+        order: 1,
+        isPublished: true,
+      },
+      {
+        menuId: headerMenu.id,
+        title: 'Projects',
+        type: 'custom-link',
+        link: '/projects',
+        order: 2,
+        isPublished: true,
+      },
+      {
+        menuId: headerMenu.id,
+        title: 'Blog',
+        type: 'custom-link',
+        link: '/blog',
+        order: 3,
+        isPublished: true,
+      },
+      {
+        menuId: headerMenu.id,
+        title: 'About',
+        type: 'custom-page',
+        link: '/about',
+        order: 4,
+        isPublished: true,
+      },
+      {
+        menuId: headerMenu.id,
+        title: 'Contact',
+        type: 'custom-page',
+        link: '/contact',
+        order: 5,
+        isPublished: true,
+      },
+    ],
+    skipDuplicates: true,
+  })
+
+  // Create menu items for footer menu
+  await prisma.menuItem.createMany({
+    data: [
+      {
+        menuId: footerMenu.id,
+        title: 'Privacy Policy',
+        type: 'custom-page',
+        link: '/privacy-policy',
+        order: 0,
+        isPublished: true,
+      },
+      {
+        menuId: footerMenu.id,
+        title: 'Terms of Service',
+        type: 'custom-page',
+        link: '/terms',
+        order: 1,
+        isPublished: true,
+      },
+      {
+        menuId: footerMenu.id,
+        title: 'FAQ',
+        type: 'custom-page',
+        link: '/faq',
+        order: 2,
+        isPublished: true,
+      },
+    ],
+    skipDuplicates: true,
+  })
+
+  // Seed Sample Page Builder Pages
+  const homePage = await prisma.pageBuilder.upsert({
+    where: { slug: 'home' },
+    update: {},
+    create: {
+      title: 'Home Page',
+      slug: 'home',
+      description: 'Welcome to our travel agency',
+      isPublished: true,
+      publishedAt: new Date(),
+      seo: {
+        title: 'Home - Your Travel Agency',
+        description: 'Explore amazing destinations with us',
+        keywords: ['travel', 'tours', 'vacation'],
+      },
+    },
+  })
+
+  // Create sections for home page
+  const heroSection = await prisma.section.create({
+    data: {
+      pageId: homePage.id,
+      name: 'Hero Section',
+      order: 0,
+      settings: {
+        backgroundColor: '#f0f0f0',
+        padding: '60px 0',
+      },
+    },
+  })
+
+  const featuresSection = await prisma.section.create({
+    data: {
+      pageId: homePage.id,
+      name: 'Features Section',
+      order: 1,
+      settings: {
+        backgroundColor: '#ffffff',
+        padding: '40px 0',
+      },
+    },
+  })
+
+  // Create row for hero section
+  const heroRow = await prisma.row.create({
+    data: {
+      sectionId: heroSection.id,
+      order: 0,
+      settings: {
+        columnsGap: '20px',
+      },
+    },
+  })
+
+  // Create column for hero row
+  const heroColumn = await prisma.column.create({
+    data: {
+      rowId: heroRow.id,
+      width: 12,
+      order: 0,
+      settings: {
+        textAlign: 'center',
+      },
+    },
+  })
+
+  // Create components for hero column
+  await prisma.component.createMany({
+    data: [
+      {
+        columnId: heroColumn.id,
+        type: 'banner',
+        order: 0,
+        props: {
+          title: 'Welcome to Your Dream Vacation',
+          subtitle: 'Discover amazing destinations around the world',
+          image: 'https://via.placeholder.com/1200x400',
+          cta: {
+            text: 'Explore Now',
+            link: '/services',
+          },
+        },
+      },
+    ],
+  })
+
+  // Create row for features section with 3 columns
+  const featuresRow = await prisma.row.create({
+    data: {
+      sectionId: featuresSection.id,
+      order: 0,
+      settings: {
+        columnsGap: '30px',
+      },
+    },
+  })
+
+  // Create 3 columns for features
+  const featureColumn1 = await prisma.column.create({
+    data: {
+      rowId: featuresRow.id,
+      width: 4,
+      order: 0,
+    },
+  })
+
+  const featureColumn2 = await prisma.column.create({
+    data: {
+      rowId: featuresRow.id,
+      width: 4,
+      order: 1,
+    },
+  })
+
+  const featureColumn3 = await prisma.column.create({
+    data: {
+      rowId: featuresRow.id,
+      width: 4,
+      order: 2,
+    },
+  })
+
+  // Create components for feature columns
+  await prisma.component.createMany({
+    data: [
+      {
+        columnId: featureColumn1.id,
+        type: 'product-card',
+        order: 0,
+        props: {
+          title: 'Best Destinations',
+          description: 'Explore handpicked travel destinations',
+          icon: '🌍',
+          apiEndpoint: '/api/services?featured=true',
+        },
+      },
+      {
+        columnId: featureColumn2.id,
+        type: 'product-card',
+        order: 0,
+        props: {
+          title: 'Affordable Packages',
+          description: 'Get the best deals for your vacation',
+          icon: '💰',
+          apiEndpoint: '/api/services?featured=true',
+        },
+      },
+      {
+        columnId: featureColumn3.id,
+        type: 'product-card',
+        order: 0,
+        props: {
+          title: '24/7 Support',
+          description: 'We are here to help you anytime',
+          icon: '🎧',
+        },
+      },
+    ],
+  })
+
+  console.log('✅ Seed data created successfully!')
 }
 
 main()

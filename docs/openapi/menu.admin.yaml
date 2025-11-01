@@ -1,0 +1,366 @@
+tags:
+  - name: Menu (Admin)
+    description: Menu management for administrators
+
+paths:
+  /admin/menu:
+    get:
+      tags:
+        - Menu (Admin)
+      summary: List all menus
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: position
+          schema:
+            type: string
+          description: Filter by menu position (header, footer, sidebar)
+        - in: query
+          name: isPublished
+          schema:
+            type: boolean
+          description: Filter by publication status
+      responses:
+        200:
+          description: Menus retrieved successfully
+        401:
+          description: Unauthorized
+    post:
+      tags:
+        - Menu (Admin)
+      summary: Create a new menu
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - slug
+              properties:
+                name:
+                  type: string
+                  example: 'Main Menu'
+                slug:
+                  type: string
+                  example: 'main-menu'
+                position:
+                  type: string
+                  example: 'header'
+                description:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/MenuItem'
+                isPublished:
+                  type: boolean
+                  default: false
+      responses:
+        201:
+          description: Menu created successfully
+        400:
+          description: Validation error
+        401:
+          description: Unauthorized
+
+  /admin/menu/{identifier}:
+    get:
+      tags:
+        - Menu (Admin)
+      summary: Get menu by ID or slug
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+          description: Menu ID (UUID) or slug
+      responses:
+        200:
+          description: Menu retrieved successfully
+        404:
+          description: Menu not found
+        401:
+          description: Unauthorized
+    put:
+      tags:
+        - Menu (Admin)
+      summary: Update menu
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                position:
+                  type: string
+                description:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/MenuItem'
+                isPublished:
+                  type: boolean
+      responses:
+        200:
+          description: Menu updated successfully
+        404:
+          description: Menu not found
+        401:
+          description: Unauthorized
+    delete:
+      tags:
+        - Menu (Admin)
+      summary: Delete menu
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Menu deleted successfully
+        404:
+          description: Menu not found
+        401:
+          description: Unauthorized
+
+  /admin/menu/{menuId}/items:
+    post:
+      tags:
+        - Menu (Admin)
+      summary: Add menu item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuItemInput'
+      responses:
+        201:
+          description: Menu item created successfully
+        404:
+          description: Menu not found
+        401:
+          description: Unauthorized
+
+  /admin/menu/{menuId}/items/{itemId}:
+    put:
+      tags:
+        - Menu (Admin)
+      summary: Update menu item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MenuItemInput'
+      responses:
+        200:
+          description: Menu item updated successfully
+        404:
+          description: Menu or item not found
+        401:
+          description: Unauthorized
+    delete:
+      tags:
+        - Menu (Admin)
+      summary: Delete menu item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Menu item deleted successfully
+        404:
+          description: Menu or item not found
+        401:
+          description: Unauthorized
+
+  /admin/menu/{menuId}/reorder:
+    post:
+      tags:
+        - Menu (Admin)
+      summary: Reorder menu items
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: menuId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      order:
+                        type: integer
+                      parentId:
+                        type: string
+                        format: uuid
+                        nullable: true
+      responses:
+        200:
+          description: Menu items reordered successfully
+        404:
+          description: Menu not found
+        401:
+          description: Unauthorized
+
+components:
+  schemas:
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        type:
+          type: string
+          enum: [custom-link, category-blogs, custom-page, article]
+        link:
+          type: string
+        icon:
+          type: string
+        target:
+          type: string
+          enum: [_self, _blank]
+          default: _self
+        cssClass:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        order:
+          type: integer
+          default: 0
+        isPublished:
+          type: boolean
+          default: true
+        meta:
+          type: object
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuItem'
+
+    MenuItemInput:
+      type: object
+      required:
+        - title
+        - type
+        - link
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+          enum: [custom-link, category-blogs, custom-page, article]
+        link:
+          type: string
+        icon:
+          type: string
+        target:
+          type: string
+          enum: [_self, _blank]
+          default: _self
+        cssClass:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        order:
+          type: integer
+          default: 0
+        isPublished:
+          type: boolean
+          default: true
+        meta:
+          type: object

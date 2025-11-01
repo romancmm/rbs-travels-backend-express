@@ -1,0 +1,46 @@
+tags:
+  - name: Menu (Public)
+    description: Public menu endpoints
+
+paths:
+  /api/menus:
+    get:
+      tags:
+        - Menu (Public)
+      summary: List published menus
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: position
+          schema:
+            type: string
+          description: Filter by menu position
+      responses:
+        200:
+          description: Menus retrieved successfully
+
+  /api/menus/{identifier}:
+    get:
+      tags:
+        - Menu (Public)
+      summary: Get published menu by ID or slug
+      parameters:
+        - in: path
+          name: identifier
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Menu retrieved successfully
+        404:
+          description: Menu not found

@@ -3,6 +3,8 @@ import adminProfileRoutes from '@/api/admin/adminProfile.route'
 import blogAdminRoutes from '@/api/blog/blog.admin.route'
 import customerAdminRoutes from '@/api/customer/route'
 import mediaAdminRoutes from '@/api/media/media.admin.route'
+import menuAdminRoutes from '@/api/menu/menu.admin.route'
+import pageBuilderAdminRoutes from '@/api/page-builder/page-builder.admin.route'
 import pageAdminRoutes from '@/api/page/page.admin.route'
 import permissionAdminRoutes from '@/api/permission/permission.admin.route'
 import projectAdminRoutes from '@/api/project/project.admin.route'
@@ -19,6 +21,8 @@ const routes = Router()
 routes.use(adminAuthMiddleware)
 
 routes.use('/page', pageAdminRoutes)
+routes.use('/menu', menuAdminRoutes)
+routes.use('/page-builder', pageBuilderAdminRoutes)
 routes.use('/customer', customerAdminRoutes)
 routes.use('/role', roleAdminRoutes)
 routes.use('/permission', permissionAdminRoutes)
