@@ -128,34 +128,80 @@ model Setting {
 }
 
 // ============================================
-// OPTIMIZED MENU MANAGEMENT (JSON-based)
-// Performance: Single query to fetch entire menu tree
+// OPTIMIZED MENU MANAGEMENT (Hybrid Approach)
+// Best of both worlds: Relational integrity + Performance caching
 // ============================================
 model Menu {
-  id          String   @id @default(uuid())
-  name        String   // e.g., "Main Menu", "Footer Menu"
-  slug        String   @unique // e.g., "main-menu", "footer-menu"
-  position    String?  // e.g., "header", "footer", "sidebar"
+  id          String     @id @default(uuid())
+  name        String     // e.g., "Main Menu", "Footer Menu"
+  slug        String     @unique // e.g., "main-menu", "footer-menu"
+  position    String?    // e.g., "header", "footer", "sidebar"
   description String?
   
-  // JSON structure for entire menu tree (better performance)
-  items       Json     // Array of menu items with nested children
+  // Relational structure (for queries and data integrity)
+  items       MenuItem[]
+  
+  // Performance cache (JSON snapshot of entire tree)
+  // Automatically regenerated when menu items change
+  itemsCache  Json?      // Cached JSON tree for fast public API
   
   // Publishing & Performance
-  isPublished Boolean  @default(false)
-  version     Int      @default(1)
+  isPublished Boolean    @default(false)
+  version     Int        @default(1)
   
   // Caching metadata (for Redis/CDN integration)
-  cacheKey    String?  @unique // e.g., "menu:main-menu:v1"
+  cacheKey    String?    @unique // e.g., "menu:main-menu:v1"
   lastCached  DateTime?
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([slug])
   @@index([position])
   @@index([isPublished])
   @@index([cacheKey])
+}
+
+model MenuItem {
+  id       String  @id @default(uuid())
+  menuId   String
+  menu     Menu    @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  
+  // Content
+  title    String
+  type     String  // 'custom-link', 'category-blogs', 'custom-page', 'article'
+  
+  // Link references (depending on type)
+  link        String?  // For custom-link
+  categoryId  String?  // For category-blogs
+  pageId      String?  // For custom-page (PageBuilder)
+  articleId   String?  // For article (Post)
+  
+  // Display options
+  icon     String?
+  target   String  @default("_self") // '_blank' or '_self'
+  cssClass String?
+  
+  // Tree structure
+  parentId String?
+  parent   MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children MenuItem[] @relation("MenuItemChildren")
+  
+  // Ordering and publishing
+  order       Int     @default(0)
+  isPublished Boolean @default(true)
+  meta        Json?   // Additional metadata
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([menuId])
+  @@index([parentId])
+  @@index([type])
+  @@index([order])
+  @@index([categoryId])
+  @@index([pageId])
+  @@index([articleId])
 }
 
 // ============================================
