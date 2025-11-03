@@ -274,7 +274,7 @@ async function main() {
     skipDuplicates: true,
   })
 
-  // Seed Sample Page Builder Pages
+  // Seed Sample Page Builder Pages with JSON structure
   const homePage = await prisma.pageBuilder.upsert({
     where: { slug: 'home' },
     update: {},
@@ -284,154 +284,255 @@ async function main() {
       description: 'Welcome to our travel agency',
       isPublished: true,
       publishedAt: new Date(),
+      isDraft: false,
+      content: {
+        sections: [
+          {
+            id: 'hero-section',
+            name: 'Hero Section',
+            order: 0,
+            settings: {
+              backgroundColor: '#f0f0f0',
+              padding: '60px 0',
+            },
+            rows: [
+              {
+                id: 'hero-row',
+                order: 0,
+                settings: {
+                  columnsGap: '20px',
+                },
+                columns: [
+                  {
+                    id: 'hero-column',
+                    width: 12,
+                    order: 0,
+                    settings: {
+                      textAlign: 'center',
+                    },
+                    components: [
+                      {
+                        id: 'hero-banner',
+                        type: 'banner',
+                        order: 0,
+                        props: {
+                          title: 'Welcome to Your Dream Vacation',
+                          subtitle: 'Discover amazing destinations around the world',
+                          image: 'https://via.placeholder.com/1200x400',
+                          cta: {
+                            text: 'Explore Now',
+                            link: '/services',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'features-section',
+            name: 'Features Section',
+            order: 1,
+            settings: {
+              backgroundColor: '#ffffff',
+              padding: '40px 0',
+            },
+            rows: [
+              {
+                id: 'features-row',
+                order: 0,
+                settings: {
+                  columnsGap: '30px',
+                },
+                columns: [
+                  {
+                    id: 'feature-column-1',
+                    width: 4,
+                    order: 0,
+                    components: [
+                      {
+                        id: 'feature-card-1',
+                        type: 'product-card',
+                        order: 0,
+                        props: {
+                          title: 'Best Destinations',
+                          description: 'Explore handpicked travel destinations',
+                          icon: '🌍',
+                          apiEndpoint: '/api/services?featured=true',
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'feature-column-2',
+                    width: 4,
+                    order: 1,
+                    components: [
+                      {
+                        id: 'feature-card-2',
+                        type: 'product-card',
+                        order: 0,
+                        props: {
+                          title: 'Affordable Packages',
+                          description: 'Get the best deals for your vacation',
+                          icon: '💰',
+                          apiEndpoint: '/api/services?featured=true',
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'feature-column-3',
+                    width: 4,
+                    order: 2,
+                    components: [
+                      {
+                        id: 'feature-card-3',
+                        type: 'product-card',
+                        order: 0,
+                        props: {
+                          title: '24/7 Support',
+                          description: 'We are here to help you anytime',
+                          icon: '🎧',
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      publishedContent: {
+        sections: [
+          {
+            id: 'hero-section',
+            name: 'Hero Section',
+            order: 0,
+            settings: {
+              backgroundColor: '#f0f0f0',
+              padding: '60px 0',
+            },
+            rows: [
+              {
+                id: 'hero-row',
+                order: 0,
+                settings: {
+                  columnsGap: '20px',
+                },
+                columns: [
+                  {
+                    id: 'hero-column',
+                    width: 12,
+                    order: 0,
+                    settings: {
+                      textAlign: 'center',
+                    },
+                    components: [
+                      {
+                        id: 'hero-banner',
+                        type: 'banner',
+                        order: 0,
+                        props: {
+                          title: 'Welcome to Your Dream Vacation',
+                          subtitle: 'Discover amazing destinations around the world',
+                          image: 'https://via.placeholder.com/1200x400',
+                          cta: {
+                            text: 'Explore Now',
+                            link: '/services',
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: 'features-section',
+            name: 'Features Section',
+            order: 1,
+            settings: {
+              backgroundColor: '#ffffff',
+              padding: '40px 0',
+            },
+            rows: [
+              {
+                id: 'features-row',
+                order: 0,
+                settings: {
+                  columnsGap: '30px',
+                },
+                columns: [
+                  {
+                    id: 'feature-column-1',
+                    width: 4,
+                    order: 0,
+                    components: [
+                      {
+                        id: 'feature-card-1',
+                        type: 'product-card',
+                        order: 0,
+                        props: {
+                          title: 'Best Destinations',
+                          description: 'Explore handpicked travel destinations',
+                          icon: '🌍',
+                          apiEndpoint: '/api/services?featured=true',
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'feature-column-2',
+                    width: 4,
+                    order: 1,
+                    components: [
+                      {
+                        id: 'feature-card-2',
+                        type: 'product-card',
+                        order: 0,
+                        props: {
+                          title: 'Affordable Packages',
+                          description: 'Get the best deals for your vacation',
+                          icon: '💰',
+                          apiEndpoint: '/api/services?featured=true',
+                        },
+                      },
+                    ],
+                  },
+                  {
+                    id: 'feature-column-3',
+                    width: 4,
+                    order: 2,
+                    components: [
+                      {
+                        id: 'feature-card-3',
+                        type: 'product-card',
+                        order: 0,
+                        props: {
+                          title: '24/7 Support',
+                          description: 'We are here to help you anytime',
+                          icon: '🎧',
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
       seo: {
         title: 'Home - Your Travel Agency',
         description: 'Explore amazing destinations with us',
         keywords: ['travel', 'tours', 'vacation'],
       },
     },
-  })
-
-  // Create sections for home page
-  const heroSection = await prisma.section.create({
-    data: {
-      pageId: homePage.id,
-      name: 'Hero Section',
-      order: 0,
-      settings: {
-        backgroundColor: '#f0f0f0',
-        padding: '60px 0',
-      },
-    },
-  })
-
-  const featuresSection = await prisma.section.create({
-    data: {
-      pageId: homePage.id,
-      name: 'Features Section',
-      order: 1,
-      settings: {
-        backgroundColor: '#ffffff',
-        padding: '40px 0',
-      },
-    },
-  })
-
-  // Create row for hero section
-  const heroRow = await prisma.row.create({
-    data: {
-      sectionId: heroSection.id,
-      order: 0,
-      settings: {
-        columnsGap: '20px',
-      },
-    },
-  })
-
-  // Create column for hero row
-  const heroColumn = await prisma.column.create({
-    data: {
-      rowId: heroRow.id,
-      width: 12,
-      order: 0,
-      settings: {
-        textAlign: 'center',
-      },
-    },
-  })
-
-  // Create components for hero column
-  await prisma.component.createMany({
-    data: [
-      {
-        columnId: heroColumn.id,
-        type: 'banner',
-        order: 0,
-        props: {
-          title: 'Welcome to Your Dream Vacation',
-          subtitle: 'Discover amazing destinations around the world',
-          image: 'https://via.placeholder.com/1200x400',
-          cta: {
-            text: 'Explore Now',
-            link: '/services',
-          },
-        },
-      },
-    ],
-  })
-
-  // Create row for features section with 3 columns
-  const featuresRow = await prisma.row.create({
-    data: {
-      sectionId: featuresSection.id,
-      order: 0,
-      settings: {
-        columnsGap: '30px',
-      },
-    },
-  })
-
-  // Create 3 columns for features
-  const featureColumn1 = await prisma.column.create({
-    data: {
-      rowId: featuresRow.id,
-      width: 4,
-      order: 0,
-    },
-  })
-
-  const featureColumn2 = await prisma.column.create({
-    data: {
-      rowId: featuresRow.id,
-      width: 4,
-      order: 1,
-    },
-  })
-
-  const featureColumn3 = await prisma.column.create({
-    data: {
-      rowId: featuresRow.id,
-      width: 4,
-      order: 2,
-    },
-  })
-
-  // Create components for feature columns
-  await prisma.component.createMany({
-    data: [
-      {
-        columnId: featureColumn1.id,
-        type: 'product-card',
-        order: 0,
-        props: {
-          title: 'Best Destinations',
-          description: 'Explore handpicked travel destinations',
-          icon: '🌍',
-          apiEndpoint: '/api/services?featured=true',
-        },
-      },
-      {
-        columnId: featureColumn2.id,
-        type: 'product-card',
-        order: 0,
-        props: {
-          title: 'Affordable Packages',
-          description: 'Get the best deals for your vacation',
-          icon: '💰',
-          apiEndpoint: '/api/services?featured=true',
-        },
-      },
-      {
-        columnId: featureColumn3.id,
-        type: 'product-card',
-        order: 0,
-        props: {
-          title: '24/7 Support',
-          description: 'We are here to help you anytime',
-          icon: '🎧',
-        },
-      },
-    ],
   })
 
   console.log('✅ Seed data created successfully!')
