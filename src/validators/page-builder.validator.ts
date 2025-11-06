@@ -71,7 +71,11 @@ export const updatePageBuilderBodySchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
     .optional(),
   description: z.string().optional(),
-  sections: z.array(sectionSchema).optional(),
+  content: z
+    .object({
+      sections: z.array(sectionSchema).optional().default([]),
+    })
+    .optional(),
   seo: seoSchema.optional(),
   isPublished: z.boolean().optional(),
 })

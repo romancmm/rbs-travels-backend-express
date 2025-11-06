@@ -64,6 +64,7 @@ export const createPage: RequestHandler = async (req, res) => {
  * Update page
  */
 export const updatePage: RequestHandler = async (req, res) => {
+  console.log('[req] :>> ', req.body)
   try {
     const { id } = req.params
 

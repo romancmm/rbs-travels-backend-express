@@ -15,8 +15,46 @@ import { paginate } from '../../utils/paginator'
 
 export class MenuService {
   /**
+   * Generate a unique slug from title
+   */
+  private generateSlug(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s\-]/g, '') // Remove non-alphanumeric chars except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+  }
+
+  /**
+   * Ensure slug is unique by appending number if needed
+   */
+  private async ensureUniqueSlug(baseSlug: string, excludeId?: string): Promise<string> {
+    let slug = baseSlug
+    let counter = 1
+
+    while (true) {
+      const existing = await prisma.menuItem.findFirst({
+        where: {
+          slug,
+          ...(excludeId && { id: { not: excludeId } }),
+        },
+      })
+
+      if (!existing) {
+        return slug
+      }
+
+      slug = `${baseSlug}-${counter}`
+      counter++
+    }
+  }
+
+  /**
    * Get all menus (Admin API)
    */
+  // main-menu
+
   async getAllMenus(page: number = 1, perPage: number = 10) {
     const { skip, take } = paginate(page, perPage)
 
@@ -47,6 +85,38 @@ export class MenuService {
   }
 
   /**
+   * Get published menus only (Public API)
+   */
+  async getPublishedMenus(page: number = 1, perPage: number = 10) {
+    const { skip, take } = paginate(page, perPage)
+
+    const [items, total] = await Promise.all([
+      prisma.menu.findMany({
+        where: { isPublished: true },
+        skip,
+        take,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          position: true,
+          description: true,
+          version: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: { items: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.menu.count({ where: { isPublished: true } }),
+    ])
+
+    return { items, page, perPage, total }
+  }
+
+  /**
    * Get menu with items (Admin API - uses relational structure)
    * Returns full MenuItem relations for editing
    */
@@ -61,11 +131,51 @@ export class MenuService {
       where,
       include: {
         items: {
-          where: { parentId: null },
+          where: { parentId: null }, // Admin sees all items (published and unpublished)
           include: {
             children: {
               include: {
                 children: true, // Support 3 levels
+              },
+              orderBy: { order: 'asc' },
+            },
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
+    })
+
+    return menu
+  }
+
+  /**
+   * Get published menu with only published items (Public API alternative)
+   */
+  async getPublishedMenu(identifier: string) {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      identifier
+    )
+
+    const where: Prisma.MenuWhereInput = {
+      isPublished: true,
+      ...(isUUID ? { id: identifier } : { slug: identifier }),
+    }
+
+    const menu = await prisma.menu.findFirst({
+      where,
+      include: {
+        items: {
+          where: {
+            parentId: null,
+            isPublished: true, // Only published items
+          },
+          include: {
+            children: {
+              where: { isPublished: true }, // Only published children
+              include: {
+                children: {
+                  where: { isPublished: true }, // Only published grandchildren
+                },
               },
               orderBy: { order: 'asc' },
             },
@@ -265,10 +375,15 @@ export class MenuService {
     // Duplicate all menu items
     const duplicateItems = async (items: any[], parentId: string | null = null) => {
       for (const item of items) {
+        // Generate unique slug for duplicated item
+        const baseSlug = this.generateSlug(item.title)
+        const uniqueSlug = await this.ensureUniqueSlug(baseSlug)
+
         const newItem = await prisma.menuItem.create({
           data: {
             menuId: duplicate.id,
             title: item.title,
+            slug: uniqueSlug,
             type: item.type,
             link: item.link,
             categoryId: item.categoryId,
@@ -306,6 +421,7 @@ export class MenuService {
     menuId: string,
     data: {
       title: string
+      slug?: string // Optional slug, will be auto-generated if not provided
       type: string
       link?: string
       categoryId?: string
@@ -326,10 +442,15 @@ export class MenuService {
       throw new Error('Menu not found')
     }
 
+    // Generate slug if not provided
+    const baseSlug = data.slug || this.generateSlug(data.title)
+    const uniqueSlug = await this.ensureUniqueSlug(baseSlug)
+
     const item = await prisma.menuItem.create({
       data: {
         menuId,
         title: data.title,
+        slug: uniqueSlug,
         type: data.type,
         link: data.link,
         categoryId: data.categoryId,
@@ -359,6 +480,7 @@ export class MenuService {
     itemId: string,
     data: {
       title?: string
+      slug?: string
       type?: string
       link?: string
       categoryId?: string
@@ -381,9 +503,22 @@ export class MenuService {
       throw new Error('Menu item not found')
     }
 
+    // Handle slug update
+    let uniqueSlug = data.slug
+    if (data.title && !data.slug) {
+      // If title is being updated but no slug provided, regenerate slug
+      uniqueSlug = await this.ensureUniqueSlug(this.generateSlug(data.title), itemId)
+    } else if (data.slug) {
+      // If custom slug is provided, ensure it's unique
+      uniqueSlug = await this.ensureUniqueSlug(data.slug, itemId)
+    }
+
     const updated = await prisma.menuItem.update({
       where: { id: itemId },
-      data,
+      data: {
+        ...data,
+        ...(uniqueSlug && { slug: uniqueSlug }),
+      },
     })
 
     // Regenerate cache
@@ -444,11 +579,17 @@ export class MenuService {
       where: { id: menuId },
       include: {
         items: {
-          where: { parentId: null },
+          where: {
+            parentId: null,
+            isPublished: true, // Only include published items
+          },
           include: {
             children: {
+              where: { isPublished: true }, // Only include published children
               include: {
-                children: true,
+                children: {
+                  where: { isPublished: true }, // Only include published grandchildren
+                },
               },
               orderBy: { order: 'asc' },
             },
@@ -465,6 +606,7 @@ export class MenuService {
       return items.map((item) => ({
         id: item.id,
         title: item.title,
+        slug: item.slug,
         type: item.type,
         link: item.link,
         categoryId: item.categoryId,

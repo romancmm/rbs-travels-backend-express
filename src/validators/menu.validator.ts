@@ -11,6 +11,12 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
     id: z.string().uuid().optional(),
     title: z.string().min(1, 'Title is required'),
+    slug: z
+      .string()
+      .min(1)
+      .max(100)
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
+      .optional(),
     type: MenuItemTypeEnum,
     link: z.string().min(1, 'Link is required'),
     icon: z.string().optional(),
@@ -71,6 +77,12 @@ export const deleteMenuParamsSchema = z.object({
 // Create Menu Item Validation (Body)
 export const createMenuItemBodySchema = z.object({
   title: z.string().min(1, 'Title is required'),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
+    .optional(), // Optional - will be auto-generated if not provided
   type: MenuItemTypeEnum,
   link: z.string().min(1, 'Link is required'),
   icon: z.string().optional(),
@@ -90,6 +102,12 @@ export const createMenuItemParamsSchema = z.object({
 // Update Menu Item Validation (Body)
 export const updateMenuItemBodySchema = z.object({
   title: z.string().min(1).optional(),
+  slug: z
+    .string()
+    .min(1)
+    .max(100)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
+    .optional(),
   type: MenuItemTypeEnum.optional(),
   link: z.string().min(1).optional(),
   icon: z.string().optional(),

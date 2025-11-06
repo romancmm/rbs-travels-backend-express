@@ -169,6 +169,7 @@ model MenuItem {
   
   // Content
   title    String
+  slug     String   @unique
   type     String  // 'custom-link', 'category-blogs', 'custom-page', 'article'
   
   // Link references (depending on type)
@@ -199,6 +200,7 @@ model MenuItem {
   @@index([parentId])
   @@index([type])
   @@index([order])
+  @@index([slug])
   @@index([categoryId])
   @@index([pageId])
   @@index([articleId])
