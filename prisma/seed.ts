@@ -243,6 +243,12 @@ async function main() {
         type: 'custom-page',
         link: '/contact',
         order: 5,
+        isPublished: true,
+      },
+    ],
+    skipDuplicates: true,
+  })
+
   // Create menu items for footer menu
   await prisma.menuItem.createMany({
     data: [
@@ -276,14 +282,8 @@ async function main() {
     ],
     skipDuplicates: true,
   })
-        order: 2,
-        isPublished: true,
-      },
-    ],
-    skipDuplicates: true,
-  })
 
-  // Seed Sample Page Builder Pages
+  // Seed Sample Page Builder Pages with JSON content structure
   const homePage = await prisma.pageBuilder.upsert({
     where: { slug: 'home' },
     update: {},
@@ -291,6 +291,60 @@ async function main() {
       title: 'Home Page',
       slug: 'home',
       description: 'Welcome to our travel agency',
+      content: {
+        sections: [
+          {
+            id: 'hero-section',
+            name: 'Hero Section',
+            order: 0,
+            settings: {
+              padding: { top: '60px', bottom: '60px', left: '0', right: '0' },
+            },
+            rows: [
+              {
+                id: 'hero-row',
+                order: 0,
+                settings: { columnsGap: '30px' },
+                columns: [
+                  {
+                    id: 'hero-column',
+                    order: 0,
+                    width: 12,
+                    components: [
+                      {
+                        id: 'hero-heading',
+                        type: 'heading',
+                        order: 0,
+                        props: {
+                          text: 'Welcome to Your Travel Agency',
+                          level: 'h1',
+                          align: 'center',
+                          color: '#000000',
+                          fontSize: '48px',
+                          fontWeight: '700',
+                          lineHeight: '1.2',
+                        },
+                      },
+                      {
+                        id: 'hero-text',
+                        type: 'text',
+                        order: 1,
+                        props: {
+                          text: 'Discover amazing destinations and create unforgettable memories with our expertly crafted travel experiences.',
+                          align: 'center',
+                          color: '#666666',
+                          fontSize: '18px',
+                          lineHeight: '1.6',
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
       isPublished: true,
       publishedAt: new Date(),
       seo: {
@@ -299,148 +353,6 @@ async function main() {
         keywords: ['travel', 'tours', 'vacation'],
       },
     },
-  })
-
-  // Create sections for home page
-  const heroSection = await prisma.section.create({
-    data: {
-      pageId: homePage.id,
-      name: 'Hero Section',
-      order: 0,
-      settings: {
-        backgroundColor: '#f0f0f0',
-        padding: '60px 0',
-      },
-    },
-  })
-
-  const featuresSection = await prisma.section.create({
-    data: {
-      pageId: homePage.id,
-      name: 'Features Section',
-      order: 1,
-      settings: {
-        backgroundColor: '#ffffff',
-        padding: '40px 0',
-      },
-    },
-  })
-
-  // Create row for hero section
-  const heroRow = await prisma.row.create({
-    data: {
-      sectionId: heroSection.id,
-      order: 0,
-      settings: {
-        columnsGap: '20px',
-      },
-    },
-  })
-
-  // Create column for hero row
-  const heroColumn = await prisma.column.create({
-    data: {
-      rowId: heroRow.id,
-      width: 12,
-      order: 0,
-      settings: {
-        textAlign: 'center',
-      },
-    },
-  })
-
-  // Create components for hero column
-  await prisma.component.createMany({
-    data: [
-      {
-        columnId: heroColumn.id,
-        type: 'banner',
-        order: 0,
-        props: {
-          title: 'Welcome to Your Dream Vacation',
-          subtitle: 'Discover amazing destinations around the world',
-          image: 'https://via.placeholder.com/1200x400',
-          cta: {
-            text: 'Explore Now',
-            link: '/services',
-          },
-        },
-      },
-    ],
-  })
-
-  // Create row for features section with 3 columns
-  const featuresRow = await prisma.row.create({
-    data: {
-      sectionId: featuresSection.id,
-      order: 0,
-      settings: {
-        columnsGap: '30px',
-      },
-    },
-  })
-
-  // Create 3 columns for features
-  const featureColumn1 = await prisma.column.create({
-    data: {
-      rowId: featuresRow.id,
-      width: 4,
-      order: 0,
-    },
-  })
-
-  const featureColumn2 = await prisma.column.create({
-    data: {
-      rowId: featuresRow.id,
-      width: 4,
-      order: 1,
-    },
-  })
-
-  const featureColumn3 = await prisma.column.create({
-    data: {
-      rowId: featuresRow.id,
-      width: 4,
-      order: 2,
-    },
-  })
-
-  // Create components for feature columns
-  await prisma.component.createMany({
-    data: [
-      {
-        columnId: featureColumn1.id,
-        type: 'product-card',
-        order: 0,
-        props: {
-          title: 'Best Destinations',
-          description: 'Explore handpicked travel destinations',
-          icon: '🌍',
-          apiEndpoint: '/api/services?featured=true',
-        },
-      },
-      {
-        columnId: featureColumn2.id,
-        type: 'product-card',
-        order: 0,
-        props: {
-          title: 'Affordable Packages',
-          description: 'Get the best deals for your vacation',
-          icon: '💰',
-          apiEndpoint: '/api/services?featured=true',
-        },
-      },
-      {
-        columnId: featureColumn3.id,
-        type: 'product-card',
-        order: 0,
-        props: {
-          title: '24/7 Support',
-          description: 'We are here to help you anytime',
-          icon: '🎧',
-        },
-      },
-    ],
   })
 
   console.log('✅ Seed data created successfully!')
