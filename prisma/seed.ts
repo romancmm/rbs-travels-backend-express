@@ -194,6 +194,7 @@ async function main() {
       {
         menuId: headerMenu.id,
         title: 'Home',
+        slug: 'home',
         type: 'custom-link',
         link: '/',
         order: 0,
@@ -202,6 +203,7 @@ async function main() {
       {
         menuId: headerMenu.id,
         title: 'Services',
+        slug: 'services',
         type: 'custom-link',
         link: '/services',
         order: 1,
@@ -210,6 +212,7 @@ async function main() {
       {
         menuId: headerMenu.id,
         title: 'Projects',
+        slug: 'projects',
         type: 'custom-link',
         link: '/projects',
         order: 2,
@@ -218,6 +221,7 @@ async function main() {
       {
         menuId: headerMenu.id,
         title: 'Blog',
+        slug: 'blog',
         type: 'custom-link',
         link: '/blog',
         order: 3,
@@ -226,6 +230,7 @@ async function main() {
       {
         menuId: headerMenu.id,
         title: 'About',
+        slug: 'about',
         type: 'custom-page',
         link: '/about',
         order: 4,
@@ -234,21 +239,17 @@ async function main() {
       {
         menuId: headerMenu.id,
         title: 'Contact',
+        slug: 'contact',
         type: 'custom-page',
         link: '/contact',
         order: 5,
-        isPublished: true,
-      },
-    ],
-    skipDuplicates: true,
-  })
-
   // Create menu items for footer menu
   await prisma.menuItem.createMany({
     data: [
       {
         menuId: footerMenu.id,
         title: 'Privacy Policy',
+        slug: 'privacy-policy',
         type: 'custom-page',
         link: '/privacy-policy',
         order: 0,
@@ -257,6 +258,7 @@ async function main() {
       {
         menuId: footerMenu.id,
         title: 'Terms of Service',
+        slug: 'terms-of-service',
         type: 'custom-page',
         link: '/terms',
         order: 1,
@@ -265,8 +267,15 @@ async function main() {
       {
         menuId: footerMenu.id,
         title: 'FAQ',
+        slug: 'faq',
         type: 'custom-page',
         link: '/faq',
+        order: 2,
+        isPublished: true,
+      },
+    ],
+    skipDuplicates: true,
+  })
         order: 2,
         isPublished: true,
       },
