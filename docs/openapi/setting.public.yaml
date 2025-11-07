@@ -14,3 +14,77 @@ paths:
                 additionalProperties:
                   type: object
                   additionalProperties: true
+
+  /settings/{key}:
+    get:
+      tags: [Settings - Public]
+      summary: Get setting by key
+      description: Returns a specific setting by its key (no auth required)
+      parameters:
+        - in: path
+          name: key
+          required: true
+          schema:
+            type: string
+          description: The setting key to retrieve
+          example: site_name
+      responses:
+        '200':
+          description: Setting fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Setting fetched
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: 550e8400-e29b-41d4-a716-446655440000
+                      key:
+                        type: string
+                        example: site_name
+                      value:
+                        type: object
+                        description: JSON value of the setting
+                        example: { 'en': 'Travel Agency', 'ar': 'وكالة السفر' }
+                      description:
+                        type: string
+                        nullable: true
+                        example: Website name displayed in header
+                      group:
+                        type: string
+                        nullable: true
+                        example: general
+                      isPublic:
+                        type: boolean
+                        example: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: 2025-11-08T10:00:00.000Z
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: 2025-11-08T10:00:00.000Z
+        '404':
+          description: Setting not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Setting not found

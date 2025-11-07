@@ -28,6 +28,11 @@ export const settingQuerySchema = paginationQuerySchema.extend({
   isPublic: booleanQuerySchema.optional(),
 })
 
+// Setting key parameter schema
+export const settingKeyParamsSchema = z.object({
+  key: z.string().min(1, 'Setting key is required'),
+})
+
 /**
  * TypeScript Types
  */
