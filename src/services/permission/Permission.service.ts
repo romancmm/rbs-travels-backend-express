@@ -1,3 +1,4 @@
+import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
 import type {
@@ -19,25 +20,43 @@ export const listPermissionsService = async (params: PermissionQueryParams = {})
 }
 
 export const getPermissionByIdService = async (id: string) => {
-  const permission = await prisma.permission.findUnique({
-    where: { id },
-    include: { roles: { select: { id: true, name: true } } },
-  })
-  if (!permission) throw Object.assign(new Error('Permission not found'), { status: 404 })
-  return permission
+  try {
+    const permission = await prisma.permission.findUnique({
+      where: { id },
+      include: { roles: { select: { id: true, name: true } } },
+    })
+    if (!permission) {
+      throw createError(ErrorMessages.NOT_FOUND('Permission'), 404, 'NOT_FOUND')
+    }
+    return permission
+  } catch (error) {
+    handleServiceError(error, 'Permission')
+  }
 }
 
 export const createPermissionService = async (data: CreatePermissionInput) => {
-  const permission = await prisma.permission.create({ data })
-  return permission
+  try {
+    const permission = await prisma.permission.create({ data })
+    return permission
+  } catch (error) {
+    handleServiceError(error, 'Permission')
+  }
 }
 
 export const updatePermissionService = async (id: string, data: UpdatePermissionInput) => {
-  const permission = await prisma.permission.update({ where: { id }, data })
-  return permission
+  try {
+    const permission = await prisma.permission.update({ where: { id }, data })
+    return permission
+  } catch (error) {
+    handleServiceError(error, 'Permission')
+  }
 }
 
 export const deletePermissionService = async (id: string) => {
-  await prisma.permission.delete({ where: { id } })
-  return { id, deleted: true }
+  try {
+    await prisma.permission.delete({ where: { id } })
+    return { id, deleted: true }
+  } catch (error) {
+    handleServiceError(error, 'Permission')
+  }
 }

@@ -1,3 +1,4 @@
+import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
 import type { CreateRoleInput, RoleQueryParams, UpdateRoleInput } from '@/validators/rbac.validator'
@@ -21,50 +22,73 @@ export const listRolesService = async (params: RoleQueryParams = {}) => {
 }
 
 export const getRoleByIdService = async (id: string) => {
-  const role = await prisma.role.findUnique({
-    where: { id },
-    include: { permissions: true, users: { select: { id: true, name: true, email: true } } },
-  })
-  if (!role) throw Object.assign(new Error('Role not found'), { status: 404 })
-  return role
+  try {
+    const role = await prisma.role.findUnique({
+      where: { id },
+      include: { permissions: true, users: { select: { id: true, name: true, email: true } } },
+    })
+    if (!role) {
+      throw createError(ErrorMessages.NOT_FOUND('Role'), 404, 'NOT_FOUND')
+    }
+    return role
+  } catch (error) {
+    handleServiceError(error, 'Role')
+  }
 }
 
 export const createRoleService = async (data: CreateRoleInput) => {
-  const { name, permissions: permissionIds } = { name: data.name, permissions: data.permissions }
-  const role = await prisma.role.create({
-    data: {
-      name,
-      permissions: permissionIds?.length
-        ? { connect: permissionIds.map((id: string) => ({ id })) }
-        : undefined,
-    },
-    include: { permissions: true },
-  })
-  return role
+  try {
+    const { name, permissions: permissionIds } = { name: data.name, permissions: data.permissions }
+    const role = await prisma.role.create({
+      data: {
+        name,
+        permissions: permissionIds?.length
+          ? { connect: permissionIds.map((id: string) => ({ id })) }
+          : undefined,
+      },
+      include: { permissions: true },
+    })
+    return role
+  } catch (error) {
+    handleServiceError(error, 'Role')
+  }
 }
 
 export const updateRoleService = async (id: string, data: UpdateRoleInput) => {
-  const { name, permissions: permissionIds } = { name: data.name, permissions: data.permissions }
-  const payload: any = {}
-  if (name !== undefined) payload.name = name
-  if (permissionIds !== undefined) {
-    // Reset permissions: disconnect all, reconnect from list
-    const existing = await prisma.role.findUnique({ where: { id }, include: { permissions: true } })
-    if (!existing) throw Object.assign(new Error('Role not found'), { status: 404 })
-    payload.permissions = {
-      disconnect: existing.permissions.map((p) => ({ id: p.id })),
-      connect: permissionIds.map((pid: string) => ({ id: pid })),
+  try {
+    const { name, permissions: permissionIds } = { name: data.name, permissions: data.permissions }
+    const payload: any = {}
+    if (name !== undefined) payload.name = name
+    if (permissionIds !== undefined) {
+      // Reset permissions: disconnect all, reconnect from list
+      const existing = await prisma.role.findUnique({
+        where: { id },
+        include: { permissions: true },
+      })
+      if (!existing) {
+        throw createError(ErrorMessages.NOT_FOUND('Role'), 404, 'NOT_FOUND')
+      }
+      payload.permissions = {
+        disconnect: existing.permissions.map((p) => ({ id: p.id })),
+        connect: permissionIds.map((pid: string) => ({ id: pid })),
+      }
     }
+    const role = await prisma.role.update({
+      where: { id },
+      data: payload,
+      include: { permissions: true },
+    })
+    return role
+  } catch (error) {
+    handleServiceError(error, 'Role')
   }
-  const role = await prisma.role.update({
-    where: { id },
-    data: payload,
-    include: { permissions: true },
-  })
-  return role
 }
 
 export const deleteRoleService = async (id: string) => {
-  await prisma.role.delete({ where: { id } })
-  return { id, deleted: true }
+  try {
+    await prisma.role.delete({ where: { id } })
+    return { id, deleted: true }
+  } catch (error) {
+    handleServiceError(error, 'Role')
+  }
 }

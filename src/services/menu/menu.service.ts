@@ -1,3 +1,4 @@
+import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { Prisma } from '@prisma/client'
 import prisma from '../../config/db'
 import { paginate } from '../../utils/paginator'
@@ -56,32 +57,36 @@ export class MenuService {
   // main-menu
 
   async getAllMenus(page: number = 1, perPage: number = 10) {
-    const { skip, take } = paginate(page, perPage)
+    try {
+      const { skip, take } = paginate(page, perPage)
 
-    const [items, total] = await Promise.all([
-      prisma.menu.findMany({
-        skip,
-        take,
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          position: true,
-          description: true,
-          isPublished: true,
-          version: true,
-          createdAt: true,
-          updatedAt: true,
-          _count: {
-            select: { items: true },
+      const [items, total] = await Promise.all([
+        prisma.menu.findMany({
+          skip,
+          take,
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            position: true,
+            description: true,
+            isPublished: true,
+            version: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: {
+              select: { items: true },
+            },
           },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-      prisma.menu.count(),
-    ])
+          orderBy: { createdAt: 'desc' },
+        }),
+        prisma.menu.count(),
+      ])
 
-    return { items, page, perPage, total }
+      return { items, page, perPage, total }
+    } catch (error) {
+      handleServiceError(error, 'Menu')
+    }
   }
 
   /**
@@ -264,27 +269,31 @@ export class MenuService {
     description?: string
     isPublished?: boolean
   }) {
-    const existing = await prisma.menu.findUnique({
-      where: { slug: data.slug },
-    })
+    try {
+      const existing = await prisma.menu.findUnique({
+        where: { slug: data.slug },
+      })
 
-    if (existing) {
-      throw new Error(`Menu with slug "${data.slug}" already exists`)
+      if (existing) {
+        throw createError(`Menu with slug "${data.slug}" already exists`, 409, 'DUPLICATE_ENTRY')
+      }
+
+      const menu = await prisma.menu.create({
+        data: {
+          name: data.name,
+          slug: data.slug,
+          position: data.position,
+          description: data.description,
+          isPublished: data.isPublished ?? false,
+          version: 1,
+          cacheKey: `menu:${data.slug}:v1`,
+        },
+      })
+
+      return menu
+    } catch (error) {
+      handleServiceError(error, 'Menu')
     }
-
-    const menu = await prisma.menu.create({
-      data: {
-        name: data.name,
-        slug: data.slug,
-        position: data.position,
-        description: data.description,
-        isPublished: data.isPublished ?? false,
-        version: 1,
-        cacheKey: `menu:${data.slug}:v1`,
-      },
-    })
-
-    return menu
   }
 
   /**
@@ -300,118 +309,134 @@ export class MenuService {
       isPublished?: boolean
     }
   ) {
-    const menu = await prisma.menu.findUnique({ where: { id } })
+    try {
+      const menu = await prisma.menu.findUnique({ where: { id } })
 
-    if (!menu) {
-      throw new Error('Menu not found')
-    }
+      if (!menu) {
+        throw createError(ErrorMessages.NOT_FOUND('Menu'), 404, 'NOT_FOUND')
+      }
 
-    if (data.slug && data.slug !== menu.slug) {
-      const existing = await prisma.menu.findUnique({
-        where: { slug: data.slug },
+      if (data.slug && data.slug !== menu.slug) {
+        const existing = await prisma.menu.findUnique({
+          where: { slug: data.slug },
+        })
+
+        if (existing) {
+          throw createError(`Menu with slug "${data.slug}" already exists`, 409, 'DUPLICATE_ENTRY')
+        }
+      }
+
+      const updated = await prisma.menu.update({
+        where: { id },
+        data: {
+          name: data.name,
+          slug: data.slug,
+          position: data.position,
+          description: data.description,
+          isPublished: data.isPublished,
+        },
       })
 
-      if (existing) {
-        throw new Error(`Menu with slug "${data.slug}" already exists`)
-      }
+      return updated
+    } catch (error) {
+      handleServiceError(error, 'Menu')
     }
-
-    const updated = await prisma.menu.update({
-      where: { id },
-      data: {
-        name: data.name,
-        slug: data.slug,
-        position: data.position,
-        description: data.description,
-        isPublished: data.isPublished,
-      },
-    })
-
-    return updated
   }
 
   /**
    * Delete menu
    */
   async deleteMenu(id: string) {
-    const menu = await prisma.menu.findUnique({ where: { id } })
+    try {
+      const menu = await prisma.menu.findUnique({ where: { id } })
 
-    if (!menu) {
-      throw new Error('Menu not found')
+      if (!menu) {
+        throw createError(ErrorMessages.NOT_FOUND('Menu'), 404, 'NOT_FOUND')
+      }
+
+      // Cascade will delete all menu items
+      await prisma.menu.delete({ where: { id } })
+    } catch (error) {
+      handleServiceError(error, 'Menu')
     }
-
-    // Cascade will delete all menu items
-    await prisma.menu.delete({ where: { id } })
   }
 
   /**
    * Duplicate menu
    */
   async duplicateMenu(id: string, newName?: string, newSlug?: string) {
-    const original = await this.getMenu(id)
+    try {
+      const original = await this.getMenu(id)
 
-    if (!original) {
-      throw new Error('Menu not found')
-    }
+      if (!original) {
+        throw createError(ErrorMessages.NOT_FOUND('Menu'), 404, 'NOT_FOUND')
+      }
 
-    const name = newName ?? `${original.name} (Copy)`
-    const slug = newSlug ?? `${original.slug}-copy-${Date.now()}`
+      const name = newName ?? `${original.name} (Copy)`
+      const slug = newSlug ?? `${original.slug}-copy-${Date.now()}`
 
-    const existing = await prisma.menu.findUnique({ where: { slug } })
+      const existing = await prisma.menu.findUnique({ where: { slug } })
 
-    if (existing) {
-      throw new Error(`Menu with slug "${slug}" already exists`)
-    }
+      if (existing) {
+        throw createError(`Menu with slug "${slug}" already exists`, 409, 'DUPLICATE_ENTRY')
+      }
 
-    // Create new menu
-    const duplicate = await this.createMenu({
-      name,
-      slug,
-      position: original.position ?? undefined,
-      description: original.description ?? undefined,
-      isPublished: false,
-    })
+      // Create new menu
+      const duplicate = await this.createMenu({
+        name,
+        slug,
+        position: original.position ?? undefined,
+        description: original.description ?? undefined,
+        isPublished: false,
+      })
 
-    // Duplicate all menu items
-    const duplicateItems = async (items: any[], parentId: string | null = null) => {
-      for (const item of items) {
-        // Generate unique slug for duplicated item
-        const baseSlug = this.generateSlug(item.title)
-        const uniqueSlug = await this.ensureUniqueSlug(baseSlug)
+      if (!duplicate) {
+        throw createError('Failed to create duplicate menu', 500, 'CREATION_FAILED')
+      }
 
-        const newItem = await prisma.menuItem.create({
-          data: {
-            menuId: duplicate.id,
-            title: item.title,
-            slug: uniqueSlug,
-            type: item.type,
-            link: item.link,
-            categoryId: item.categoryId,
-            pageId: item.pageId,
-            articleId: item.articleId,
-            icon: item.icon,
-            target: item.target,
-            cssClass: item.cssClass,
-            parentId,
-            order: item.order,
-            isPublished: item.isPublished,
-            meta: item.meta,
-          },
-        })
+      // Duplicate all menu items
+      const duplicateItems = async (items: any[], parentId: string | null = null) => {
+        for (const item of items) {
+          // Generate unique slug for duplicated item
+          const baseSlug = this.generateSlug(item.title)
+          const uniqueSlug = await this.ensureUniqueSlug(baseSlug)
 
-        // Recursively duplicate children
-        if (item.children && item.children.length > 0) {
-          await duplicateItems(item.children, newItem.id)
+          const newItem = await prisma.menuItem.create({
+            data: {
+              menuId: duplicate.id,
+              title: item.title,
+              slug: uniqueSlug,
+              type: item.type,
+              link: item.link,
+              categoryId: item.categoryId,
+              pageId: item.pageId,
+              articleId: item.articleId,
+              icon: item.icon,
+              target: item.target,
+              cssClass: item.cssClass,
+              parentId,
+              order: item.order,
+              isPublished: item.isPublished,
+              meta: item.meta,
+            },
+          })
+
+          // Recursively duplicate children
+          if (item.children && item.children.length > 0) {
+            await duplicateItems(item.children, newItem.id)
+          }
         }
       }
+
+      await duplicateItems(original.items)
+
+      // Regenerate cache
+      await this.regenerateCache(duplicate.id)
+
+      return this.getMenu(duplicate.id)
+    } catch (error) {
+      handleServiceError(error, 'Menu')
     }
-
-    await duplicateItems(original.items)
-
-    // Regenerate cache
-    await this.regenerateCache(duplicate.id)
-
-    return this.getMenu(duplicate.id)
   }
 
   /**
@@ -436,40 +461,44 @@ export class MenuService {
       meta?: any
     }
   ) {
-    const menu = await prisma.menu.findUnique({ where: { id: menuId } })
+    try {
+      const menu = await prisma.menu.findUnique({ where: { id: menuId } })
 
-    if (!menu) {
-      throw new Error('Menu not found')
+      if (!menu) {
+        throw createError(ErrorMessages.NOT_FOUND('Menu'), 404, 'NOT_FOUND')
+      }
+
+      // Generate slug if not provided
+      const baseSlug = data.slug || this.generateSlug(data.title)
+      const uniqueSlug = await this.ensureUniqueSlug(baseSlug)
+
+      const item = await prisma.menuItem.create({
+        data: {
+          menuId,
+          title: data.title,
+          slug: uniqueSlug,
+          type: data.type,
+          link: data.link,
+          categoryId: data.categoryId,
+          pageId: data.pageId,
+          articleId: data.articleId,
+          icon: data.icon,
+          target: data.target ?? '_self',
+          cssClass: data.cssClass,
+          parentId: data.parentId,
+          order: data.order ?? 0,
+          isPublished: data.isPublished ?? true,
+          meta: data.meta,
+        },
+      })
+
+      // Regenerate cache
+      await this.regenerateCache(menuId)
+
+      return item
+    } catch (error) {
+      handleServiceError(error, 'MenuItem')
     }
-
-    // Generate slug if not provided
-    const baseSlug = data.slug || this.generateSlug(data.title)
-    const uniqueSlug = await this.ensureUniqueSlug(baseSlug)
-
-    const item = await prisma.menuItem.create({
-      data: {
-        menuId,
-        title: data.title,
-        slug: uniqueSlug,
-        type: data.type,
-        link: data.link,
-        categoryId: data.categoryId,
-        pageId: data.pageId,
-        articleId: data.articleId,
-        icon: data.icon,
-        target: data.target ?? '_self',
-        cssClass: data.cssClass,
-        parentId: data.parentId,
-        order: data.order ?? 0,
-        isPublished: data.isPublished ?? true,
-        meta: data.meta,
-      },
-    })
-
-    // Regenerate cache
-    await this.regenerateCache(menuId)
-
-    return item
   }
 
   /**
@@ -495,79 +524,91 @@ export class MenuService {
       meta?: any
     }
   ) {
-    const item = await prisma.menuItem.findFirst({
-      where: { id: itemId, menuId },
-    })
+    try {
+      const item = await prisma.menuItem.findFirst({
+        where: { id: itemId, menuId },
+      })
 
-    if (!item) {
-      throw new Error('Menu item not found')
+      if (!item) {
+        throw createError(ErrorMessages.NOT_FOUND('MenuItem'), 404, 'NOT_FOUND')
+      }
+
+      // Handle slug update
+      let uniqueSlug = data.slug
+      if (data.title && !data.slug) {
+        // If title is being updated but no slug provided, regenerate slug
+        uniqueSlug = await this.ensureUniqueSlug(this.generateSlug(data.title), itemId)
+      } else if (data.slug) {
+        // If custom slug is provided, ensure it's unique
+        uniqueSlug = await this.ensureUniqueSlug(data.slug, itemId)
+      }
+
+      const updated = await prisma.menuItem.update({
+        where: { id: itemId },
+        data: {
+          ...data,
+          ...(uniqueSlug && { slug: uniqueSlug }),
+        },
+      })
+
+      // Regenerate cache
+      await this.regenerateCache(menuId)
+
+      return updated
+    } catch (error) {
+      handleServiceError(error, 'MenuItem')
     }
-
-    // Handle slug update
-    let uniqueSlug = data.slug
-    if (data.title && !data.slug) {
-      // If title is being updated but no slug provided, regenerate slug
-      uniqueSlug = await this.ensureUniqueSlug(this.generateSlug(data.title), itemId)
-    } else if (data.slug) {
-      // If custom slug is provided, ensure it's unique
-      uniqueSlug = await this.ensureUniqueSlug(data.slug, itemId)
-    }
-
-    const updated = await prisma.menuItem.update({
-      where: { id: itemId },
-      data: {
-        ...data,
-        ...(uniqueSlug && { slug: uniqueSlug }),
-      },
-    })
-
-    // Regenerate cache
-    await this.regenerateCache(menuId)
-
-    return updated
   }
 
   /**
    * Delete menu item
    */
   async deleteMenuItem(menuId: string, itemId: string) {
-    const item = await prisma.menuItem.findFirst({
-      where: { id: itemId, menuId },
-    })
+    try {
+      const item = await prisma.menuItem.findFirst({
+        where: { id: itemId, menuId },
+      })
 
-    if (!item) {
-      throw new Error('Menu item not found')
+      if (!item) {
+        throw createError(ErrorMessages.NOT_FOUND('MenuItem'), 404, 'NOT_FOUND')
+      }
+
+      // Cascade will delete children
+      await prisma.menuItem.delete({ where: { id: itemId } })
+
+      // Regenerate cache
+      await this.regenerateCache(menuId)
+    } catch (error) {
+      handleServiceError(error, 'MenuItem')
     }
-
-    // Cascade will delete children
-    await prisma.menuItem.delete({ where: { id: itemId } })
-
-    // Regenerate cache
-    await this.regenerateCache(menuId)
   }
 
   /**
    * Reorder menu items
    */
   async reorderMenuItems(menuId: string, itemOrders: { id: string; order: number }[]) {
-    const menu = await prisma.menu.findUnique({ where: { id: menuId } })
+    try {
+      const menu = await prisma.menu.findUnique({ where: { id: menuId } })
 
-    if (!menu) {
-      throw new Error('Menu not found')
-    }
+      if (!menu) {
+        throw createError(ErrorMessages.NOT_FOUND('Menu'), 404, 'NOT_FOUND')
+      }
 
-    // Update order for each item
-    await Promise.all(
-      itemOrders.map((item) =>
-        prisma.menuItem.update({
-          where: { id: item.id },
-          data: { order: item.order },
-        })
+      // Update order for each item
+      await Promise.all(
+        itemOrders.map((item) =>
+          prisma.menuItem.update({
+            where: { id: item.id },
+            data: { order: item.order },
+          })
+        )
       )
-    )
 
-    // Regenerate cache
-    await this.regenerateCache(menuId)
+      // Regenerate cache
+      await this.regenerateCache(menuId)
+    } catch (error) {
+      handleServiceError(error, 'Menu')
+    }
   }
 
   /**
