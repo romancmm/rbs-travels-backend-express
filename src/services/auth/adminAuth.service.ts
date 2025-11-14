@@ -28,17 +28,41 @@ export const registerAdminService = async (data: RegisterInput & { roleIds?: str
 
     const user = await prisma.user.create({
       data: userData,
-      include: { roles: { include: { permissions: true } } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        isActive: true,
+        isAdmin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
     const tokens = generateTokens({ id: user.id, isAdmin: true })
 
-    // Compute combined permissions
-    const permissions = Array.from(
-      new Set(user.roles.flatMap((r) => r.permissions.map((p) => p.name)))
-    )
+    // Fetch permissions separately (more efficient than including full roles)
+    const permissions = await prisma.permission.findMany({
+      where: {
+        roles: {
+          some: {
+            users: {
+              some: {
+                id: user.id,
+              },
+            },
+          },
+        },
+      },
+      select: {
+        name: true,
+      },
+    })
+
+    const permissionNames = permissions.map((p) => p.name)
     const isSuperAdmin = user.email === 'superadmin@gmail.com'
 
-    return { user: { ...user, permissions, isSuperAdmin }, ...tokens }
+    return { user: { ...user, permissions: permissionNames, isSuperAdmin }, ...tokens }
   } catch (error) {
     handleServiceError(error, 'Admin')
   }
@@ -49,7 +73,17 @@ export const loginAdminService = async (data: AdminLoginInput) => {
     const { email, password } = data
     const user = await prisma.user.findUnique({
       where: { email },
-      include: { roles: { include: { permissions: true } } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        password: true,
+        avatar: true,
+        isActive: true,
+        isAdmin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     })
     if (!user || !user.isAdmin)
       throw createError(ErrorMessages.INVALID_CREDENTIALS, 401, 'INVALID_CREDENTIALS')
@@ -59,17 +93,31 @@ export const loginAdminService = async (data: AdminLoginInput) => {
 
     const tokens = generateTokens({ id: user.id, isAdmin: true })
 
-    // Get all roles and combine permissions from all roles
-    const roles = user.roles || []
-    const permissions = Array.from(
-      new Set(
-        roles.flatMap((r: any) =>
-          Array.isArray(r.permissions) ? r.permissions.map((p: any) => p.name) : []
-        )
-      )
-    )
+    // Fetch permissions separately (more efficient than including full roles)
+    const permissions = await prisma.permission.findMany({
+      where: {
+        roles: {
+          some: {
+            users: {
+              some: {
+                id: user.id,
+              },
+            },
+          },
+        },
+      },
+      select: {
+        name: true,
+      },
+    })
+
+    const permissionNames = permissions.map((p) => p.name)
     const isSuperAdmin = user.email === 'superadmin@gmail.com'
-    const responseUser = { ...user, roles, permissions, isSuperAdmin }
+
+    // Remove password from response
+    const { password: _, ...safeUser } = user
+    const responseUser = { ...safeUser, permissions: permissionNames, isSuperAdmin }
+
     return { user: responseUser, ...tokens }
   } catch (error) {
     handleServiceError(error, 'Admin Authentication')

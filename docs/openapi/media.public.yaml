@@ -1,0 +1,205 @@
+components:
+  schemas:
+    MediaFile:
+      type: object
+      properties:
+        fileId: { type: string }
+        name: { type: string }
+        url: { type: string, format: uri }
+        filePath: { type: string }
+        size: { type: integer }
+        fileType: { type: string }
+        type: { type: string, enum: [file] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        tags:
+          type: array
+          items: { type: string }
+    MediaFolder:
+      type: object
+      properties:
+        folderId: { type: string }
+        name: { type: string }
+        folderPath: { type: string }
+        type: { type: string, enum: [folder] }
+        createdAt: { type: string, format: date-time }
+    MediaLibraryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/MediaFile'
+              - $ref: '#/components/schemas/MediaFolder'
+        folders:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFolder' }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFile' }
+        page: { type: integer }
+        perPage: { type: integer }
+        hasMore: { type: boolean }
+        totalEstimate: { type: integer }
+        currentPath: { type: string }
+    MediaStructureResponse:
+      type: object
+      properties:
+        totalFiles: { type: integer }
+        totalFolders: { type: integer }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFile' }
+        folders:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFolder' }
+        structure:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/MediaFile'
+              - $ref: '#/components/schemas/MediaFolder'
+
+paths:
+  /media:
+    get:
+      tags: [Media - Public]
+      summary: List media files and folders (Public)
+      description:
+        Get paginated list of files and folders from media library by folder path. Public access for
+        displaying uploaded images/files.
+      parameters:
+        - in: query
+          name: path
+          schema: { type: string, default: '/' }
+          description: Folder path to browse (e.g., "/" for root, "/blog" for blog folder)
+          example: '/blog'
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+          description: Page number for pagination
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+          description: Number of items per page
+        - in: query
+          name: fileType
+          schema:
+            type: string
+            enum: [all, image, video, audio, raw]
+            default: all
+          description: Filter by file type
+      responses:
+        '200':
+          description: Media library content retrieved successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaLibraryResponse' }
+              examples:
+                blogImages:
+                  summary: Images from blog folder
+                  value:
+                    items:
+                      - fileId: '64a7b8c9d1e2f3g4h5i6j7k8'
+                        name: 'article-hero.jpg'
+                        url: 'https://ik.imagekit.io/your-id/blog/article-hero.jpg'
+                        filePath: '/blog/article-hero.jpg'
+                        size: 245678
+                        fileType: 'image'
+                        type: 'file'
+                        createdAt: '2025-01-15T10:30:00Z'
+                        tags: ['blog', 'hero-image']
+                      - fileId: '74b8c9d1e2f3g4h5i6j7k8l9'
+                        name: 'gallery-1.jpg'
+                        url: 'https://ik.imagekit.io/your-id/blog/gallery-1.jpg'
+                        filePath: '/blog/gallery-1.jpg'
+                        size: 187234
+                        fileType: 'image'
+                        type: 'file'
+                        createdAt: '2025-01-15T11:45:00Z'
+                        tags: ['blog', 'gallery']
+                    folders: []
+                    files:
+                      - fileId: '64a7b8c9d1e2f3g4h5i6j7k8'
+                        name: 'article-hero.jpg'
+                        url: 'https://ik.imagekit.io/your-id/blog/article-hero.jpg'
+                        filePath: '/blog/article-hero.jpg'
+                        size: 245678
+                        fileType: 'image'
+                        type: 'file'
+                        createdAt: '2025-01-15T10:30:00Z'
+                        tags: ['blog', 'hero-image']
+                      - fileId: '74b8c9d1e2f3g4h5i6j7k8l9'
+                        name: 'gallery-1.jpg'
+                        url: 'https://ik.imagekit.io/your-id/blog/gallery-1.jpg'
+                        filePath: '/blog/gallery-1.jpg'
+                        size: 187234
+                        fileType: 'image'
+                        type: 'file'
+                        createdAt: '2025-01-15T11:45:00Z'
+                        tags: ['blog', 'gallery']
+                    page: 1
+                    perPage: 50
+                    hasMore: false
+                    totalEstimate: 2
+                    currentPath: '/blog'
+        '400': { description: Invalid request parameters }
+        '500': { description: Server error }
+
+  /media/structure:
+    get:
+      tags: [Media - Public]
+      summary: Get complete media library structure (Public)
+      description:
+        Returns overview of entire media library with file/folder counts and structure. Useful for
+        building file browsers or navigation.
+      responses:
+        '200':
+          description: Media library structure retrieved successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaStructureResponse' }
+              examples:
+                fullStructure:
+                  summary: Complete library structure
+                  value:
+                    totalFiles: 125
+                    totalFolders: 8
+                    files:
+                      - fileId: '64a7b8c9d1e2f3g4h5i6j7k8'
+                        name: 'hero-image.jpg'
+                        url: 'https://ik.imagekit.io/your-id/hero-image.jpg'
+                        filePath: '/hero-image.jpg'
+                        size: 345678
+                        fileType: 'image'
+                        type: 'file'
+                        createdAt: '2025-01-10T08:00:00Z'
+                        tags: ['homepage', 'hero']
+                    folders:
+                      - folderId: 'folder-blog-001'
+                        name: 'blog'
+                        folderPath: '/blog'
+                        type: 'folder'
+                        createdAt: '2025-01-05T09:00:00Z'
+                      - folderId: 'folder-gallery-001'
+                        name: 'gallery'
+                        folderPath: '/gallery'
+                        type: 'folder'
+                        createdAt: '2025-01-06T10:00:00Z'
+                    structure:
+                      - folderId: 'folder-blog-001'
+                        name: 'blog'
+                        folderPath: '/blog'
+                        type: 'folder'
+                        createdAt: '2025-01-05T09:00:00Z'
+                      - fileId: '64a7b8c9d1e2f3g4h5i6j7k8'
+                        name: 'hero-image.jpg'
+                        url: 'https://ik.imagekit.io/your-id/hero-image.jpg'
+                        filePath: '/hero-image.jpg'
+                        size: 345678
+                        fileType: 'image'
+                        type: 'file'
+                        createdAt: '2025-01-10T08:00:00Z'
+                        tags: ['homepage', 'hero']
+        '500': { description: Server error }

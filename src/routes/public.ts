@@ -1,4 +1,5 @@
 import blogPublicRoutes from '@/api/blog/blog.public.route'
+import mediaPublicRoutes from '@/api/media/media.public.route'
 import menuPublicRoutes from '@/api/menu/menu.public.route'
 import pageBuilderPublicRoutes from '@/api/page-builder/page-builder.public.route'
 import pagePublicRoutes from '@/api/page/page.public.route'
@@ -22,5 +23,6 @@ routes.use('/services', servicePublicRoutes)
 routes.use('/projects', projectPublicRoutes)
 routes.use('/settings', settingPublicRoutes)
 routes.use('/upload', uploadPublicRoutes)
+routes.use('/media', mediaPublicRoutes)
 
 export default routes

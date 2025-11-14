@@ -1,6 +1,36 @@
 import imagekit from '@/utils/imagekit'
 import type { MediaListQuery } from '@/validators/media.validator'
 
+// Helper function to extract only necessary fields
+const formatMediaItem = (item: any) => {
+  if (item.type === 'folder') {
+    return {
+      type: 'folder',
+      name: item.name,
+      folderPath: item.folderPath,
+      folderId: item.folderId,
+      createdAt: item.createdAt,
+    }
+  }
+
+  // For files, return essential fields only
+  return {
+    type: 'file',
+    fileId: item.fileId,
+    name: item.name,
+    url: item.url,
+    thumbnail: item.thumbnail,
+    filePath: item.filePath,
+    fileType: item.fileType,
+    size: item.size,
+    width: item.width,
+    height: item.height,
+    mime: item.mime,
+    createdAt: item.createdAt,
+    tags: item.tags,
+  }
+}
+
 export const listMediaService = async (query: MediaListQuery) => {
   const { page = 1, perPage = 50, path = '/', fileType = 'all' } = query
   const skip = (page - 1) * perPage
@@ -38,17 +68,19 @@ export const listMediaService = async (query: MediaListQuery) => {
       console.warn('Could not fetch folders:', folderErr)
     }
 
-    // Combine files and folders
-    const items = [...folders, ...files]
+    // Format items to return only necessary fields
+    const formattedFolders = folders.map(formatMediaItem)
+    const formattedFiles = files.map(formatMediaItem)
+    const formattedItems = [...formattedFolders, ...formattedFiles]
 
     // ImageKit doesn't provide total count, so we estimate pagination
     const hasMore = files.length === perPage
     const totalEstimate = skip + files.length + (hasMore ? 1 : 0)
 
     return {
-      items,
-      folders,
-      files,
+      items: formattedItems,
+      folders: formattedFolders,
+      files: formattedFiles,
       page,
       perPage,
       hasMore,
@@ -72,16 +104,17 @@ export const getMediaLibraryStructureService = async () => {
       sort: 'DESC_CREATED',
     })
 
-    // Separate files and folders
-    const files = allFiles.filter((item: any) => item.type === 'file')
-    const folders = allFiles.filter((item: any) => item.type === 'folder')
+    // Separate and format files and folders
+    const files = allFiles.filter((item: any) => item.type === 'file').map(formatMediaItem)
+    const folders = allFiles.filter((item: any) => item.type === 'folder').map(formatMediaItem)
+    const structure = allFiles.map(formatMediaItem)
 
     return {
       totalFiles: files.length,
       totalFolders: folders.length,
       files,
       folders,
-      structure: allFiles,
+      structure,
     }
   } catch (err: any) {
     console.error('ImageKit library structure error:', err)
