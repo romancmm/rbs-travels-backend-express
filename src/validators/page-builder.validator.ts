@@ -52,9 +52,9 @@ export const createPageBuilderBodySchema = z.object({
   title: z.string().min(1, 'Page title is required').max(200),
   slug: z
     .string()
-    .min(1, 'Slug is required')
     .max(200)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format'),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
+    .optional(), // Optional - will be auto-generated from title
   description: z.string().optional(),
   sections: z.array(sectionSchema).optional().default([]),
   seo: seoSchema.optional(),
@@ -66,7 +66,6 @@ export const updatePageBuilderBodySchema = z.object({
   title: z.string().min(1).max(200).optional(),
   slug: z
     .string()
-    .min(1)
     .max(200)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
     .optional(),
@@ -153,8 +152,9 @@ export const duplicatePageBodySchema = z.object({
   title: z.string().min(1, 'New page title is required'),
   slug: z
     .string()
-    .min(1, 'New slug is required')
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format'),
+    .max(200)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
+    .optional(), // Optional - will be auto-generated from title
 })
 
 export const updateContentBodySchema = z.object({

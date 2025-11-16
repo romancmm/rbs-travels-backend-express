@@ -77,9 +77,9 @@ export const createMenuSchema = z.object({
   name: z.string().min(1, 'Menu name is required').max(100),
   slug: z
     .string()
-    .min(1, 'Slug is required')
     .max(100)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format'),
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
+    .optional(), // Optional - will be auto-generated from name
   position: z.string().optional(),
   description: z.string().optional(),
   items: z.array(menuItemSchema).optional().default([]),
@@ -91,7 +91,6 @@ export const updateMenuBodySchema = z.object({
   name: z.string().min(1).max(100).optional(),
   slug: z
     .string()
-    .min(1)
     .max(100)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
     .optional(),

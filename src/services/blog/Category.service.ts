@@ -1,6 +1,7 @@
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
+import { handleSlug } from '@/utils/slug.util'
 import type {
   CategoryQueryParams,
   CreateCategoryInput,
@@ -44,7 +45,15 @@ export const getCategoryByIdService = async (id: string) => {
 
 export const createCategoryService = async (data: CreateCategoryInput) => {
   try {
-    const category = await prisma.category.create({ data })
+    // Handle slug: auto-generate or purify client-provided slug
+    const slug = await handleSlug('category', data.name, data.slug)
+
+    const category = await prisma.category.create({
+      data: {
+        ...data,
+        slug,
+      },
+    })
     return category
   } catch (error) {
     handleServiceError(error, 'Category')
@@ -53,7 +62,23 @@ export const createCategoryService = async (data: CreateCategoryInput) => {
 
 export const updateCategoryService = async (id: string, data: UpdateCategoryInput) => {
   try {
-    const category = await prisma.category.update({ where: { id }, data })
+    // Handle slug if name or slug is being updated
+    let slug = data.slug
+    if (data.name || data.slug) {
+      const category = await prisma.category.findUnique({ where: { id } })
+      if (!category) throw createError(ErrorMessages.NOT_FOUND('Category'), 404, 'NOT_FOUND')
+
+      const name = data.name || category.name
+      slug = await handleSlug('category', name, data.slug, id)
+    }
+
+    const category = await prisma.category.update({
+      where: { id },
+      data: {
+        ...data,
+        ...(slug && { slug }),
+      },
+    })
     return category
   } catch (error) {
     handleServiceError(error, 'Category')

@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client'
 import prisma from '../../config/db'
 import { paginate } from '../../utils/paginator'
+import { handleSlug } from '../../utils/slug.util'
 
 /**
  * ============================================
@@ -134,27 +135,22 @@ export class PageBuilderService {
    */
   async createPage(data: {
     title: string
-    slug: string
+    slug?: string
     description?: string
     content?: any
     seo?: any
     isPublished?: boolean
   }) {
-    const existing = await prisma.pageBuilder.findUnique({
-      where: { slug: data.slug },
-    })
-
-    if (existing) {
-      throw new Error(`Page with slug "${data.slug}" already exists`)
-    }
+    // Handle slug: auto-generate or purify client-provided slug
+    const slug = await handleSlug('pageBuilder', data.title, data.slug)
 
     const content = data.content ?? { sections: [] }
-    const cacheKey = `page:${data.slug}:v1`
+    const cacheKey = `page:${slug}:v1`
 
     return await prisma.pageBuilder.create({
       data: {
         title: data.title,
-        slug: data.slug,
+        slug,
         description: data.description,
         content,
         draftContent: content,
@@ -189,22 +185,20 @@ export class PageBuilderService {
       throw new Error('Page not found')
     }
 
-    if (data.slug && data.slug !== pageData.slug) {
-      const existing = await prisma.pageBuilder.findUnique({
-        where: { slug: data.slug },
-      })
-
-      if (existing) {
-        throw new Error(`Page with slug "${data.slug}" already exists`)
-      }
-    }
-
     const updateData: Prisma.PageBuilderUpdateInput = {}
 
     if (data.title) updateData.title = data.title
-    if (data.slug) updateData.slug = data.slug
     if (data.description !== undefined) updateData.description = data.description
     if (data.seo !== undefined) updateData.seo = data.seo
+
+    // Handle slug if title or slug is being updated
+    if (data.title || data.slug) {
+      const title = data.title || pageData.title
+      const slug = await handleSlug('pageBuilder', title, data.slug, id)
+      updateData.slug = slug
+      updateData.cacheKey = `page:${slug}:v${pageData.version + 1}`
+      updateData.version = { increment: 1 }
+    }
 
     if (data.content !== undefined) {
       updateData.content = data.content
@@ -218,11 +212,6 @@ export class PageBuilderService {
       if (data.isPublished && !pageData.isPublished) {
         updateData.publishedAt = new Date()
       }
-    }
-
-    if (data.slug && data.slug !== pageData.slug) {
-      updateData.cacheKey = `page:${data.slug}:v${pageData.version + 1}`
-      updateData.version = { increment: 1 }
     }
 
     return await prisma.pageBuilder.update({
@@ -298,15 +287,9 @@ export class PageBuilderService {
     }
 
     const title = newTitle ?? `${original.title} (Copy)`
-    const slug = newSlug ?? `${original.slug}-copy-${Date.now()}`
 
-    const existing = await prisma.pageBuilder.findUnique({
-      where: { slug },
-    })
-
-    if (existing) {
-      throw new Error(`Page with slug "${slug}" already exists`)
-    }
+    // Handle slug with auto-suffixing if needed
+    const slug = await handleSlug('pageBuilder', title, newSlug)
 
     return await this.createPage({
       title,

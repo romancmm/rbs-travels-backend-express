@@ -1,6 +1,7 @@
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
+import { handleSlug } from '@/utils/slug.util'
 import type {
   CreateServiceInput,
   ServiceQueryParams,
@@ -59,7 +60,15 @@ export const getServiceBySlugService = async (slug: string) => {
 
 export const createServiceService = async (data: CreateServiceInput) => {
   try {
-    const service = await prisma.service.create({ data })
+    // Handle slug: auto-generate or purify client-provided slug
+    const slug = await handleSlug('service', data.title, data.slug)
+
+    const service = await prisma.service.create({
+      data: {
+        ...data,
+        slug,
+      },
+    })
     return service
   } catch (error) {
     handleServiceError(error, 'Service')
@@ -68,7 +77,23 @@ export const createServiceService = async (data: CreateServiceInput) => {
 
 export const updateServiceService = async (id: string, data: UpdateServiceInput) => {
   try {
-    const service = await prisma.service.update({ where: { id }, data })
+    // Handle slug if title or slug is being updated
+    let slug = data.slug
+    if (data.title || data.slug) {
+      const service = await prisma.service.findUnique({ where: { id } })
+      if (!service) throw createError(ErrorMessages.NOT_FOUND('Service'), 404, 'NOT_FOUND')
+
+      const title = data.title || service.title
+      slug = await handleSlug('service', title, data.slug, id)
+    }
+
+    const service = await prisma.service.update({
+      where: { id },
+      data: {
+        ...data,
+        ...(slug && { slug }),
+      },
+    })
     return service
   } catch (error) {
     handleServiceError(error, 'Service')

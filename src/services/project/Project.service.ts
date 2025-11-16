@@ -1,6 +1,7 @@
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
+import { handleSlug } from '@/utils/slug.util'
 import type {
   CreateProjectInput,
   ProjectQueryParams,
@@ -63,7 +64,15 @@ export const getProjectBySlugService = async (slug: string) => {
 
 export const createProjectService = async (data: CreateProjectInput) => {
   try {
-    const project = await prisma.project.create({ data })
+    // Handle slug: auto-generate or purify client-provided slug
+    const slug = await handleSlug('project', data.title, data.slug)
+
+    const project = await prisma.project.create({
+      data: {
+        ...data,
+        slug,
+      },
+    })
     return project
   } catch (error) {
     handleServiceError(error, 'Project')
@@ -72,7 +81,23 @@ export const createProjectService = async (data: CreateProjectInput) => {
 
 export const updateProjectService = async (id: string, data: UpdateProjectInput) => {
   try {
-    const project = await prisma.project.update({ where: { id }, data })
+    // Handle slug if title or slug is being updated
+    let slug = data.slug
+    if (data.title || data.slug) {
+      const project = await prisma.project.findUnique({ where: { id } })
+      if (!project) throw createError(ErrorMessages.NOT_FOUND('Project'), 404, 'NOT_FOUND')
+
+      const title = data.title || project.title
+      slug = await handleSlug('project', title, data.slug, id)
+    }
+
+    const project = await prisma.project.update({
+      where: { id },
+      data: {
+        ...data,
+        ...(slug && { slug }),
+      },
+    })
     return project
   } catch (error) {
     handleServiceError(error, 'Project')

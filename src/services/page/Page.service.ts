@@ -1,6 +1,7 @@
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
+import { handleSlug } from '@/utils/slug.util'
 import type { CreatePageInput, PageQueryParams, UpdatePageInput } from '@/validators/page.validator'
 import { Prisma } from '@prisma/client'
 
@@ -37,7 +38,10 @@ export const getPageByIdService = async (id: string) => {
 
 export const createPageService = async (data: CreatePageInput) => {
   try {
-    const payload: any = { ...data }
+    // Handle slug: auto-generate or purify client-provided slug
+    const slug = await handleSlug('page', data.title, data.slug)
+
+    const payload: any = { ...data, slug }
     if (payload.content === null) payload.content = Prisma.JsonNull
     if (payload.meta === null) payload.meta = Prisma.JsonNull
     const page = await prisma.page.create({ data: payload })
@@ -49,7 +53,17 @@ export const createPageService = async (data: CreatePageInput) => {
 
 export const updatePageService = async (id: string, data: UpdatePageInput) => {
   try {
-    const payload: any = { ...data }
+    // Handle slug if title or slug is being updated
+    let slug = data.slug
+    if (data.title || data.slug) {
+      const page = await prisma.page.findUnique({ where: { id } })
+      if (!page) throw createError(ErrorMessages.NOT_FOUND('Page'), 404, 'NOT_FOUND')
+
+      const title = data.title || page.title
+      slug = await handleSlug('page', title, data.slug, id)
+    }
+
+    const payload: any = { ...data, ...(slug && { slug }) }
     if ('content' in payload && payload.content === null) payload.content = Prisma.JsonNull
     if ('meta' in payload && payload.meta === null) payload.meta = Prisma.JsonNull
     const page = await prisma.page.update({ where: { id }, data: payload })

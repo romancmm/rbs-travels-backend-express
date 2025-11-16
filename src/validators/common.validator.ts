@@ -19,10 +19,12 @@ export const passwordSchema = z
   .regex(/[0-9]/, 'Password must contain at least one number')
 
 // Slug validation (lowercase, hyphens allowed)
+// Now optional - backend will auto-generate/purify slugs
 export const slugSchema = z
   .string()
-  .min(1, 'Slug is required')
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be lowercase with hyphens only')
+  .max(200, 'Slug must be at most 200 characters')
+  .optional()
+  .transform((val) => val?.trim() || undefined)
 
 // Pagination schemas
 export const paginationQuerySchema = z.object({
