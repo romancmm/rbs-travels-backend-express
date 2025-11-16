@@ -114,10 +114,17 @@ async function migrateMenuData() {
 
       // Create menu items
       for (const item of sampleItems) {
+        // Generate slug from title
+        const slug = item.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '')
+
         await prisma.menuItem.create({
           data: {
             menuId: menu.id,
             title: item.title,
+            slug: slug,
             type: item.type,
             link: item.link,
             icon: item.icon,

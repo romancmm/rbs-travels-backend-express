@@ -1,7 +1,13 @@
 import { z } from 'zod'
 
 // Menu Item Type Enum
-export const MenuItemTypeEnum = z.enum(['custom-link', 'category-blogs', 'custom-page', 'article'])
+export const MenuItemTypeEnum = z.enum([
+  'custom-link',
+  'category-blogs',
+  'custom-page',
+  'article',
+  'gallery',
+])
 
 // Menu Item Target Enum
 export const MenuItemTargetEnum = z.enum(['_self', '_blank'])
@@ -62,6 +68,7 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
           path: ['articleId'],
         })
       }
+      // if (data.type === 'gallery' && (!data.link || data.link.length === 0)) {
     })
 )
 

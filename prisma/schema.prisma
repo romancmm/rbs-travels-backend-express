@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
- 
 generator client {
   provider = "prisma-client-js"
 }
@@ -18,20 +12,20 @@ model User {
   name      String
   email     String   @unique
   password  String
-  avatar    String?  // User profile avatar image URL
+  avatar    String?
   isActive  Boolean  @default(true)
   isAdmin   Boolean  @default(false)
-  roles     Role[]   @relation("UserRoles") // Many-to-many: user can have multiple roles
-  posts     Post[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  posts     Post[]
+  roles     Role[]   @relation("UserRoles")
 }
 
 model Role {
   id          String       @id @default(uuid())
   name        String       @unique
   permissions Permission[] @relation("RolePermissions")
-  users       User[]       @relation("UserRoles") // Many-to-many: role can be assigned to multiple users
+  users       User[]       @relation("UserRoles")
 }
 
 model Permission {
@@ -44,7 +38,7 @@ model Page {
   id          String   @id @default(uuid())
   title       String
   slug        String   @unique
-  content     Json // store blocks/sections (Elementor-like structure)
+  content     Json
   meta        Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -52,23 +46,23 @@ model Page {
 }
 
 model Post {
-  id            String     @id @default(uuid())
-  title         String
-  slug          String     @unique
-  excerpt       String?
-  content       String
-  thumbnail     String?
-  gallery       String[]   @default([])
-  seo           Json?
-  authorId      String
-  author        User       @relation(fields: [authorId], references: [id])
-  categoryId    String?
-  category      Category?  @relation(fields: [categoryId], references: [id])
-  tags          String[]   @default([])
-  isPublished   Boolean    @default(false)
-  publishedAt   DateTime?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  content     String
+  thumbnail   String?
+  gallery     String[]  @default([])
+  seo         Json?
+  authorId    String
+  categoryId  String?
+  tags        String[]  @default([])
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  author      User      @relation(fields: [authorId], references: [id])
+  category    Category? @relation(fields: [categoryId], references: [id])
 }
 
 model Category {
@@ -76,44 +70,44 @@ model Category {
   name        String   @unique
   slug        String   @unique
   description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   posts       Post[]
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  description String?
+  content     String
+  icon        String?
+  thumbnail   String?
+  features    String[] @default([])
+  price       Float?
+  isPublished Boolean  @default(false)
+  order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model Service {
-  id            String   @id @default(uuid())
-  title         String
-  slug          String   @unique
-  description   String?
-  content       String
-  icon          String?
-  thumbnail String?
-  features      String[] @default([])
-  price         Float?
-  isPublished   Boolean  @default(false)
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
 model Project {
-  id            String   @id @default(uuid())
-  title         String
-  slug          String   @unique
-  description   String?
-  content       String
-  client        String?
-  category      String?
-  tags          String[] @default([])
-  thumbnail String?
-  images        String[] @default([])
-  completedAt   DateTime?
-  isPublished   Boolean  @default(false)
-  isFeatured    Boolean  @default(false)
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  description String?
+  content     String
+  client      String?
+  category    String?
+  tags        String[]  @default([])
+  thumbnail   String?
+  images      String[]  @default([])
+  completedAt DateTime?
+  isPublished Boolean   @default(false)
+  isFeatured  Boolean   @default(false)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Setting {
@@ -121,40 +115,26 @@ model Setting {
   key         String   @unique
   value       Json
   description String?
-  group       String?  // e.g., 'general', 'seo', 'social', 'email', etc.
-  isPublic    Boolean  @default(false) // if true, can be accessed without auth
+  group       String?
+  isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-// ============================================
-// OPTIMIZED MENU MANAGEMENT (Hybrid Approach)
-// Best of both worlds: Relational integrity + Performance caching
-// ============================================
 model Menu {
   id          String     @id @default(uuid())
-  name        String     // e.g., "Main Menu", "Footer Menu"
-  slug        String     @unique // e.g., "main-menu", "footer-menu"
-  position    String?    // e.g., "header", "footer", "sidebar"
+  name        String
+  slug        String     @unique
+  position    String?
   description String?
-  
-  // Relational structure (for queries and data integrity)
-  items       MenuItem[]
-  
-  // Performance cache (JSON snapshot of entire tree)
-  // Automatically regenerated when menu items change
-  itemsCache  Json?      // Cached JSON tree for fast public API
-  
-  // Publishing & Performance
+  itemsCache  Json?
   isPublished Boolean    @default(false)
   version     Int        @default(1)
-  
-  // Caching metadata (for Redis/CDN integration)
-  cacheKey    String?    @unique // e.g., "menu:main-menu:v1"
+  cacheKey    String?    @unique
   lastCached  DateTime?
-  
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+  items       MenuItem[]
 
   @@index([slug])
   @@index([position])
@@ -163,38 +143,27 @@ model Menu {
 }
 
 model MenuItem {
-  id       String  @id @default(uuid())
-  menuId   String
-  menu     Menu    @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  
-  // Content
-  title    String
-  slug     String   @unique
-  type     String  // 'custom-link', 'category-blogs', 'custom-page', 'article'
-  
-  // Link references (depending on type)
-  link        String?  // For custom-link
-  categoryId  String?  // For category-blogs
-  pageId      String?  // For custom-page (PageBuilder)
-  articleId   String?  // For article (Post)
-  
-  // Display options
-  icon     String?
-  target   String  @default("_self") // '_blank' or '_self'
-  cssClass String?
-  
-  // Tree structure
-  parentId String?
-  parent   MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
-  children MenuItem[] @relation("MenuItemChildren")
-  
-  // Ordering and publishing
-  order       Int     @default(0)
-  isPublished Boolean @default(true)
-  meta        Json?   // Additional metadata
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String     @id @default(uuid())
+  menuId      String
+  title       String
+  slug        String     @unique
+  type        String
+  link        String?
+  categoryId  String?
+  pageId      String?
+  articleId   String?
+  icon        String?
+  target      String     @default("_self")
+  cssClass    String?
+  parentId    String?
+  order       Int        @default(0)
+  isPublished Boolean    @default(true)
+  meta        Json?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  menu        Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  parent      MenuItem?  @relation("MenuItemChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    MenuItem[] @relation("MenuItemChildren")
 
   @@index([menuId])
   @@index([parentId])
@@ -206,43 +175,25 @@ model MenuItem {
   @@index([articleId])
 }
 
-// ============================================
-// OPTIMIZED PAGE BUILDER (JSON-based)
-// Performance: Single query for entire page structure
-// Scalability: Easy versioning, drafts, and caching
-// ============================================
 model PageBuilder {
-  id          String    @id @default(uuid())
-  title       String
-  slug        String    @unique
-  description String?
-  
-  // JSON structure for entire page (sections -> rows -> columns -> components)
-  content     Json      // Complete page structure in single field
-  
-  // SEO & Metadata
-  seo         Json?     // {title, description, keywords, ogTags, canonical, etc.}
-  
-  // Publishing & Versioning
-  isPublished Boolean   @default(false)
-  isDraft     Boolean   @default(true)
-  publishedAt DateTime?
-  version     Int       @default(1)
-  
-  // Draft/Published content separation for better performance
-  draftContent     Json? // Working draft content
-  publishedContent Json? // Last published version (cached for public API)
-  
-  // Caching metadata (for Redis/CDN integration)
-  cacheKey    String?   @unique // e.g., "page:home:v2"
-  lastCached  DateTime?
-  
-  // Analytics & Performance tracking
-  viewCount   Int       @default(0)
-  lastViewed  DateTime?
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  title            String
+  slug             String    @unique
+  description      String?
+  content          Json
+  seo              Json?
+  isPublished      Boolean   @default(false)
+  isDraft          Boolean   @default(true)
+  publishedAt      DateTime?
+  version          Int       @default(1)
+  draftContent     Json?
+  publishedContent Json?
+  cacheKey         String?   @unique
+  lastCached       DateTime?
+  viewCount        Int       @default(0)
+  lastViewed       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([slug])
   @@index([isPublished])
@@ -250,33 +201,3 @@ model PageBuilder {
   @@index([cacheKey])
   @@index([publishedAt])
 }
-
-// model Destination {
-//   id          String   @id @default(uuid())
-//   title       String
-//   slug        String   @unique
-//   country     String
-//   city        String?
-//   description String?
-//   tours       Tour[]
-//   media       Media[]
-//   createdAt   DateTime @default(now())
-//   updatedAt   DateTime @updatedAt
-//   isPublished Boolean  @default(false)
-// }
-
-// model Tour {
-//   id            String    @id @default(uuid())
-//   title         String
-//   slug          String    @unique
-//   destination   Destination @relation(fields: [destinationId], references: [id])
-//   destinationId String
-//   price         Float
-//   durationDays  Int
-//   maxGuests     Int
-//   description   String?
-//   media         Media[]
-//   createdAt     DateTime  @default(now())
-//   updatedAt     DateTime  @updatedAt
-//   isPublished   Boolean   @default(false)
-// }

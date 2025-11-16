@@ -61,12 +61,16 @@ async function main() {
     'page.delete',
   ]
 
-  // Upsert all permissions
-  const permissions = await Promise.all(
-    permissionNames.map((name) =>
-      prisma.permission.upsert({ where: { name }, update: {}, create: { name } })
-    )
-  )
+  // Upsert all permissions (in smaller batches to avoid connection pool limits)
+  const permissions = []
+  for (const name of permissionNames) {
+    const permission = await prisma.permission.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    })
+    permissions.push(permission)
+  }
 
   // Create roles
   const superAdminRole = await prisma.role.upsert({

@@ -302,7 +302,7 @@ components:
           type: string
         type:
           type: string
-          enum: [custom-link, category-blogs, custom-page, article]
+          enum: [custom-link, category-blogs, custom-page, article, gallery]
         link:
           type: string
         icon:
@@ -341,7 +341,7 @@ components:
           type: string
         type:
           type: string
-          enum: [custom-link, category-blogs, custom-page, article]
+          enum: [custom-link, category-blogs, custom-page, article, gallery]
         link:
           type: string
         icon:
