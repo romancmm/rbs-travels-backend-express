@@ -1,17 +1,38 @@
 version: '3.8'
 
 services:
+  rbs-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rbs-backend
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    ports:
+      - '${PORT:-4000}:4000'
+    volumes:
+      - app_files:/app/files
+    networks:
+      - rbs-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   postgres:
     image: postgres:16-alpine
+    container_name: rbs-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
       POSTGRES_DB: rbs_db
     ports:
-      - '5433:5432'
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rbs-network
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d rbs_db']
       interval: 10s
@@ -21,3 +42,9 @@ services:
 volumes:
   postgres_data:
     driver: local
+  app_files:
+    driver: local
+
+networks:
+  rbs-network:
+    driver: bridge

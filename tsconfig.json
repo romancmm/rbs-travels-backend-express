@@ -30,6 +30,6 @@
     },
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": ["src"],
+  "include": ["src", "index.ts"],
   "exclude": ["**/*.old.ts", "**/*.backup.ts"]
 }

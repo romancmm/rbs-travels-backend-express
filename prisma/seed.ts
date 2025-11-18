@@ -169,11 +169,11 @@ async function main() {
 
   // Seed Sample Menus
   const headerMenu = await prisma.menu.upsert({
-    where: { slug: 'header-menu' },
+    where: { slug: 'main-menu' },
     update: {},
     create: {
-      name: 'Header Menu',
-      slug: 'header-menu',
+      name: 'Main Menu',
+      slug: 'main-menu',
       position: 'header',
       description: 'Main navigation menu',
       isPublished: true,

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  rbs-backend:
+    restart: always
+    environment:
+      NODE_ENV: production
+
+  postgres:
+    restart: always
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: md5
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_prod_data:
+    external: true

@@ -1,0 +1,25 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - stage
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to VPS
+
+    steps:
+      - name: Set up SSH agent & Run Deploy CI script
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "SSH setup completed."
+            cd apps/rbs-travels-backend-express
+            git pull 
+            ./deploy-ci.sh
+            echo "Github Actions Done in Deployment"
