@@ -148,7 +148,7 @@ model MenuItem {
   title       String
   slug        String     @unique
   type        String     // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
-  referenceId String?    // UUID of referenced entity (page, post, category, service, project)
+  reference   String?    // Slug of referenced entity (page, post, category, service, project)
   url         String?    // URL for custom/external links or resolved URL
   icon        String?
   target      String     @default("_self")
@@ -166,7 +166,7 @@ model MenuItem {
   @@index([menuId])
   @@index([parentId])
   @@index([type])
-  @@index([referenceId])
+  @@index([reference])
   @@index([order])
   @@index([slug])
   @@index([isPublished])

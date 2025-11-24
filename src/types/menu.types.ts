@@ -20,7 +20,7 @@ export interface MenuItem {
   title: string
   slug: string
   type: MenuItemType
-  referenceId: string | null // UUID of referenced entity (page, post, category, etc.)
+  reference: string | null // Slug of referenced entity (page, post, category, etc.)
   url: string | null // URL for custom/external links or resolved URL
   icon?: string | null
   target: MenuItemTarget
@@ -38,7 +38,7 @@ export interface CreateMenuItemInput {
   title: string
   slug?: string
   type: MenuItemType
-  referenceId?: string
+  reference?: string // Slug of referenced entity
   url?: string
   icon?: string
   target?: MenuItemTarget
@@ -53,7 +53,7 @@ export interface UpdateMenuItemInput {
   title?: string
   slug?: string
   type?: MenuItemType
-  referenceId?: string
+  reference?: string // Slug of referenced entity
   url?: string
   icon?: string
   target?: MenuItemTarget
@@ -120,10 +120,10 @@ export const hasChildren = (item: MenuItem): boolean => {
 export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
   const errors: string[] = []
 
-  // Entity types require referenceId
+  // Entity types require reference
   if (['page', 'post', 'category', 'service', 'project'].includes(item.type)) {
-    if (!item.referenceId) {
-      errors.push(`Reference ID is required for ${item.type} type`)
+    if (!item.reference) {
+      errors.push(`Reference (slug) is required for ${item.type} type`)
     }
   }
 
@@ -145,13 +145,27 @@ export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
 }
 
 /**
- * Helper to build menu item URL
+ * Helper to build menu item URL from reference
  */
 export const getMenuItemUrl = (item: MenuItem): string | null => {
   // Return existing URL if set
   if (item.url) return item.url
 
-  // For entity types, construct URL from referenceId
-  // This would typically be resolved on the backend
+  // For entity types, construct URL from reference (slug)
+  if (item.reference) {
+    switch (item.type) {
+      case 'page':
+        return `/${item.reference}`
+      case 'post':
+        return `/blog/${item.reference}`
+      case 'category':
+        return `/category/${item.reference}`
+      case 'service':
+        return `/services/${item.reference}`
+      case 'project':
+        return `/projects/${item.reference}`
+    }
+  }
+
   return null
 }

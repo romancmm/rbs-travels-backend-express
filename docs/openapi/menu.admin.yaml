@@ -315,11 +315,11 @@ components:
             - project: Links to a Project
             - custom: Custom internal link
             - external: External link
-        referenceId:
+        reference:
           type: string
-          format: uuid
           nullable: true
-          description: UUID of referenced entity (for page, post, category, service, project types)
+          description: Slug of referenced entity (for page, post, category, service, project types)
+          example: 'about-us'
         url:
           type: string
           nullable: true

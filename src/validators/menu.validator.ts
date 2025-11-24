@@ -27,7 +27,7 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
         .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
         .optional(),
       type: MenuItemTypeEnum,
-      referenceId: z.string().uuid().nullable().optional(), // UUID of referenced entity
+      reference: z.string().nullable().optional(), // Slug of referenced entity
       url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
       icon: z.string().optional(),
       target: MenuItemTargetEnum.default('_self'),
@@ -41,16 +41,16 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
     .superRefine((data, ctx) => {
       // Validate based on type
       if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
-        if (!data.referenceId) {
+        if (!data.reference || data.reference === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `Reference ID is required for ${data.type} type`,
-            path: ['referenceId'],
+            message: `Reference (slug) is required for ${data.type} type`,
+            path: ['reference'],
           })
         }
       }
       if (['custom', 'external'].includes(data.type)) {
-        if (!data.url) {
+        if (!data.url || data.url === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `URL is required for ${data.type} type`,
@@ -115,7 +115,7 @@ export const createMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(), // Optional - will be auto-generated if not provided
     type: MenuItemTypeEnum,
-    referenceId: z.string().uuid().nullable().optional(), // UUID of referenced entity
+    reference: z.string().nullable().optional(), // Slug of referenced entity
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.default('_self'),
@@ -128,16 +128,16 @@ export const createMenuItemBodySchema = z
   .superRefine((data, ctx) => {
     // Validate based on type
     if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
-      if (!data.referenceId) {
+      if (!data.reference || data.reference === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Reference ID is required for ${data.type} type`,
-          path: ['referenceId'],
+          message: `Reference (slug) is required for ${data.type} type`,
+          path: ['reference'],
         })
       }
     }
     if (['custom', 'external'].includes(data.type)) {
-      if (!data.url) {
+      if (!data.url || data.url === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `URL is required for ${data.type} type`,
@@ -163,7 +163,7 @@ export const updateMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(),
     type: MenuItemTypeEnum.optional(),
-    referenceId: z.string().uuid().nullable().optional(), // UUID of referenced entity
+    reference: z.string().nullable().optional(), // Slug of referenced entity
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.optional(),
@@ -177,16 +177,16 @@ export const updateMenuItemBodySchema = z
     // Only validate if type is being updated
     if (data.type) {
       if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
-        if (!data.referenceId) {
+        if (!data.reference || data.reference === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `Reference ID is required for ${data.type} type`,
-            path: ['referenceId'],
+            message: `Reference (slug) is required for ${data.type} type`,
+            path: ['reference'],
           })
         }
       }
       if (['custom', 'external'].includes(data.type)) {
-        if (!data.url) {
+        if (!data.url || data.url === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `URL is required for ${data.type} type`,

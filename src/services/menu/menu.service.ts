@@ -359,7 +359,7 @@ export class MenuService {
               title: item.title,
               slug: uniqueSlug,
               type: item.type,
-              referenceId: item.referenceId,
+              reference: item.reference,
               url: item.url,
               icon: item.icon,
               target: item.target,
@@ -398,7 +398,7 @@ export class MenuService {
       title: string
       slug?: string // Optional slug, will be auto-generated if not provided
       type: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
-      referenceId?: string // UUID of referenced entity
+      reference?: string // Slug of referenced entity
       url?: string // URL for custom/external links or resolved URL
       icon?: string
       target?: string
@@ -425,7 +425,7 @@ export class MenuService {
           title: data.title,
           slug: uniqueSlug,
           type: data.type,
-          referenceId: data.referenceId,
+          reference: data.reference,
           url: data.url,
           icon: data.icon,
           target: data.target ?? '_self',
@@ -456,7 +456,7 @@ export class MenuService {
       title?: string
       slug?: string
       type?: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
-      referenceId?: string // UUID of referenced entity
+      reference?: string // Slug of referenced entity
       url?: string // URL for custom/external links or resolved URL
       icon?: string
       target?: string
@@ -589,7 +589,7 @@ export class MenuService {
         title: item.title,
         slug: item.slug,
         type: item.type,
-        referenceId: item.referenceId,
+        reference: item.reference,
         url: item.url,
         icon: item.icon,
         target: item.target,
