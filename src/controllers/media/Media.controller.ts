@@ -1,11 +1,22 @@
 import {
+  bulkAddTagsService,
+  bulkCopyFilesService,
+  bulkDeleteFilesService,
+  bulkMoveFilesService,
+  bulkRemoveTagsService,
+  copyFileService,
+  copyFolderService,
   createFolderService,
   deleteFileService,
   deleteFolderService,
   deleteFolderWithContentsService,
+  getFileDetailsService,
   getMediaLibraryStructureService,
   listMediaService,
+  moveFileService,
+  moveFolderService,
   renameFolderService,
+  searchMediaService,
   updateFileService,
 } from '@/services/media/Media.service'
 import type { NextFunction, Request, Response } from 'express'
@@ -78,6 +89,141 @@ export const deleteFolder = async (req: Request, res: Response, next: NextFuncti
       ? await deleteFolderWithContentsService(path, true)
       : await deleteFolderService(path)
 
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+// ============================================================================
+// FILE OPERATIONS - Move, Copy, Details
+// ============================================================================
+
+export const moveFile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileId } = req.params as { fileId: string }
+    const { destinationPath } = req.body as { destinationPath: string }
+    const data = await moveFileService(fileId, destinationPath)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const copyFile = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileId } = req.params as { fileId: string }
+    const { destinationPath } = req.body as { destinationPath: string }
+    const data = await copyFileService(fileId, destinationPath)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const getFileDetails = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileId } = req.params as { fileId: string }
+    const data = await getFileDetailsService(fileId)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const moveFolder = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { sourcePath, destinationPath } = req.body as {
+      sourcePath: string
+      destinationPath: string
+    }
+    const data = await moveFolderService(sourcePath, destinationPath)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const copyFolder = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { sourcePath, destinationPath } = req.body as {
+      sourcePath: string
+      destinationPath: string
+    }
+    const data = await copyFolderService(sourcePath, destinationPath)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+// ============================================================================
+// BULK OPERATIONS
+// ============================================================================
+
+export const bulkDeleteFiles = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileIds } = req.body as { fileIds: string[] }
+    const data = await bulkDeleteFilesService(fileIds)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const bulkMoveFiles = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileIds, destinationPath } = req.body as {
+      fileIds: string[]
+      destinationPath: string
+    }
+    const data = await bulkMoveFilesService(fileIds, destinationPath)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const bulkCopyFiles = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileIds, destinationPath } = req.body as {
+      fileIds: string[]
+      destinationPath: string
+    }
+    const data = await bulkCopyFilesService(fileIds, destinationPath)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const bulkAddTags = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileIds, tags } = req.body as { fileIds: string[]; tags: string[] }
+    const data = await bulkAddTagsService(fileIds, tags)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const bulkRemoveTags = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { fileIds, tags } = req.body as { fileIds: string[]; tags: string[] }
+    const data = await bulkRemoveTagsService(fileIds, tags)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+// ============================================================================
+// SEARCH AND FILTERING
+// ============================================================================
+
+export const search = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const data = await searchMediaService((req as any).query)
     res.json(data)
   } catch (e) {
     next(e)

@@ -85,6 +85,46 @@ components:
           properties:
             deletedFiles: { type: integer }
             deletedFolders: { type: integer }
+    BulkOperationResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            totalFiles: { type: integer }
+            successful: { type: integer }
+            failed: { type: integer }
+            results:
+              type: array
+              items:
+                type: object
+                properties:
+                  fileId: { type: string }
+                  success: { type: boolean }
+                  error: { type: string }
+    FileDetailsResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        file: { $ref: '#/components/schemas/MediaFile' }
+    SearchResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/MediaFile' }
+        page: { type: integer }
+        perPage: { type: integer }
+        hasMore: { type: boolean }
+        totalEstimate: { type: integer }
+        searchQuery: { type: string }
+        filters:
+          type: object
+          properties:
+            tags: { type: array, items: { type: string } }
+            fileType: { type: string }
+            path: { type: string }
+            dateFrom: { type: string }
+            dateTo: { type: string }
 
 paths:
   /admin/media:
@@ -135,6 +175,55 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/MediaStructureResponse' }
+        '401': { description: Unauthorized }
+        '500': { description: Server error }
+
+  /admin/media/search:
+    get:
+      tags: [Media - Admin]
+      summary: Search media files
+      description: Search and filter media files by name, tags, type, path, and date range
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: searchQuery
+          schema: { type: string }
+          description: Search by filename
+          example: 'vacation'
+        - in: query
+          name: tags
+          schema: { type: string }
+          description: Filter by tags (comma-separated)
+          example: 'nature,landscape'
+        - in: query
+          name: fileType
+          schema: { type: string, enum: [all, image, video, audio, raw] }
+          description: Filter by file type
+        - in: query
+          name: path
+          schema: { type: string }
+          description: Filter by folder path
+        - in: query
+          name: dateFrom
+          schema: { type: string, format: date }
+          description: Filter files created after this date
+        - in: query
+          name: dateTo
+          schema: { type: string, format: date }
+          description: Filter files created before this date
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: perPage
+          schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SearchResponse' }
+        '400': { description: Invalid request parameters }
         '401': { description: Unauthorized }
         '500': { description: Server error }
 
@@ -254,7 +343,109 @@ paths:
         '404': { description: Folder not found }
         '500': { description: Server error }
 
+  /admin/media/folder/move:
+    put:
+      tags: [Media - Admin]
+      summary: Move a folder
+      description: Move a folder to a different location
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourcePath:
+                  type: string
+                  description: Current full path of the folder
+                  example: '/albums/vacation'
+                destinationPath:
+                  type: string
+                  description: Destination path where folder will be moved
+                  example: '/archived'
+              required: [sourcePath, destinationPath]
+      responses:
+        '200':
+          description: Folder moved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      oldPath: { type: string }
+                      newPath: { type: string }
+        '400': { description: Invalid request }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '404': { description: Folder not found }
+        '500': { description: Server error }
+
+  /admin/media/folder/copy:
+    put:
+      tags: [Media - Admin]
+      summary: Copy a folder
+      description: Copy a folder to a different location
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourcePath:
+                  type: string
+                  description: Current full path of the folder
+                  example: '/albums/vacation'
+                destinationPath:
+                  type: string
+                  description: Destination path where folder will be copied
+                  example: '/backup'
+              required: [sourcePath, destinationPath]
+      responses:
+        '200':
+          description: Folder copied successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      sourcePath: { type: string }
+                      destinationPath: { type: string }
+        '400': { description: Invalid request }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '404': { description: Folder not found }
+        '500': { description: Server error }
+
   /admin/media/file/{fileId}:
+    get:
+      tags: [Media - Admin]
+      summary: Get file details
+      description: Retrieve complete information about a specific file
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: fileId
+          required: true
+          schema: { type: string }
+          description: Unique identifier of the file
+          example: 'abc123def456'
+      responses:
+        '200':
+          description: File details retrieved successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FileDetailsResponse' }
+        '401': { description: Unauthorized }
+        '403': { description: Insufficient permissions }
+        '404': { description: File not found }
+        '500': { description: Server error }
     put:
       tags: [Media - Admin]
       summary: Update file details

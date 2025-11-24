@@ -407,3 +407,406 @@ export const deleteFolderWithContentsService = async (
     throw new Error(`Failed to delete folder with contents: ${message}`)
   }
 }
+
+// ============================================================================
+// FILE OPERATIONS - Move, Copy, Details
+// ============================================================================
+
+export const moveFileService = async (fileId: string, destinationPath: string) => {
+  try {
+    const normalizedPath = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+
+    // Get current file details
+    const fileDetails = await imagekit.getFileDetails(fileId)
+    if (!fileDetails) {
+      throw new Error(`File with ID "${fileId}" not found`)
+    }
+
+    // ImageKit move operation
+    const result = await imagekit.moveFile({
+      sourceFilePath: fileDetails.filePath,
+      destinationPath: normalizedPath,
+    })
+
+    return {
+      success: true,
+      file: formatMediaItem(result),
+      oldPath: fileDetails.filePath,
+      newPath: normalizedPath,
+      message: `File "${fileDetails.name}" moved successfully`,
+    }
+  } catch (err: any) {
+    console.error('Move file error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to move file: ${message}`)
+  }
+}
+
+export const copyFileService = async (fileId: string, destinationPath: string) => {
+  try {
+    const normalizedPath = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+
+    // Get current file details
+    const fileDetails = await imagekit.getFileDetails(fileId)
+    if (!fileDetails) {
+      throw new Error(`File with ID "${fileId}" not found`)
+    }
+
+    // ImageKit copy operation
+    const result = await imagekit.copyFile({
+      sourceFilePath: fileDetails.filePath,
+      destinationPath: normalizedPath,
+    })
+
+    return {
+      success: true,
+      file: formatMediaItem(result),
+      originalPath: fileDetails.filePath,
+      copyPath: normalizedPath,
+      message: `File "${fileDetails.name}" copied successfully`,
+    }
+  } catch (err: any) {
+    console.error('Copy file error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to copy file: ${message}`)
+  }
+}
+
+export const getFileDetailsService = async (fileId: string) => {
+  try {
+    const fileDetails = await imagekit.getFileDetails(fileId)
+    if (!fileDetails) {
+      throw new Error(`File with ID "${fileId}" not found`)
+    }
+
+    return {
+      success: true,
+      file: fileDetails,
+    }
+  } catch (err: any) {
+    console.error('Get file details error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to get file details: ${message}`)
+  }
+}
+
+export const moveFolderService = async (sourcePath: string, destinationPath: string) => {
+  try {
+    const normalizedSource = sourcePath.startsWith('/') ? sourcePath : `/${sourcePath}`
+    const normalizedDest = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+
+    // ImageKit move folder operation
+    const result = await imagekit.moveFolder({
+      sourceFolderPath: normalizedSource,
+      destinationPath: normalizedDest,
+    })
+
+    return {
+      success: true,
+      folder: result,
+      oldPath: normalizedSource,
+      newPath: normalizedDest,
+      message: `Folder moved from "${normalizedSource}" to "${normalizedDest}"`,
+    }
+  } catch (err: any) {
+    console.error('Move folder error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to move folder: ${message}`)
+  }
+}
+
+export const copyFolderService = async (sourcePath: string, destinationPath: string) => {
+  try {
+    const normalizedSource = sourcePath.startsWith('/') ? sourcePath : `/${sourcePath}`
+    const normalizedDest = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+
+    // ImageKit copy folder operation
+    const result = await imagekit.copyFolder({
+      sourceFolderPath: normalizedSource,
+      destinationPath: normalizedDest,
+    })
+
+    return {
+      success: true,
+      folder: result,
+      sourcePath: normalizedSource,
+      destinationPath: normalizedDest,
+      message: `Folder copied from "${normalizedSource}" to "${normalizedDest}"`,
+    }
+  } catch (err: any) {
+    console.error('Copy folder error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to copy folder: ${message}`)
+  }
+}
+
+// ============================================================================
+// BULK OPERATIONS
+// ============================================================================
+
+export const bulkDeleteFilesService = async (fileIds: string[]) => {
+  try {
+    const results = await Promise.allSettled(
+      fileIds.map(async (fileId) => {
+        const fileDetails = await imagekit.getFileDetails(fileId)
+        await imagekit.deleteFile(fileId)
+        return { fileId, name: fileDetails.name, success: true }
+      })
+    )
+
+    const successful = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
+
+    return {
+      success: true,
+      totalFiles: fileIds.length,
+      successful,
+      failed,
+      results: results.map((r, index) => ({
+        fileId: fileIds[index],
+        success: r.status === 'fulfilled',
+        error: r.status === 'rejected' ? r.reason?.message : undefined,
+      })),
+      message: `Bulk delete completed: ${successful} successful, ${failed} failed`,
+    }
+  } catch (err: any) {
+    console.error('Bulk delete files error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to bulk delete files: ${message}`)
+  }
+}
+
+export const bulkMoveFilesService = async (fileIds: string[], destinationPath: string) => {
+  try {
+    const normalizedPath = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+
+    const results = await Promise.allSettled(
+      fileIds.map(async (fileId) => {
+        const fileDetails = await imagekit.getFileDetails(fileId)
+        const result = await imagekit.moveFile({
+          sourceFilePath: fileDetails.filePath,
+          destinationPath: normalizedPath,
+        })
+        return { fileId, name: fileDetails.name, success: true }
+      })
+    )
+
+    const successful = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
+
+    return {
+      success: true,
+      totalFiles: fileIds.length,
+      successful,
+      failed,
+      destinationPath: normalizedPath,
+      results: results.map((r, index) => ({
+        fileId: fileIds[index],
+        success: r.status === 'fulfilled',
+        error: r.status === 'rejected' ? r.reason?.message : undefined,
+      })),
+      message: `Bulk move completed: ${successful} successful, ${failed} failed`,
+    }
+  } catch (err: any) {
+    console.error('Bulk move files error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to bulk move files: ${message}`)
+  }
+}
+
+export const bulkCopyFilesService = async (fileIds: string[], destinationPath: string) => {
+  try {
+    const normalizedPath = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+
+    const results = await Promise.allSettled(
+      fileIds.map(async (fileId) => {
+        const fileDetails = await imagekit.getFileDetails(fileId)
+        const result = await imagekit.copyFile({
+          sourceFilePath: fileDetails.filePath,
+          destinationPath: normalizedPath,
+        })
+        return { fileId, name: fileDetails.name, success: true }
+      })
+    )
+
+    const successful = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
+
+    return {
+      success: true,
+      totalFiles: fileIds.length,
+      successful,
+      failed,
+      destinationPath: normalizedPath,
+      results: results.map((r, index) => ({
+        fileId: fileIds[index],
+        success: r.status === 'fulfilled',
+        error: r.status === 'rejected' ? r.reason?.message : undefined,
+      })),
+      message: `Bulk copy completed: ${successful} successful, ${failed} failed`,
+    }
+  } catch (err: any) {
+    console.error('Bulk copy files error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to bulk copy files: ${message}`)
+  }
+}
+
+export const bulkAddTagsService = async (fileIds: string[], tags: string[]) => {
+  try {
+    const results = await Promise.allSettled(
+      fileIds.map(async (fileId) => {
+        const fileDetails = await imagekit.getFileDetails(fileId)
+        const existingTags = fileDetails.tags || []
+        const newTags = Array.from(new Set([...existingTags, ...tags]))
+
+        const result = await imagekit.updateFileDetails(fileId, { tags: newTags })
+        return { fileId, name: fileDetails.name, success: true }
+      })
+    )
+
+    const successful = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
+
+    return {
+      success: true,
+      totalFiles: fileIds.length,
+      successful,
+      failed,
+      tagsAdded: tags,
+      results: results.map((r, index) => ({
+        fileId: fileIds[index],
+        success: r.status === 'fulfilled',
+        error: r.status === 'rejected' ? r.reason?.message : undefined,
+      })),
+      message: `Bulk tag update completed: ${successful} successful, ${failed} failed`,
+    }
+  } catch (err: any) {
+    console.error('Bulk add tags error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to bulk add tags: ${message}`)
+  }
+}
+
+export const bulkRemoveTagsService = async (fileIds: string[], tags: string[]) => {
+  try {
+    const results = await Promise.allSettled(
+      fileIds.map(async (fileId) => {
+        const fileDetails = await imagekit.getFileDetails(fileId)
+        const existingTags = fileDetails.tags || []
+        const newTags = existingTags.filter((tag: string) => !tags.includes(tag))
+
+        const result = await imagekit.updateFileDetails(fileId, { tags: newTags })
+        return { fileId, name: fileDetails.name, success: true }
+      })
+    )
+
+    const successful = results.filter((r) => r.status === 'fulfilled').length
+    const failed = results.filter((r) => r.status === 'rejected').length
+
+    return {
+      success: true,
+      totalFiles: fileIds.length,
+      successful,
+      failed,
+      tagsRemoved: tags,
+      results: results.map((r, index) => ({
+        fileId: fileIds[index],
+        success: r.status === 'fulfilled',
+        error: r.status === 'rejected' ? r.reason?.message : undefined,
+      })),
+      message: `Bulk tag removal completed: ${successful} successful, ${failed} failed`,
+    }
+  } catch (err: any) {
+    console.error('Bulk remove tags error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to bulk remove tags: ${message}`)
+  }
+}
+
+// ============================================================================
+// SEARCH AND FILTERING
+// ============================================================================
+
+export const searchMediaService = async (query: {
+  searchQuery?: string
+  tags?: string[]
+  fileType?: string
+  path?: string
+  dateFrom?: string
+  dateTo?: string
+  page?: number
+  perPage?: number
+}) => {
+  try {
+    const { page = 1, perPage = 50, searchQuery, tags, fileType, path, dateFrom, dateTo } = query
+    const skip = (page - 1) * perPage
+
+    // Build search query
+    const searchOptions: any = {
+      skip,
+      limit: perPage,
+      sort: 'DESC_CREATED',
+    }
+
+    // Add search query
+    if (searchQuery) {
+      searchOptions.searchQuery = `name:"${searchQuery}"`
+    }
+
+    // Add tags filter
+    if (tags && tags.length > 0) {
+      searchOptions.tags = tags
+    }
+
+    // Add file type filter
+    if (fileType && fileType !== 'all') {
+      searchOptions.fileType = fileType
+    }
+
+    // Add path filter
+    if (path) {
+      searchOptions.path = path.startsWith('/') ? path : `/${path}`
+    }
+
+    console.log('🔍 Search Options:', searchOptions)
+
+    const files = await imagekit.listFiles(searchOptions)
+
+    // Filter by date range if provided
+    let filteredFiles: any[] = files
+    if (dateFrom || dateTo) {
+      filteredFiles = files.filter((file: any) => {
+        const fileDate = new Date(file.createdAt)
+        if (dateFrom && fileDate < new Date(dateFrom)) return false
+        if (dateTo && fileDate > new Date(dateTo)) return false
+        return true
+      })
+    }
+
+    const formattedFiles = filteredFiles.map(formatMediaItem)
+
+    const hasMore = files.length === perPage
+    const totalEstimate = skip + files.length + (hasMore ? 1 : 0)
+
+    return {
+      items: formattedFiles,
+      page,
+      perPage,
+      hasMore,
+      totalEstimate,
+      searchQuery,
+      filters: {
+        tags,
+        fileType,
+        path,
+        dateFrom,
+        dateTo,
+      },
+    }
+  } catch (err: any) {
+    console.error('Search media error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to search media: ${message}`)
+  }
+}
