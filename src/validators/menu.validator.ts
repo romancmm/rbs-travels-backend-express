@@ -174,17 +174,22 @@ export const updateMenuItemBodySchema = z
     meta: z.record(z.string(), z.any()).optional(),
   })
   .superRefine((data, ctx) => {
-    // Only validate if type is being updated
-    if (data.type) {
+    // Only validate if BOTH type and reference/url are being updated together
+    // This prevents validation errors when updating other fields
+    if (data.type && data.reference !== undefined) {
       if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
-        if (!data.reference || data.reference === null) {
+        // Allow null for reference field (optional entity link)
+        if (data.reference !== null && !data.reference) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `Reference (slug) is required for ${data.type} type`,
+            message: `Reference (slug) must be a valid string or null for ${data.type} type`,
             path: ['reference'],
           })
         }
       }
+    }
+
+    if (data.type && data.url !== undefined) {
       if (['custom', 'external'].includes(data.type)) {
         if (!data.url || data.url === null) {
           ctx.addIssue({
