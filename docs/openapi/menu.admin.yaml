@@ -300,19 +300,41 @@ components:
           format: uuid
         title:
           type: string
+          example: 'About Us'
+        slug:
+          type: string
+          example: 'about-us'
         type:
           type: string
-          enum: [custom-link, category-blogs, custom-page, article, gallery]
-        link:
+          enum: [page, post, category, service, project, custom, external]
+          description: |
+            - page: Links to a Page
+            - post: Links to a Post/Article
+            - category: Links to a Category
+            - service: Links to a Service
+            - project: Links to a Project
+            - custom: Custom internal link
+            - external: External link
+        referenceId:
           type: string
+          format: uuid
+          nullable: true
+          description: UUID of referenced entity (for page, post, category, service, project types)
+        url:
+          type: string
+          nullable: true
+          description: URL for custom/external links or resolved URL
+          example: '/about-us'
         icon:
           type: string
+          nullable: true
         target:
           type: string
           enum: [_self, _blank]
           default: _self
         cssClass:
           type: string
+          nullable: true
         parentId:
           type: string
           format: uuid
@@ -325,6 +347,7 @@ components:
           default: true
         meta:
           type: object
+          nullable: true
         children:
           type: array
           items:
@@ -335,15 +358,25 @@ components:
       required:
         - title
         - type
-        - link
       properties:
         title:
           type: string
+          example: 'About Us'
+        slug:
+          type: string
+          example: 'about-us'
+          description: Optional - will be auto-generated from title if not provided
         type:
           type: string
-          enum: [custom-link, category-blogs, custom-page, article, gallery]
-        link:
+          enum: [page, post, category, service, project, custom, external]
+        referenceId:
           type: string
+          format: uuid
+          description: Required for page, post, category, service, project types
+        url:
+          type: string
+          description: Required for custom and external types
+          example: '/about-us'
         icon:
           type: string
         target:

@@ -2,11 +2,13 @@ import { z } from 'zod'
 
 // Menu Item Type Enum
 export const MenuItemTypeEnum = z.enum([
-  'custom-link',
-  'category-blogs',
-  'custom-page',
-  'article',
-  'gallery',
+  'page', // Links to a Page
+  'post', // Links to a Post/Article
+  'category', // Links to a Category
+  'service', // Links to a Service
+  'project', // Links to a Project
+  'custom', // Custom internal link
+  'external', // External link
 ])
 
 // Menu Item Target Enum
@@ -25,10 +27,8 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
         .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
         .optional(),
       type: MenuItemTypeEnum,
-      link: z.string().optional(),
-      categoryId: z.string().uuid().optional(),
-      pageId: z.string().uuid().optional(),
-      articleId: z.string().uuid().optional(),
+      referenceId: z.string().uuid().nullable().optional(), // UUID of referenced entity
+      url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
       icon: z.string().optional(),
       target: MenuItemTargetEnum.default('_self'),
       cssClass: z.string().optional(),
@@ -39,36 +39,25 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
       children: z.array(menuItemSchema).optional(),
     })
     .superRefine((data, ctx) => {
-      // Validate required fields based on type
-      if (data.type === 'custom-link' && (!data.link || data.link.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Link is required for custom-link type',
-          path: ['link'],
-        })
+      // Validate based on type
+      if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
+        if (!data.referenceId) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Reference ID is required for ${data.type} type`,
+            path: ['referenceId'],
+          })
+        }
       }
-      if (data.type === 'category-blogs' && (!data.categoryId || data.categoryId.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Category ID is required for category-blogs type',
-          path: ['categoryId'],
-        })
+      if (['custom', 'external'].includes(data.type)) {
+        if (!data.url) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `URL is required for ${data.type} type`,
+            path: ['url'],
+          })
+        }
       }
-      if (data.type === 'custom-page' && (!data.pageId || data.pageId.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Page ID is required for custom-page type',
-          path: ['pageId'],
-        })
-      }
-      if (data.type === 'article' && (!data.articleId || data.articleId.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Article ID is required for article type',
-          path: ['articleId'],
-        })
-      }
-      // if (data.type === 'gallery' && (!data.link || data.link.length === 0)) {
     })
 )
 
@@ -126,10 +115,8 @@ export const createMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(), // Optional - will be auto-generated if not provided
     type: MenuItemTypeEnum,
-    link: z.string().optional(),
-    categoryId: z.string().uuid().optional(),
-    pageId: z.string().uuid().optional(),
-    articleId: z.string().uuid().optional(),
+    referenceId: z.string().uuid().nullable().optional(), // UUID of referenced entity
+    url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.default('_self'),
     cssClass: z.string().optional(),
@@ -139,34 +126,24 @@ export const createMenuItemBodySchema = z
     meta: z.record(z.string(), z.any()).optional(),
   })
   .superRefine((data, ctx) => {
-    // Validate required fields based on type
-    if (data.type === 'custom-link' && (!data.link || data.link.length === 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Link is required for custom-link type',
-        path: ['link'],
-      })
+    // Validate based on type
+    if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
+      if (!data.referenceId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Reference ID is required for ${data.type} type`,
+          path: ['referenceId'],
+        })
+      }
     }
-    if (data.type === 'category-blogs' && (!data.categoryId || data.categoryId.length === 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Category ID is required for category-blogs type',
-        path: ['categoryId'],
-      })
-    }
-    if (data.type === 'custom-page' && (!data.pageId || data.pageId.length === 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Page ID is required for custom-page type',
-        path: ['pageId'],
-      })
-    }
-    if (data.type === 'article' && (!data.articleId || data.articleId.length === 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Article ID is required for article type',
-        path: ['articleId'],
-      })
+    if (['custom', 'external'].includes(data.type)) {
+      if (!data.url) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `URL is required for ${data.type} type`,
+          path: ['url'],
+        })
+      }
     }
   })
 
@@ -186,10 +163,8 @@ export const updateMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(),
     type: MenuItemTypeEnum.optional(),
-    link: z.string().optional(),
-    categoryId: z.string().uuid().optional(),
-    pageId: z.string().uuid().optional(),
-    articleId: z.string().uuid().optional(),
+    referenceId: z.string().uuid().nullable().optional(), // UUID of referenced entity
+    url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.optional(),
     cssClass: z.string().optional(),
@@ -201,33 +176,23 @@ export const updateMenuItemBodySchema = z
   .superRefine((data, ctx) => {
     // Only validate if type is being updated
     if (data.type) {
-      if (data.type === 'custom-link' && (!data.link || data.link.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Link is required for custom-link type',
-          path: ['link'],
-        })
+      if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
+        if (!data.referenceId) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Reference ID is required for ${data.type} type`,
+            path: ['referenceId'],
+          })
+        }
       }
-      if (data.type === 'category-blogs' && (!data.categoryId || data.categoryId.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Category ID is required for category-blogs type',
-          path: ['categoryId'],
-        })
-      }
-      if (data.type === 'custom-page' && (!data.pageId || data.pageId.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Page ID is required for custom-page type',
-          path: ['pageId'],
-        })
-      }
-      if (data.type === 'article' && (!data.articleId || data.articleId.length === 0)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: 'Article ID is required for article type',
-          path: ['articleId'],
-        })
+      if (['custom', 'external'].includes(data.type)) {
+        if (!data.url) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `URL is required for ${data.type} type`,
+            path: ['url'],
+          })
+        }
       }
     }
   })

@@ -359,10 +359,8 @@ export class MenuService {
               title: item.title,
               slug: uniqueSlug,
               type: item.type,
-              link: item.link,
-              categoryId: item.categoryId,
-              pageId: item.pageId,
-              articleId: item.articleId,
+              referenceId: item.referenceId,
+              url: item.url,
               icon: item.icon,
               target: item.target,
               cssClass: item.cssClass,
@@ -399,11 +397,9 @@ export class MenuService {
     data: {
       title: string
       slug?: string // Optional slug, will be auto-generated if not provided
-      type: string
-      link?: string
-      categoryId?: string
-      pageId?: string
-      articleId?: string
+      type: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+      referenceId?: string // UUID of referenced entity
+      url?: string // URL for custom/external links or resolved URL
       icon?: string
       target?: string
       cssClass?: string
@@ -429,10 +425,8 @@ export class MenuService {
           title: data.title,
           slug: uniqueSlug,
           type: data.type,
-          link: data.link,
-          categoryId: data.categoryId,
-          pageId: data.pageId,
-          articleId: data.articleId,
+          referenceId: data.referenceId,
+          url: data.url,
           icon: data.icon,
           target: data.target ?? '_self',
           cssClass: data.cssClass,
@@ -461,11 +455,9 @@ export class MenuService {
     data: {
       title?: string
       slug?: string
-      type?: string
-      link?: string
-      categoryId?: string
-      pageId?: string
-      articleId?: string
+      type?: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+      referenceId?: string // UUID of referenced entity
+      url?: string // URL for custom/external links or resolved URL
       icon?: string
       target?: string
       cssClass?: string
@@ -597,10 +589,8 @@ export class MenuService {
         title: item.title,
         slug: item.slug,
         type: item.type,
-        link: item.link,
-        categoryId: item.categoryId,
-        pageId: item.pageId,
-        articleId: item.articleId,
+        referenceId: item.referenceId,
+        url: item.url,
         icon: item.icon,
         target: item.target,
         cssClass: item.cssClass,

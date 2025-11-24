@@ -147,18 +147,16 @@ model MenuItem {
   menuId      String
   title       String
   slug        String     @unique
-  type        String
-  link        String?
-  categoryId  String?
-  pageId      String?
-  articleId   String?
+  type        String     // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+  referenceId String?    // UUID of referenced entity (page, post, category, service, project)
+  url         String?    // URL for custom/external links or resolved URL
   icon        String?
   target      String     @default("_self")
   cssClass    String?
   parentId    String?
   order       Int        @default(0)
   isPublished Boolean    @default(true)
-  meta        Json?
+  meta        Json?      // Additional metadata (seo, description, image, etc.)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   menu        Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
@@ -168,11 +166,10 @@ model MenuItem {
   @@index([menuId])
   @@index([parentId])
   @@index([type])
+  @@index([referenceId])
   @@index([order])
   @@index([slug])
-  @@index([categoryId])
-  @@index([pageId])
-  @@index([articleId])
+  @@index([isPublished])
 }
 
 model PageBuilder {
