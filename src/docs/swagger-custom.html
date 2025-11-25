@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Agency API Documentation</title>
+    <link rel="stylesheet" type="text/css" href="/docs/swagger-ui.css" />
+    <link rel="icon" type="image/png" href="/docs/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/docs/favicon-16x16.png" sizes="16x16" />
+    <style>
+        html {
+            box-sizing: border-box;
+            overflow: -moz-scrollbars-vertical;
+            overflow-y: scroll;
+        }
+
+        *,
+        *:before,
+        *:after {
+            box-sizing: inherit;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .swagger-ui .topbar {
+            display: none;
+        }
+
+        .swagger-ui .information-container {
+            margin: 20px 0;
+        }
+
+        .swagger-ui .scheme-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 4px;
+        }
+
+        .auth-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            border-radius: 4px;
+            background: #49cc90;
+            color: white;
+            font-weight: bold;
+            z-index: 9999;
+            display: none;
+        }
+
+        .auth-indicator.active {
+            display: block;
+        }
+
+        .auth-indicator.inactive {
+            background: #f93e3e;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="swagger-ui"></div>
+    <div id="auth-indicator" class="auth-indicator">🔒 Not Authenticated</div>
+
+    <script src="/docs/swagger-ui-bundle.js" charset="UTF-8"></script>
+    <script src="/docs/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+    <script>
+        window.onload = function () {
+            // Load token from localStorage
+            const savedToken = localStorage.getItem('swagger_auth_token');
+            const authIndicator = document.getElementById('auth-indicator');
+
+            // Update auth indicator
+            function updateAuthIndicator(hasToken) {
+                if (hasToken) {
+                    authIndicator.textContent = '🔓 Authenticated';
+                    authIndicator.className = 'auth-indicator active';
+                } else {
+                    authIndicator.textContent = '🔒 Not Authenticated';
+                    authIndicator.className = 'auth-indicator inactive';
+                }
+            }
+
+            // Initialize Swagger UI
+            const ui = SwaggerUIBundle({
+                url: "/docs.json",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                docExpansion: 'none',
+                defaultModelsExpandDepth: 3,
+                defaultModelExpandDepth: 3,
+                displayRequestDuration: true,
+                filter: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                persistAuthorization: true,
+                tryItOutEnabled: true,
+                tagsSorter: 'alpha',
+                operationsSorter: 'alpha',
+                syntaxHighlight: {
+                    activate: true,
+                    theme: 'monokai'
+                },
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+
+                // Request interceptor to add token
+                requestInterceptor: function (request) {
+                    const token = localStorage.getItem('swagger_auth_token');
+                    if (token) {
+                        request.headers['Authorization'] = 'Bearer ' + token;
+                    }
+                    return request;
+                },
+
+                // Response interceptor to capture login tokens
+                responseInterceptor: function (response) {
+                    // Check if this is a login response
+                    if (response.url && (
+                        response.url.includes('/auth/admin/login') ||
+                        response.url.includes('/auth/customer/login') ||
+                        response.url.includes('/admin/auth/login')
+                    )) {
+                        try {
+                            const data = JSON.parse(response.text);
+
+                            // Extract token from various possible response structures
+                            const token = data.token || data.data?.token || data.accessToken || data.data?.accessToken;
+
+                            if (token) {
+                                // Save to localStorage
+                                localStorage.setItem('swagger_auth_token', token);
+
+                                // Auto-authorize in Swagger UI
+                                ui.preauthorizeApiKey('bearerAuth', 'Bearer ' + token);
+
+                                // Update indicator
+                                updateAuthIndicator(true);
+
+                                // Show success message
+                                setTimeout(() => {
+                                    alert('✅ Authentication token saved! You can now access protected endpoints.');
+                                }, 500);
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse login response:', e);
+                        }
+                    }
+                    return response;
+                }
+            });
+
+            window.ui = ui;
+
+            // Auto-authorize if token exists
+            if (savedToken) {
+                setTimeout(() => {
+                    ui.preauthorizeApiKey('bearerAuth', 'Bearer ' + savedToken);
+                    updateAuthIndicator(true);
+                }, 1000);
+            } else {
+                updateAuthIndicator(false);
+            }
+
+            // Add logout button functionality
+            setTimeout(() => {
+                const authWrapper = document.querySelector('.auth-wrapper');
+                if (authWrapper) {
+                    const logoutBtn = document.createElement('button');
+                    logoutBtn.textContent = 'Clear Token';
+                    logoutBtn.className = 'btn cancel';
+                    logoutBtn.style.marginLeft = '10px';
+                    logoutBtn.onclick = function () {
+                        localStorage.removeItem('swagger_auth_token');
+                        updateAuthIndicator(false);
+                        alert('Token cleared. Please login again to access protected endpoints.');
+                        location.reload();
+                    };
+                    authWrapper.appendChild(logoutBtn);
+                }
+            }, 2000);
+        };
+    </script>
+</body>
+
+</html>

@@ -39,8 +39,14 @@ paths:
               type: object
               required: [email, password]
               properties:
-                email: { type: string, format: email }
-                password: { type: string, format: password }
+                email:
+                  type: string
+                  format: email
+                  example: admin@gmail.com
+                password:
+                  type: string
+                  format: password
+                  example: secret
       responses:
         '200':
           description: Login success with tokens and admin user
