@@ -1,7 +1,7 @@
 paths:
-  /admin/blog/posts:
+  /admin/articles/posts:
     get:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: List posts (admin)
       security:
         - bearerAuth: []
@@ -32,7 +32,7 @@ paths:
       responses:
         '200': { description: Posts fetched }
     post:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Create post
       security:
         - bearerAuth: []
@@ -71,9 +71,9 @@ paths:
                 publishedAt: { type: string, format: date-time }
       responses:
         '200': { description: Post created }
-  /admin/blog/posts/{id}:
+  /admin/articles/posts/{id}:
     get:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Get post by ID (admin)
       security:
         - bearerAuth: []
@@ -86,7 +86,7 @@ paths:
         '200': { description: Post fetched }
         '404': { description: Not found }
     put:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Update post
       security:
         - bearerAuth: []
@@ -128,7 +128,7 @@ paths:
       responses:
         '200': { description: Post updated }
     delete:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Delete post
       security:
         - bearerAuth: []
@@ -139,9 +139,9 @@ paths:
           schema: { type: string }
       responses:
         '200': { description: Post deleted }
-  /admin/blog/categories:
+  /admin/articles/categories:
     get:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: List categories (admin)
       security:
         - bearerAuth: []
@@ -158,7 +158,7 @@ paths:
       responses:
         '200': { description: Categories fetched }
     post:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Create category
       security:
         - bearerAuth: []
@@ -175,9 +175,9 @@ paths:
                 description: { type: string }
       responses:
         '200': { description: Category created }
-  /admin/blog/categories/{id}:
+  /admin/articles/categories/{id}:
     get:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Get category by ID (admin)
       security:
         - bearerAuth: []
@@ -190,7 +190,7 @@ paths:
         '200': { description: Category fetched }
         '404': { description: Not found }
     put:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Update category
       security:
         - bearerAuth: []
@@ -212,7 +212,7 @@ paths:
       responses:
         '200': { description: Category updated }
     delete:
-      tags: [Blog - Admin]
+      tags: [Articles - Admin]
       summary: Delete category
       security:
         - bearerAuth: []

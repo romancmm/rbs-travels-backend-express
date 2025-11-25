@@ -4,8 +4,8 @@
  */
 
 export type MenuItemType =
-  | 'category-blog' // Category listing page (multiple categories via references[])
-  | 'single-article' // Single blog post/article (via reference)
+  | 'category-articles' // Category listing page (multiple categories via references[])
+  | 'single-article' // Single article/post (via reference)
   | 'page' // Single page (via reference)
   | 'service' // Single service (via reference)
   | 'project' // Single project (via reference)
@@ -20,7 +20,7 @@ export interface MenuItem {
   title: string
   slug: string
   type: MenuItemType
-  reference: string | string[] | null // String for single entity OR Array for category-blog
+  reference: string | string[] | null // String for single entity OR Array for category-articles
   url: string | null // URL for custom/external links or resolved URL
   icon?: string | null
   target: MenuItemTarget
@@ -38,7 +38,7 @@ export interface CreateMenuItemInput {
   title: string
   slug?: string
   type: MenuItemType
-  reference?: string | string[] | null // String for single entity OR Array for category-blog
+  reference?: string | string[] | null // String for single entity OR Array for category-articles
   url?: string
   icon?: string
   target?: MenuItemTarget
@@ -53,7 +53,7 @@ export interface UpdateMenuItemInput {
   title?: string
   slug?: string
   type?: MenuItemType
-  reference?: string | string[] | null // String for single entity OR Array for category-blog
+  reference?: string | string[] | null // String for single entity OR Array for category-articles
   url?: string
   icon?: string
   target?: MenuItemTarget
@@ -102,8 +102,8 @@ export const isEntityMenuItem = (item: MenuItem): boolean => {
   return ['single-article', 'page', 'service', 'project'].includes(item.type)
 }
 
-export const isCategoryBlogMenuItem = (item: MenuItem): boolean => {
-  return item.type === 'category-blog'
+export const isCategoryArticlesMenuItem = (item: MenuItem): boolean => {
+  return item.type === 'category-articles'
 }
 
 export const isExternalMenuItem = (item: MenuItem): boolean => {
@@ -124,10 +124,10 @@ export const hasChildren = (item: MenuItem): boolean => {
 export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
   const errors: string[] = []
 
-  // Category-blog requires array of references
-  if (item.type === 'category-blog') {
+  // Category-articles requires array of references
+  if (item.type === 'category-articles') {
     if (!Array.isArray(item.reference) || item.reference.length === 0) {
-      errors.push('At least one category is required for category-blog type')
+      errors.push('At least one category is required for category-articles type')
     }
   }
 
@@ -162,24 +162,24 @@ export const getMenuItemUrl = (item: MenuItem): string | null => {
   // Return existing URL if set (for custom-link and external-link)
   if (item.url) return item.url
 
-  // Category-blog: construct URL from reference array
-  if (item.type === 'category-blog' && Array.isArray(item.reference)) {
+  // Category-articles: construct URL from reference array
+  if (item.type === 'category-articles' && Array.isArray(item.reference)) {
     if (item.reference.length > 0) {
       // If single category, link to that category
       if (item.reference.length === 1) {
-        return `/blog/category/${item.reference[0]}`
+        return `/articles/category/${item.reference[0]}`
       }
-      // If multiple categories, link to blog with category filter
-      return `/blog?categories=${item.reference.join(',')}`
+      // If multiple categories, link to articles with category filter
+      return `/articles?categories=${item.reference.join(',')}`
     }
-    return '/blog' // Default blog listing
+    return '/articles' // Default articles listing
   }
 
   // For entity types, construct URL from reference string
   if (item.reference && typeof item.reference === 'string') {
     switch (item.type) {
       case 'single-article':
-        return `/blog/${item.reference}`
+        return `/articles/${item.reference}`
       case 'page':
         return `/${item.reference}`
       case 'service':

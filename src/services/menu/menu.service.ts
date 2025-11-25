@@ -397,8 +397,8 @@ export class MenuService {
     data: {
       title: string
       slug?: string // Optional slug, will be auto-generated if not provided
-      type: string // 'category-blog' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
-      reference?: string | string[] | null // String for single entity OR Array for category-blog
+      type: string // 'category-articles' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
+      reference?: string | string[] | null // String for single entity OR Array for category-articles
       url?: string // URL for custom/external links or resolved URL
       icon?: string
       target?: string
@@ -455,8 +455,8 @@ export class MenuService {
     data: {
       title?: string
       slug?: string
-      type?: string // 'category-blog' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
-      reference?: string | string[] | null // String for single entity OR Array for category-blog
+      type?: string // 'category-articles' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
+      reference?: string | string[] | null // String for single entity OR Array for category-articles
       url?: string // URL for custom/external links or resolved URL
       icon?: string
       target?: string

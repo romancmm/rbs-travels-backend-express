@@ -6,7 +6,7 @@ import type {
   CategoryQueryParams,
   CreateCategoryInput,
   UpdateCategoryInput,
-} from '@/validators/blog.validator'
+} from '@/validators/article.validator'
 
 export const listCategoriesService = async (params: CategoryQueryParams = {}) => {
   try {

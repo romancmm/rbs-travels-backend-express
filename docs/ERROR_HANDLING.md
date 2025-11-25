@@ -131,8 +131,8 @@ if (!found) {
 - ✅ Customer Service
 - ✅ Auth Service (Customer)
 - ✅ Auth Service (Admin)
-- ✅ Blog Post Service
-- ✅ Blog Category Service
+- ✅ Article Post Service
+- ✅ Article Category Service
 - ✅ Menu Service
 - ✅ Page Service
 - ✅ Project Service

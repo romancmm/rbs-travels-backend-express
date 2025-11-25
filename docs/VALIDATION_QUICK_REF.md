@@ -14,7 +14,7 @@ import {
 } from '@/validators/common.validator'
 
 // Domain-specific validators
-import { createPostSchema, updatePostSchema } from '@/validators/blog.validator'
+import { createPostSchema, updatePostSchema } from '@/validators/article.validator'
 import { createServiceSchema } from '@/validators/service.validator'
 // ... etc
 ```
@@ -59,7 +59,7 @@ router.put(
 ### In Controllers
 
 ```typescript
-import type { CreatePostInput } from '@/validators/blog.validator'
+import type { CreatePostInput } from '@/validators/article.validator'
 
 export const create: RequestHandler = async (req, res) => {
   const data = req.body as CreatePostInput // Already validated
@@ -71,7 +71,7 @@ export const create: RequestHandler = async (req, res) => {
 ### In Services
 
 ```typescript
-import type { CreatePostInput, UpdatePostInput } from '@/validators/blog.validator'
+import type { CreatePostInput, UpdatePostInput } from '@/validators/article.validator'
 
 export const createPost = async (data: CreatePostInput) => {
   // data is guaranteed valid - no need to check

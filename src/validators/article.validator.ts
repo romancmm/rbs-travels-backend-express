@@ -8,11 +8,11 @@ import {
 } from './common.validator'
 
 /**
- * Blog Post Validation Schemas
+ * Article Post Validation Schemas
  */
 
-// Blog SEO schema
-export const blogSeoSchema = z.object({
+// Article SEO schema
+export const articleSeoSchema = z.object({
   title: z
     .string()
     .min(1, 'SEO title is required')
@@ -49,7 +49,7 @@ export const createPostSchema = z.object({
     .default([]),
   isPublished: z.boolean().default(false),
   publishedAt: z.string().datetime().optional().nullable(),
-  seo: blogSeoSchema,
+  seo: articleSeoSchema,
 })
 
 // Update post schema (all fields optional except what's being updated)
@@ -74,7 +74,7 @@ export const updatePostSchema = z.object({
     .optional(),
   isPublished: z.boolean().optional(),
   publishedAt: z.string().datetime().optional().nullable(),
-  seo: blogSeoSchema.optional(),
+  seo: articleSeoSchema.optional(),
 })
 
 // Post query params schema
@@ -114,7 +114,7 @@ export const categoryQuerySchema = paginationQuerySchema.extend({
  */
 
 // Post types
-export type BlogSeo = z.infer<typeof blogSeoSchema>
+export type ArticleSeo = z.infer<typeof articleSeoSchema>
 export type CreatePostInput = z.infer<typeof createPostSchema>
 export type UpdatePostInput = z.infer<typeof updatePostSchema>
 export type PostQueryParams = z.infer<typeof postQuerySchema>

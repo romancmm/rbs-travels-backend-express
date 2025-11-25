@@ -1,4 +1,4 @@
-import blogPublicRoutes from '@/api/blog/blog.public.route'
+import articlePublicRoutes from '@/api/article/article.public.route'
 import mediaPublicRoutes from '@/api/media/media.public.route'
 import menuPublicRoutes from '@/api/menu/menu.public.route'
 import pageBuilderPublicRoutes from '@/api/page-builder/page-builder.public.route'
@@ -18,7 +18,7 @@ routes.get('/', (_req, res) => res.send('🚀 Travel Agency API running'))
 routes.use('/pages', pageBuilderPublicRoutes)
 routes.use('/page', pagePublicRoutes)
 routes.use('/menus', menuPublicRoutes)
-routes.use('/blog', blogPublicRoutes)
+routes.use('/articles', articlePublicRoutes)
 routes.use('/services', servicePublicRoutes)
 routes.use('/projects', projectPublicRoutes)
 routes.use('/settings', settingPublicRoutes)

@@ -1,6 +1,6 @@
 import userAdminRoutes from '@/api/admin'
 import adminProfileRoutes from '@/api/admin/adminProfile.route'
-import blogAdminRoutes from '@/api/blog/blog.admin.route'
+import articleAdminRoutes from '@/api/article/article.admin.route'
 import customerAdminRoutes from '@/api/customer/route'
 import mediaAdminRoutes from '@/api/media/media.admin.route'
 import menuAdminRoutes from '@/api/menu/menu.admin.route'
@@ -26,7 +26,7 @@ routes.use('/pages', pageBuilderAdminRoutes)
 routes.use('/customer', customerAdminRoutes)
 routes.use('/role', roleAdminRoutes)
 routes.use('/permission', permissionAdminRoutes)
-routes.use('/blog', blogAdminRoutes)
+routes.use('/articles', articleAdminRoutes)
 routes.use('/service', serviceAdminRoutes)
 routes.use('/project', projectAdminRoutes)
 routes.use('/setting', settingAdminRoutes)

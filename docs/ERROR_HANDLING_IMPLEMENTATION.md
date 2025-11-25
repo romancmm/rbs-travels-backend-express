@@ -61,12 +61,12 @@ key violation | 400 | "Invalid reference: Related entity does not exist" | | P20
 
 ### ✅ Content Management
 
-6. **Blog Post Service** (`src/services/blog/Post.service.ts`)
+6. **Article Post Service** (`src/services/article/Post.service.ts`)
 
    - 6 methods updated: list, get by ID, get by slug, create, update, delete
    - Post not found returns 404 with clear message
 
-7. **Blog Category Service** (`src/services/blog/Category.service.ts`)
+7. **Article Category Service** (`src/services/article/Category.service.ts`)
 
    - 5 methods updated: list, get, create, update, delete
    - Category not found errors handled
@@ -249,8 +249,8 @@ curl -X GET "http://localhost:4000/api/v1/admin/permission/permissions/invalid-i
 2. `src/services/customer/Customer.service.ts`
 3. `src/services/auth/Auth.service.ts`
 4. `src/services/auth/adminAuth.service.ts`
-5. `src/services/blog/Post.service.ts`
-6. `src/services/blog/Category.service.ts`
+5. `src/services/article/Post.service.ts`
+6. `src/services/article/Category.service.ts`
 7. `src/services/menu/menu.service.ts`
 8. `src/services/page/Page.service.ts`
 9. `src/services/project/Project.service.ts`

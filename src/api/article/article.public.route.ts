@@ -1,7 +1,7 @@
-import * as CategoryController from '@/controllers/blog/Category.controller'
-import * as PostController from '@/controllers/blog/Post.controller'
+import * as CategoryController from '@/controllers/article/Category.controller'
+import * as PostController from '@/controllers/article/Post.controller'
 import { validate } from '@/middlewares/validation.middleware'
-import { categoryQuerySchema, postQuerySchema } from '@/validators/blog.validator'
+import { categoryQuerySchema, postQuerySchema } from '@/validators/article.validator'
 import { idParamSchema, slugParamSchema } from '@/validators/common.validator'
 import { Router } from 'express'
 

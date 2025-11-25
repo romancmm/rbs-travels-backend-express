@@ -326,7 +326,7 @@ All validation errors now return a standardized format:
 Add TypeScript types to controllers for better type safety:
 
 ```typescript
-import type { CreatePostInput } from '@/validators/blog.validator'
+import type { CreatePostInput } from '@/validators/article.validator'
 
 export const create: RequestHandler = async (req, res) => {
   const data = req.body as CreatePostInput // Already validated
@@ -339,7 +339,7 @@ export const create: RequestHandler = async (req, res) => {
 Use TypeScript types in services and remove manual validation:
 
 ```typescript
-import type { CreatePostInput, UpdatePostInput } from '@/validators/blog.validator'
+import type { CreatePostInput, UpdatePostInput } from '@/validators/article.validator'
 
 export const createPost = async (data: CreatePostInput) => {
   // No need to validate - data is guaranteed valid

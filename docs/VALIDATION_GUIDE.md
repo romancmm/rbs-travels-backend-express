@@ -203,7 +203,7 @@ export default router
 // src/api/blog/blog.admin.route.ts
 import { Router } from 'express'
 import { validate, validateMultiple } from '@/validators'
-import { postQuerySchema, createPostSchema, updatePostSchema } from '@/validators/blog.validator'
+import { postQuerySchema, createPostSchema, updatePostSchema } from '@/validators/article.validator'
 import { idParamSchema } from '@/validators/common.validator'
 import * as PostController from '@/controllers/blog/Post.controller'
 
@@ -244,7 +244,7 @@ export const create: RequestHandler = async (req, res) => {
 
 ```typescript
 // src/controllers/blog/Post.controller.ts
-import type { CreatePostInput } from '@/validators/blog.validator'
+import type { CreatePostInput } from '@/validators/article.validator'
 
 export const create: RequestHandler = async (req, res) => {
   try {
@@ -263,7 +263,7 @@ export const create: RequestHandler = async (req, res) => {
 **Before:**
 
 ```typescript
-// src/services/blog/Post.service.ts
+// src/services/article/Post.service.ts
 export const createPostService = async (data: any, authorId: string) => {
   const { title, slug, excerpt, content, thumbnail, categoryId, tags, isPublished, publishedAt } =
     data || {}
@@ -275,8 +275,8 @@ export const createPostService = async (data: any, authorId: string) => {
 **After:**
 
 ```typescript
-// src/services/blog/Post.service.ts
-import type { CreatePostInput, UpdatePostInput } from '@/validators/blog.validator'
+// src/services/article/Post.service.ts
+import type { CreatePostInput, UpdatePostInput } from '@/validators/article.validator'
 
 export const createPostService = async (data: CreatePostInput, authorId: string) => {
   // No need for manual validation - data is already validated and typed!

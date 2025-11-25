@@ -58,7 +58,7 @@ Shared validation schemas:
 - `RefreshTokenInput`, `ResetPasswordRequestInput`
 - `ResetPasswordInput`, `ChangePasswordInput`
 
-#### 4. Blog Validator (`src/validators/blog.validator.ts`)
+#### 4. Article Validator (`src/validators/blog.validator.ts`)
 
 ✅ **6 schemas created:**
 

@@ -1,5 +1,5 @@
-import * as CategoryController from '@/controllers/blog/Category.controller'
-import * as PostController from '@/controllers/blog/Post.controller'
+import * as CategoryController from '@/controllers/article/Category.controller'
+import * as PostController from '@/controllers/article/Post.controller'
 import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { requirePermission } from '@/middlewares/rbac.middleware'
 import { validate, validateMultiple } from '@/middlewares/validation.middleware'
@@ -10,13 +10,13 @@ import {
   postQuerySchema,
   updateCategorySchema,
   updatePostSchema,
-} from '@/validators/blog.validator'
+} from '@/validators/article.validator'
 import { idParamSchema } from '@/validators/common.validator'
 import { Router } from 'express'
 
 const router = Router()
 
-// All admin blog routes require authentication
+// All admin article routes require authentication
 router.use(adminAuthMiddleware)
 
 // Posts - admin CRUD

@@ -9,8 +9,8 @@ export * from './common.validator'
 // Auth validators and types
 export * from './auth.validator'
 
-// Blog validators and types
-export * from './blog.validator'
+// Article validators and types
+export * from './article.validator'
 
 // User/Admin validators and types
 export * from './user.validator'

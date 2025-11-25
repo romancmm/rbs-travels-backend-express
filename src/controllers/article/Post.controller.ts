@@ -5,7 +5,7 @@ import {
   getPostBySlugService,
   listPostsService,
   updatePostService,
-} from '@/services/blog/Post.service'
+} from '@/services/article/Post.service'
 import { error, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 

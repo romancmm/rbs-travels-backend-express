@@ -41,9 +41,9 @@ components:
         updatedAt: { type: string, format: date-time }
 
 paths:
-  /blog/posts:
+  /articles/posts:
     get:
-      tags: [Blog - Public]
+      tags: [Articles - Public]
       summary: List published posts
       parameters:
         - in: query
@@ -90,9 +90,9 @@ paths:
                   page: { type: integer }
                   perPage: { type: integer }
                   total: { type: integer }
-  /blog/posts/{id}:
+  /articles/posts/{id}:
     get:
-      tags: [Blog - Public]
+      tags: [Articles - Public]
       summary: Get post by ID
       parameters:
         - in: path
@@ -106,9 +106,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/BlogPost' }
         '404': { description: Not found }
-  /blog/posts/slug/{slug}:
+  /articles/posts/slug/{slug}:
     get:
-      tags: [Blog - Public]
+      tags: [Articles - Public]
       summary: Get post by slug
       parameters:
         - in: path
@@ -122,9 +122,9 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/BlogPost' }
         '404': { description: Not found }
-  /blog/categories:
+  /articles/categories:
     get:
-      tags: [Blog - Public]
+      tags: [Articles - Public]
       summary: List categories
       parameters:
         - in: query
@@ -151,9 +151,9 @@ paths:
                   page: { type: integer }
                   perPage: { type: integer }
                   total: { type: integer }
-  /blog/categories/{id}:
+  /articles/categories/{id}:
     get:
-      tags: [Blog - Public]
+      tags: [Articles - Public]
       summary: Get category by ID
       parameters:
         - in: path

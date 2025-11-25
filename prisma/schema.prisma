@@ -147,8 +147,8 @@ model MenuItem {
   menuId      String
   title       String
   slug        String     @unique
-  type        String     // 'category-blog' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
-  reference   Json?      // String for single entity OR Array for multiple (category-blog): 'about-us' OR ['tech', 'business']
+  type        String     // 'category-articles' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
+  reference   Json?      // String for single entity OR Array for multiple (category-articles): 'about-us' OR ['tech', 'business']
   url         String?    // URL for custom/external links or resolved URL
   icon        String?
   target      String     @default("_self")

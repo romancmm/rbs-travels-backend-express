@@ -2,7 +2,11 @@ import { createError, ErrorMessages, handleServiceError } from '@/utils/error-ha
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
 import { handleSlug } from '@/utils/slug.util'
-import type { CreatePostInput, PostQueryParams, UpdatePostInput } from '@/validators/blog.validator'
+import type {
+  CreatePostInput,
+  PostQueryParams,
+  UpdatePostInput,
+} from '@/validators/article.validator'
 
 export const listPostsService = async (params: PostQueryParams = {}) => {
   try {
