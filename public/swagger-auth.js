@@ -124,54 +124,18 @@
     }
   }
 
-  // Add clear token button
-  function addClearTokenButton() {
-    const checkAndAdd = () => {
-      const authWrapper = document.querySelector('.scheme-container');
-      if (authWrapper && !document.getElementById('clear-token-btn')) {
-        const btnContainer = document.createElement('div');
-        btnContainer.style.marginTop = '10px';
-        
-        const clearBtn = document.createElement('button');
-        clearBtn.id = 'clear-token-btn';
-        clearBtn.textContent = '🗑️ Clear Saved Token';
-        clearBtn.className = 'btn';
-        clearBtn.style.cssText = 'background: #f93e3e; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;';
-        
-        clearBtn.onclick = function() {
-          if (confirm('Are you sure you want to clear the saved authentication token?')) {
-            localStorage.removeItem('swagger_auth_token');
-            updateAuthIndicator();
-            alert('Token cleared. Please login again to access protected endpoints.');
-            location.reload();
-          }
-        };
-        
-        btnContainer.appendChild(clearBtn);
-        authWrapper.appendChild(btnContainer);
-      }
-    };
-    
-    // Try multiple times as Swagger UI loads asynchronously
-    setTimeout(checkAndAdd, 1000);
-    setTimeout(checkAndAdd, 2000);
-    setTimeout(checkAndAdd, 3000);
-  }
-
   // Initialize everything when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
       setTimeout(() => {
         addAuthIndicator();
         loadSavedToken();
-        addClearTokenButton();
       }, 1000);
     });
   } else {
     setTimeout(() => {
       addAuthIndicator();
       loadSavedToken();
-      addClearTokenButton();
     }, 1000);
   }
 })();
