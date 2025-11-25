@@ -24,8 +24,8 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
     const where: any = {}
 
     if (typeof isPublished === 'boolean') where.isPublished = isPublished
-    if (categoryId) where.categoryId = categoryId
-    if (categorySlug) where.category = { slug: categorySlug }
+    if (categoryId) where.categories = { some: { id: categoryId } }
+    if (categorySlug) where.categories = { some: { slug: categorySlug } }
     if (authorId) where.authorId = authorId
     if (tag) where.tags = { has: tag }
     if (q) {
@@ -41,7 +41,7 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
         where,
         skip,
         take,
-        include: { author: { select: { id: true, name: true, email: true } }, category: true },
+        include: { author: { select: { id: true, name: true, email: true } }, categories: true },
         orderBy: { createdAt: 'desc' },
       }),
       prisma.post.count({ where }),
@@ -56,7 +56,7 @@ export const getPostByIdService = async (id: string) => {
   try {
     const post = await prisma.post.findUnique({
       where: { id },
-      include: { author: { select: { id: true, name: true, email: true } }, category: true },
+      include: { author: { select: { id: true, name: true, email: true } }, categories: true },
     })
     if (!post) throw createError(ErrorMessages.NOT_FOUND('Post'), 404, 'NOT_FOUND')
     return post
@@ -69,7 +69,7 @@ export const getPostBySlugService = async (slug: string) => {
   try {
     const post = await prisma.post.findUnique({
       where: { slug },
-      include: { author: { select: { id: true, name: true, email: true } }, category: true },
+      include: { author: { select: { id: true, name: true, email: true } }, categories: true },
     })
     if (!post) throw createError(ErrorMessages.NOT_FOUND('Post'), 404, 'NOT_FOUND')
     return post
@@ -83,12 +83,19 @@ export const createPostService = async (data: CreatePostInput, authorId: string)
     // Handle slug: auto-generate or purify client-provided slug
     const slug = await handleSlug('post', data.title, data.slug)
 
+    const { categoryIds, ...postData } = data
+
     const post = await prisma.post.create({
       data: {
-        ...data,
+        ...postData,
         slug,
         authorId,
+        categories:
+          categoryIds && categoryIds.length > 0
+            ? { connect: categoryIds.map((id) => ({ id })) }
+            : undefined,
       },
+      include: { categories: true },
     })
     return post
   } catch (error) {
@@ -108,12 +115,20 @@ export const updatePostService = async (id: string, data: UpdatePostInput) => {
       slug = await handleSlug('post', title, data.slug, id)
     }
 
+    const { categoryIds, ...postData } = data
+
     const post = await prisma.post.update({
       where: { id },
       data: {
-        ...data,
+        ...postData,
         ...(slug && { slug }),
+        ...(categoryIds !== undefined && {
+          categories: {
+            set: categoryIds.map((id) => ({ id })),
+          },
+        }),
       },
+      include: { categories: true },
     })
     return post
   } catch (error) {

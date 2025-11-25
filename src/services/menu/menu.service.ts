@@ -419,13 +419,34 @@ export class MenuService {
       // Handle slug: auto-generate or purify client-provided slug
       const uniqueSlug = await handleSlug('menuItem', data.title, data.slug)
 
+      // Ensure reference is properly formatted for Json type
+      // Prisma Json type expects native JS values (string, array, object, null)
+      // NOT JSON strings
+      let referenceValue: any = null
+      if (data.reference !== undefined && data.reference !== null) {
+        // If reference is a string that looks like JSON, parse it
+        if (
+          typeof data.reference === 'string' &&
+          (data.reference.startsWith('[') || data.reference.startsWith('{'))
+        ) {
+          try {
+            referenceValue = JSON.parse(data.reference)
+          } catch {
+            // If parsing fails, use as-is (it's just a regular string)
+            referenceValue = data.reference
+          }
+        } else {
+          referenceValue = data.reference
+        }
+      }
+
       const item = await prisma.menuItem.create({
         data: {
           menuId,
           title: data.title,
           slug: uniqueSlug,
           type: data.type,
-          reference: data.reference as any, // Json type in Prisma
+          reference: referenceValue,
           url: data.url,
           icon: data.icon,
           target: data.target ?? '_self',
@@ -483,11 +504,34 @@ export class MenuService {
         uniqueSlug = await handleSlug('menuItem', title, data.slug, itemId)
       }
 
+      // Ensure reference is properly formatted for Json type
+      // Prisma Json type expects native JS values (string, array, object, null)
+      // NOT JSON strings
+      let referenceValue: any = undefined
+      if (data.reference !== undefined) {
+        if (data.reference === null) {
+          referenceValue = null
+        } else if (
+          typeof data.reference === 'string' &&
+          (data.reference.startsWith('[') || data.reference.startsWith('{'))
+        ) {
+          // If reference is a string that looks like JSON, parse it
+          try {
+            referenceValue = JSON.parse(data.reference)
+          } catch {
+            // If parsing fails, use as-is (it's just a regular string)
+            referenceValue = data.reference
+          }
+        } else {
+          referenceValue = data.reference
+        }
+      }
+
       const updated = await prisma.menuItem.update({
         where: { id: itemId },
         data: {
           ...data,
-          reference: data.reference as any, // Json type in Prisma
+          reference: referenceValue,
           ...(uniqueSlug && { slug: uniqueSlug }),
         },
       })

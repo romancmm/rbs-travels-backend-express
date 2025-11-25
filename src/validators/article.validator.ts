@@ -35,7 +35,7 @@ export const createPostSchema = z.object({
   content: z.string().min(1, 'Content is required'),
   thumbnail: imageUrlSchema,
   gallery: z.array(z.string()).default([]),
-  categoryId: uuidSchema.optional().nullable(),
+  categoryIds: z.array(uuidSchema).default([]),
   tags: z
     .union([
       z.array(z.string()),
@@ -60,7 +60,7 @@ export const updatePostSchema = z.object({
   content: z.string().min(1).optional(),
   thumbnail: imageUrlSchema,
   gallery: z.array(z.string()).optional(),
-  categoryId: uuidSchema.optional().nullable(),
+  categoryIds: z.array(uuidSchema).optional(),
   tags: z
     .union([
       z.array(z.string()),
