@@ -27,7 +27,10 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
         .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
         .optional(),
       type: MenuItemTypeEnum,
-      reference: z.union([z.string(), z.array(z.string())]).nullable().optional(), // String OR Array
+      reference: z
+        .union([z.string(), z.array(z.string())])
+        .nullable()
+        .optional(), // String OR Array
       url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
       icon: z.string().optional(),
       target: MenuItemTargetEnum.default('_self'),
@@ -137,7 +140,10 @@ export const createMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(), // Optional - will be auto-generated if not provided
     type: MenuItemTypeEnum,
-    reference: z.union([z.string(), z.array(z.string())]).nullable().optional(), // String OR Array
+    reference: z
+      .union([z.string(), z.array(z.string())])
+      .nullable()
+      .optional(), // String OR Array
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.default('_self'),
@@ -207,7 +213,10 @@ export const updateMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(),
     type: MenuItemTypeEnum.optional(),
-    reference: z.union([z.string(), z.array(z.string())]).nullable().optional(), // String OR Array
+    reference: z
+      .union([z.string(), z.array(z.string())])
+      .nullable()
+      .optional(), // String OR Array
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.optional(),
