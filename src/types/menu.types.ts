@@ -4,15 +4,13 @@
  */
 
 export type MenuItemType =
-  | 'page' // Links to a Page
-  | 'post' // Links to a Post/Article
-  | 'category' // Links to a Category
-  | 'service' // Links to a Service
-  | 'project' // Links to a Project
-  | 'custom-link' // Custom internal link (legacy)
-  | 'custom-link' // Custom internal link
-  | 'external-link' // External link (legacy)
-  | 'external-link' // External link
+  | 'category-blog' // Category listing page (multiple categories via references[])
+  | 'single-article' // Single blog post/article (via reference)
+  | 'page' // Single page (via reference)
+  | 'service' // Single service (via reference)
+  | 'project' // Single project (via reference)
+  | 'custom-link' // Custom URL (internal or external)
+  | 'external-link' // External link with validation
 
 export type MenuItemTarget = '_self' | '_blank'
 
@@ -22,7 +20,7 @@ export interface MenuItem {
   title: string
   slug: string
   type: MenuItemType
-  reference: string | null // Slug of referenced entity (page, post, category, etc.)
+  reference: string | string[] | null // String for single entity OR Array for category-blog
   url: string | null // URL for custom/external links or resolved URL
   icon?: string | null
   target: MenuItemTarget
@@ -40,7 +38,7 @@ export interface CreateMenuItemInput {
   title: string
   slug?: string
   type: MenuItemType
-  reference?: string // Slug of referenced entity
+  reference?: string | string[] | null // String for single entity OR Array for category-blog
   url?: string
   icon?: string
   target?: MenuItemTarget
@@ -55,7 +53,7 @@ export interface UpdateMenuItemInput {
   title?: string
   slug?: string
   type?: MenuItemType
-  reference?: string // Slug of referenced entity
+  reference?: string | string[] | null // String for single entity OR Array for category-blog
   url?: string
   icon?: string
   target?: MenuItemTarget
@@ -101,15 +99,19 @@ export interface UpdateMenuInput {
  * Type guards for menu items
  */
 export const isEntityMenuItem = (item: MenuItem): boolean => {
-  return ['page', 'post', 'category', 'service', 'project'].includes(item.type)
+  return ['single-article', 'page', 'service', 'project'].includes(item.type)
+}
+
+export const isCategoryBlogMenuItem = (item: MenuItem): boolean => {
+  return item.type === 'category-blog'
 }
 
 export const isExternalMenuItem = (item: MenuItem): boolean => {
-  return item.type === 'external-link' || item.type === 'external-link'
+  return item.type === 'external-link'
 }
 
 export const isCustomMenuItem = (item: MenuItem): boolean => {
-  return item.type === 'custom-link' || item.type === 'custom-link'
+  return ['custom-link', 'external-link'].includes(item.type)
 }
 
 export const hasChildren = (item: MenuItem): boolean => {
@@ -122,22 +124,29 @@ export const hasChildren = (item: MenuItem): boolean => {
 export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
   const errors: string[] = []
 
-  // Entity types require reference
-  if (['page', 'post', 'category', 'service', 'project'].includes(item.type)) {
-    if (!item.reference) {
+  // Category-blog requires array of references
+  if (item.type === 'category-blog') {
+    if (!Array.isArray(item.reference) || item.reference.length === 0) {
+      errors.push('At least one category is required for category-blog type')
+    }
+  }
+
+  // Entity types require single string reference
+  if (['single-article', 'page', 'service', 'project'].includes(item.type)) {
+    if (!item.reference || typeof item.reference !== 'string') {
       errors.push(`Reference (slug) is required for ${item.type} type`)
     }
   }
 
-  // Custom/External types require url
-  if (['custom-link', 'custom-link', 'external-link', 'external-link'].includes(item.type)) {
+  // Link types require url
+  if (['custom-link', 'external-link'].includes(item.type)) {
     if (!item.url) {
       errors.push(`URL is required for ${item.type} type`)
     }
   }
 
   // External links should start with http:// or https://
-  if ((item.type === 'external-link' || item.type === 'external-link') && item.url) {
+  if (item.type === 'external-link' && item.url) {
     if (!item.url.startsWith('http://') && !item.url.startsWith('https://')) {
       errors.push('External URLs must start with http:// or https://')
     }
@@ -150,18 +159,29 @@ export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
  * Helper to build menu item URL from reference
  */
 export const getMenuItemUrl = (item: MenuItem): string | null => {
-  // Return existing URL if set
+  // Return existing URL if set (for custom-link and external-link)
   if (item.url) return item.url
 
-  // For entity types, construct URL from reference (slug)
-  if (item.reference) {
+  // Category-blog: construct URL from reference array
+  if (item.type === 'category-blog' && Array.isArray(item.reference)) {
+    if (item.reference.length > 0) {
+      // If single category, link to that category
+      if (item.reference.length === 1) {
+        return `/blog/category/${item.reference[0]}`
+      }
+      // If multiple categories, link to blog with category filter
+      return `/blog?categories=${item.reference.join(',')}`
+    }
+    return '/blog' // Default blog listing
+  }
+
+  // For entity types, construct URL from reference string
+  if (item.reference && typeof item.reference === 'string') {
     switch (item.type) {
+      case 'single-article':
+        return `/blog/${item.reference}`
       case 'page':
         return `/${item.reference}`
-      case 'post':
-        return `/blog/${item.reference}`
-      case 'category':
-        return `/category/${item.reference}`
       case 'service':
         return `/services/${item.reference}`
       case 'project':

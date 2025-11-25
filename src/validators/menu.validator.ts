@@ -2,15 +2,13 @@ import { z } from 'zod'
 
 // Menu Item Type Enum
 export const MenuItemTypeEnum = z.enum([
-  'page', // Links to a Page
-  'post', // Links to a Post/Article
-  'category', // Links to a Category
-  'service', // Links to a Service
-  'project', // Links to a Project
-  'custom-link', // Custom internal link (legacy)
-  'custom-link', // Custom internal link
-  'external-link', // External link (legacy)
-  'external-link', // External link
+  'category-blog',
+  'single-article',
+  'page',
+  'service',
+  'project',
+  'custom-link',
+  'external-link',
 ])
 
 // Menu Item Target Enum
@@ -29,7 +27,7 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
         .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
         .optional(),
       type: MenuItemTypeEnum,
-      reference: z.string().nullable().optional(), // Slug of referenced entity
+      reference: z.union([z.string(), z.array(z.string())]).nullable().optional(), // String OR Array
       url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
       icon: z.string().optional(),
       target: MenuItemTargetEnum.default('_self'),
@@ -41,9 +39,20 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
       children: z.array(menuItemSchema).optional(),
     })
     .superRefine((data, ctx) => {
-      // Validate based on type
-      if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
-        if (!data.reference || data.reference === null) {
+      // Category-blog requires array of references
+      if (data.type === 'category-blog') {
+        if (!Array.isArray(data.reference) || data.reference.length === 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'At least one category is required for category-blog type',
+            path: ['reference'],
+          })
+        }
+      }
+
+      // Entity types require single string reference
+      if (['single-article', 'page', 'service', 'project'].includes(data.type)) {
+        if (!data.reference || typeof data.reference !== 'string') {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `Reference (slug) is required for ${data.type} type`,
@@ -51,24 +60,24 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
           })
         }
       }
-      if (['custom-link', 'custom-link', 'external-link', 'external-link'].includes(data.type)) {
+
+      // Link types require URL
+      if (['custom-link', 'external-link'].includes(data.type)) {
         if (!data.url || data.url === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `URL is required for ${data.type} type`,
             path: ['url'],
           })
-        }
-      }
-
-      // External links must start with http:// or https://
-      if ((data.type === 'external-link' || data.type === 'external-link') && data.url) {
-        if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'External URLs must start with http:// or https://',
-            path: ['url'],
-          })
+        } else if (data.type === 'external-link') {
+          // Validate external links must start with http:// or https://
+          if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'External links must start with http:// or https://',
+              path: ['url'],
+            })
+          }
         }
       }
     })
@@ -128,7 +137,7 @@ export const createMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(), // Optional - will be auto-generated if not provided
     type: MenuItemTypeEnum,
-    reference: z.string().nullable().optional(), // Slug of referenced entity
+    reference: z.union([z.string(), z.array(z.string())]).nullable().optional(), // String OR Array
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.default('_self'),
@@ -139,9 +148,20 @@ export const createMenuItemBodySchema = z
     meta: z.record(z.string(), z.any()).optional(),
   })
   .superRefine((data, ctx) => {
-    // Validate based on type
-    if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
-      if (!data.reference || data.reference === null) {
+    // Category-blog requires array of references
+    if (data.type === 'category-blog') {
+      if (!Array.isArray(data.reference) || data.reference.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one category is required for category-blog type',
+          path: ['reference'],
+        })
+      }
+    }
+
+    // Entity types require single string reference
+    if (['single-article', 'page', 'service', 'project'].includes(data.type)) {
+      if (!data.reference || typeof data.reference !== 'string') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Reference (slug) is required for ${data.type} type`,
@@ -149,15 +169,16 @@ export const createMenuItemBodySchema = z
         })
       }
     }
-    // Validate URL for all link types (custom, custom-link, external, external-link)
-    if (['custom-link', 'custom-link', 'external-link', 'external-link'].includes(data.type)) {
+
+    // Link types require URL
+    if (['custom-link', 'external-link'].includes(data.type)) {
       if (!data.url || data.url === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `URL is required for ${data.type} type`,
           path: ['url'],
         })
-      } else if (['external-link', 'external-link'].includes(data.type)) {
+      } else if (data.type === 'external-link') {
         // Validate external links must start with http:// or https://
         if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
           ctx.addIssue({
@@ -186,7 +207,7 @@ export const updateMenuItemBodySchema = z
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Invalid slug format')
       .optional(),
     type: MenuItemTypeEnum.optional(),
-    reference: z.string().nullable().optional(), // Slug of referenced entity
+    reference: z.union([z.string(), z.array(z.string())]).nullable().optional(), // String OR Array
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
     target: MenuItemTargetEnum.optional(),
@@ -197,31 +218,42 @@ export const updateMenuItemBodySchema = z
     meta: z.record(z.string(), z.any()).optional(),
   })
   .superRefine((data, ctx) => {
-    // Only validate if BOTH type and reference/url are being updated together
-    // This prevents validation errors when updating other fields
+    // Only validate if type is being updated together with required fields
+
+    // Category-blog validation
+    if (data.type === 'category-blog' && data.reference !== undefined) {
+      if (!Array.isArray(data.reference) || data.reference.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one category is required for category-blog type',
+          path: ['reference'],
+        })
+      }
+    }
+
+    // Entity types validation
     if (data.type && data.reference !== undefined) {
-      if (['page', 'post', 'category', 'service', 'project'].includes(data.type)) {
-        // Allow null for reference field (optional entity link)
-        if (data.reference !== null && !data.reference) {
+      if (['single-article', 'page', 'service', 'project'].includes(data.type)) {
+        if (data.reference !== null && typeof data.reference !== 'string') {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `Reference (slug) must be a valid string or null for ${data.type} type`,
+            message: `Reference must be a string for ${data.type} type`,
             path: ['reference'],
           })
         }
       }
     }
 
-    // Validate URL for all link types (custom, custom-link, external, external-link)
+    // Link types validation
     if (data.type && data.url !== undefined) {
-      if (['custom-link', 'custom-link', 'external-link', 'external-link'].includes(data.type)) {
+      if (['custom-link', 'external-link'].includes(data.type)) {
         if (!data.url || data.url === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `URL is required for ${data.type} type`,
             path: ['url'],
           })
-        } else if (['external-link', 'external-link'].includes(data.type)) {
+        } else if (data.type === 'external-link') {
           // Validate external links must start with http:// or https://
           if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
             ctx.addIssue({

@@ -126,7 +126,7 @@ async function migrateMenuData() {
             title: item.title,
             slug: slug,
             type: item.type,
-            link: item.link,
+            url: item.link,
             icon: item.icon,
             target: '_self',
             order: item.order,

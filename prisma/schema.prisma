@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -146,8 +147,8 @@ model MenuItem {
   menuId      String
   title       String
   slug        String     @unique
-  type        String     // 'page' | 'post' | 'category-blog' | 'service' | 'project' | 'custom-link'  | 'external-link'
-  reference   String?    // Slug of referenced entity (page, post, category, service, project)
+  type        String     // 'category-blog' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
+  reference   Json?      // String for single entity OR Array for multiple (category-blog): 'about-us' OR ['tech', 'business']
   url         String?    // URL for custom/external links or resolved URL
   icon        String?
   target      String     @default("_self")
@@ -165,7 +166,6 @@ model MenuItem {
   @@index([menuId])
   @@index([parentId])
   @@index([type])
-  @@index([reference])
   @@index([order])
   @@index([slug])
   @@index([isPublished])
