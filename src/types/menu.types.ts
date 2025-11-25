@@ -9,8 +9,10 @@ export type MenuItemType =
   | 'category' // Links to a Category
   | 'service' // Links to a Service
   | 'project' // Links to a Project
-  | 'custom' // Custom internal link
-  | 'external' // External link
+  | 'custom' // Custom internal link (legacy)
+  | 'custom-link' // Custom internal link
+  | 'external' // External link (legacy)
+  | 'external-link' // External link
 
 export type MenuItemTarget = '_self' | '_blank'
 
@@ -103,11 +105,11 @@ export const isEntityMenuItem = (item: MenuItem): boolean => {
 }
 
 export const isExternalMenuItem = (item: MenuItem): boolean => {
-  return item.type === 'external'
+  return item.type === 'external' || item.type === 'external-link'
 }
 
 export const isCustomMenuItem = (item: MenuItem): boolean => {
-  return item.type === 'custom'
+  return item.type === 'custom' || item.type === 'custom-link'
 }
 
 export const hasChildren = (item: MenuItem): boolean => {
@@ -128,14 +130,14 @@ export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
   }
 
   // Custom/External types require url
-  if (['custom', 'external'].includes(item.type)) {
+  if (['custom', 'custom-link', 'external', 'external-link'].includes(item.type)) {
     if (!item.url) {
       errors.push(`URL is required for ${item.type} type`)
     }
   }
 
   // External links should start with http:// or https://
-  if (item.type === 'external' && item.url) {
+  if ((item.type === 'external' || item.type === 'external-link') && item.url) {
     if (!item.url.startsWith('http://') && !item.url.startsWith('https://')) {
       errors.push('External URLs must start with http:// or https://')
     }

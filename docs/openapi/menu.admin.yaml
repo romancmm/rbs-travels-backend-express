@@ -306,15 +306,15 @@ components:
           example: 'about-us'
         type:
           type: string
-          enum: [page, post, category, service, project, custom, external]
+          enum: [page, post, category, service, project, custom-link, external-link]
           description: |
             - page: Links to a Page
             - post: Links to a Post/Article
             - category: Links to a Category
             - service: Links to a Service
             - project: Links to a Project
-            - custom: Custom internal link
-            - external: External link
+            - custom-link: Custom internal link
+            - external-link: External link
         reference:
           type: string
           nullable: true
@@ -368,7 +368,7 @@ components:
           description: Optional - will be auto-generated from title if not provided
         type:
           type: string
-          enum: [page, post, category, service, project, custom, external]
+          enum: [page, post, category, service, project, custom-link, external-link]
         referenceId:
           type: string
           format: uuid

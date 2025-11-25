@@ -28,7 +28,7 @@ interface MenuItem {
   menuId: string
   title: string
   slug: string
-  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom-link' | 'external-link'
   reference?: string | null // Slug of referenced entity
   url?: string | null // URL for custom/external links
   icon?: string
@@ -57,8 +57,8 @@ export type MenuItemType =
   | 'category'
   | 'service'
   | 'project'
-  | 'custom'
-  | 'external'
+  | 'custom-link'
+  | 'external-link'
 
 export interface MenuItem {
   id: string
@@ -137,12 +137,12 @@ export default function MenuItemForm({ menuId, onSuccess }) {
         alert(`Please select a ${type}`)
         return
       }
-    } else if (['custom', 'external'].includes(type)) {
+    } else if (['custom-link', 'external-link'].includes(type)) {
       if (!formData.url) {
         alert('URL is required')
         return
       }
-      if (type === 'external' && !formData.url.match(/^https?:\/\//)) {
+      if (type === 'external-link' && !formData.url.match(/^https?:\/\//)) {
         alert('External URLs must start with http:// or https://')
         return
       }
@@ -201,8 +201,8 @@ export default function MenuItemForm({ menuId, onSuccess }) {
           <option value="category">Category</option>
           <option value="service">Service</option>
           <option value="project">Project</option>
-          <option value="custom">Custom Link</option>
-          <option value="external">External Link</option>
+          <option value="custom-link">Custom Link</option>
+          <option value="external-link">External Link</option>
         </select>
       </div>
 
@@ -227,17 +227,17 @@ export default function MenuItemForm({ menuId, onSuccess }) {
       )}
 
       {/* URL Input */}
-      {['custom', 'external'].includes(type) && (
+      {['custom-link', 'external-link'].includes(type) && (
         <div>
           <label>URL *</label>
           <input
             type="text"
             value={formData.url}
             onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-            placeholder={type === 'external' ? 'https://example.com' : '/custom-path'}
+            placeholder={type === 'external-link' ? 'https://example.com' : '/custom-path'}
             required
           />
-          {type === 'external' && (
+          {type === 'external-link' && (
             <p className="text-sm text-gray-500">Must start with http:// or https://</p>
           )}
         </div>
@@ -659,12 +659,12 @@ export function validateMenuItem(data: CreateMenuItemInput): string[] {
   }
 
   // URL types require url
-  if (['custom', 'external'].includes(data.type)) {
+  if (['custom-link', 'external-link'].includes(data.type)) {
     if (!data.url) {
       errors.push(`URL is required for ${data.type} type`)
     }
 
-    if (data.type === 'external' && data.url) {
+    if (data.type === 'external-link' && data.url) {
       if (!data.url.match(/^https?:\/\//)) {
         errors.push('External URLs must start with http:// or https://')
       }

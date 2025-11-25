@@ -7,8 +7,10 @@ export const MenuItemTypeEnum = z.enum([
   'category', // Links to a Category
   'service', // Links to a Service
   'project', // Links to a Project
-  'custom', // Custom internal link
-  'external', // External link
+  'custom', // Custom internal link (legacy)
+  'custom-link', // Custom internal link
+  'external', // External link (legacy)
+  'external-link', // External link
 ])
 
 // Menu Item Target Enum
@@ -49,11 +51,22 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
           })
         }
       }
-      if (['custom', 'external'].includes(data.type)) {
+      if (['custom', 'custom-link', 'external', 'external-link'].includes(data.type)) {
         if (!data.url || data.url === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `URL is required for ${data.type} type`,
+            path: ['url'],
+          })
+        }
+      }
+
+      // External links must start with http:// or https://
+      if ((data.type === 'external' || data.type === 'external-link') && data.url) {
+        if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'External URLs must start with http:// or https://',
             path: ['url'],
           })
         }
@@ -136,13 +149,23 @@ export const createMenuItemBodySchema = z
         })
       }
     }
-    if (['custom', 'external'].includes(data.type)) {
+    // Validate URL for all link types (custom, custom-link, external, external-link)
+    if (['custom', 'custom-link', 'external', 'external-link'].includes(data.type)) {
       if (!data.url || data.url === null) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `URL is required for ${data.type} type`,
           path: ['url'],
         })
+      } else if (['external', 'external-link'].includes(data.type)) {
+        // Validate external links must start with http:// or https://
+        if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'External links must start with http:// or https://',
+            path: ['url'],
+          })
+        }
       }
     }
   })
@@ -189,14 +212,24 @@ export const updateMenuItemBodySchema = z
       }
     }
 
+    // Validate URL for all link types (custom, custom-link, external, external-link)
     if (data.type && data.url !== undefined) {
-      if (['custom', 'external'].includes(data.type)) {
+      if (['custom', 'custom-link', 'external', 'external-link'].includes(data.type)) {
         if (!data.url || data.url === null) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `URL is required for ${data.type} type`,
             path: ['url'],
           })
+        } else if (['external', 'external-link'].includes(data.type)) {
+          // Validate external links must start with http:// or https://
+          if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: 'External links must start with http:// or https://',
+              path: ['url'],
+            })
+          }
         }
       }
     }

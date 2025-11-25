@@ -38,7 +38,7 @@ interface MenuItem {
   menuId: string
   title: string
   slug: string
-  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom-link' | 'external-link'
   reference?: string | null // Slug of referenced entity
   url?: string | null // URL for custom/external links
   icon?: string
@@ -67,8 +67,8 @@ export type MenuItemType =
   | 'category'
   | 'service'
   | 'project'
-  | 'custom'
-  | 'external'
+  | 'custom-link'
+  | 'external-link'
 
 export type MenuItemTarget = '_self' | '_blank'
 
@@ -160,8 +160,8 @@ return (
       <option value="category">Category</option>
       <option value="service">Service</option>
       <option value="project">Project</option>
-      <option value="custom">Custom Link</option>
-      <option value="external">External Link</option>
+      <option value="custom-link">Custom Link</option>
+      <option value="external-link">External Link</option>
     </Select>
 
     {/* Entity Selector - Shows slug in the dropdown */}
@@ -177,7 +177,7 @@ return (
     )}
 
     {/* URL Input for custom/external */}
-    {['custom', 'external'].includes(selectedType) && (
+    {['custom-link', 'external-link'].includes(selectedType) && (
       <Input
         label="URL"
         name="url"

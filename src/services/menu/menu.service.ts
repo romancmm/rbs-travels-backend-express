@@ -397,7 +397,7 @@ export class MenuService {
     data: {
       title: string
       slug?: string // Optional slug, will be auto-generated if not provided
-      type: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+      type: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'custom-link' | 'external' | 'external-link'
       reference?: string // Slug of referenced entity
       url?: string // URL for custom/external links or resolved URL
       icon?: string
@@ -455,7 +455,7 @@ export class MenuService {
     data: {
       title?: string
       slug?: string
-      type?: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+      type?: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'custom-link' | 'external' | 'external-link'
       reference?: string // Slug of referenced entity
       url?: string // URL for custom/external links or resolved URL
       icon?: string
