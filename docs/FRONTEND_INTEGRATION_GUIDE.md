@@ -130,7 +130,7 @@ import { useState, useEffect } from 'react'
 import type { MenuItemType } from '@/types/menu.types'
 
 // Type selector
-const [selectedType, setSelectedType] = useState<MenuItemType>('custom')
+const [selectedType, setSelectedType] = useState<MenuItemType>('custom-link')
 const [entities, setEntities] = useState([])
 
 // Fetch entities when type changes
@@ -182,7 +182,7 @@ return (
         label="URL"
         name="url"
         type="text"
-        placeholder={selectedType === 'external' ? 'https://example.com' : '/custom-path'}
+        placeholder={selectedType === 'external-link' ? 'https://example.com' : '/custom-path'}
         required
       />
     )}
@@ -258,13 +258,13 @@ const validateMenuItem = (data: CreateMenuItemInput): string[] => {
   }
 
   // Custom/External types require url
-  if (['custom', 'external'].includes(data.type)) {
+  if (['custom-link', 'external-link'].includes(data.type)) {
     if (!data.url) {
       errors.push('URL is required')
     }
 
     // External links must have http:// or https://
-    if (data.type === 'external' && data.url) {
+    if (data.type === 'external-link' && data.url) {
       if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
         errors.push('External URLs must start with http:// or https://')
       }
@@ -286,7 +286,15 @@ import { z } from 'zod'
 const menuItemSchema = z
   .object({
     title: z.string().min(1, 'Title is required'),
-    type: z.enum(['page', 'post', 'category', 'service', 'project', 'custom', 'external']),
+    type: z.enum([
+      'page',
+      'post',
+      'category',
+      'service',
+      'project',
+      'custom-link',
+      'external-link',
+    ]),
     reference: z.string().nullable().optional(),
     url: z.string().nullable().optional(),
     icon: z.string().optional(),
@@ -304,7 +312,7 @@ const menuItemSchema = z
         return !!data.reference
       }
       // URL types require url
-      if (['custom', 'external'].includes(data.type)) {
+      if (['custom-link', 'external-link'].includes(data.type)) {
         return !!data.url
       }
       return true
@@ -392,7 +400,7 @@ const handleSubmit = async (data: FormData) => {
   }
 
   // Add url for custom/external types
-  if (['custom', 'external'].includes(selectedType)) {
+  if (['custom-link', 'external-link'].includes(selectedType)) {
     payload.url = data.url
   }
 
@@ -518,7 +526,7 @@ const MenuItemDisplay: React.FC<MenuItemDisplayProps> = ({ item }) => {
         {item.url && (
           <div>
             <strong>URL:</strong> {item.url}
-            {item.type === 'external' && <ExternalLinkIcon className="ml-1" />}
+            {item.type === 'external-link' && <ExternalLinkIcon className="ml-1" />}
           </div>
         )}
 
@@ -666,7 +674,7 @@ function renderMenuLink(item: MenuItem) {
   )
 
   // External links
-  if (item.type === 'external') {
+  if (item.type === 'external-link') {
     return (
       <a
         href={item.url || '#'}
@@ -819,12 +827,12 @@ const AccessibleMenuItem: React.FC<{ item: MenuItem }> = ({ item }) => {
           role="menuitem"
           href={item.url || '#'}
           target={item.target}
-          rel={item.type === 'external' ? 'noopener noreferrer' : undefined}
+          rel={item.type === 'external-link' ? 'noopener noreferrer' : undefined}
           className="menu-link"
         >
           {item.icon && <span aria-hidden="true">{item.icon}</span>}
           {item.title}
-          {item.type === 'external' && <span className="sr-only"> (opens in new tab)</span>}
+          {item.type === 'external-link' && <span className="sr-only"> (opens in new tab)</span>}
         </a>
       )}
     </li>

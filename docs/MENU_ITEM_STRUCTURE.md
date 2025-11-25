@@ -248,7 +248,7 @@ function renderMenuItem(item: MenuItem) {
       // Internal link - use Next.js Link or React Router
       return <Link href={item.url}>{item.title}</Link>
 
-    case 'external':
+    case 'external-link':
       // External link - open in new tab
       return (
         <a href={item.url} target={item.target} rel="noopener noreferrer">
@@ -256,7 +256,7 @@ function renderMenuItem(item: MenuItem) {
         </a>
       )
 
-    case 'custom':
+    case 'custom-link':
       // Custom internal link
       return <Link href={item.url}>{item.title}</Link>
 
@@ -289,8 +289,8 @@ export const MenuItemTypeEnum = z.enum([
   'service',
   'project',
   'product', // NEW
-  'custom',
-  'external',
+  'custom-link',
+  'external-link',
 ])
 ```
 

@@ -162,13 +162,13 @@ import { isExternalMenuItem, isCustomMenuItem } from '@/types/menu.types'
 
 // Check if menu item is external
 if (isExternalMenuItem(item)) {
-  // item.type is 'external' or 'external-link'
+  // item.type is 'external-link' or 'external-link'
   // Open in new tab: target="_blank"
 }
 
 // Check if menu item uses custom URL
 if (isCustomMenuItem(item)) {
-  // item.type is 'custom', 'custom-link', 'external', or 'external-link'
+  // item.type is 'custom-link', 'custom-link', 'external-link', or 'external-link'
   // Use item.url directly
 }
 ```

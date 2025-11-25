@@ -5,8 +5,7 @@
 - These are example implementations for rendering menu items
 - in your frontend application (React, Vue, Angular, etc.) \*/
 
-// ============================================ // React Example //
-============================================
+# // ============================================ // React Example //
 
 import React from 'react' import Link from 'next/link' // or react-router-dom import type { MenuItem
 } from '@/types/menu.types'
@@ -18,7 +17,7 @@ type switch (item.type) { case 'page': case 'post': case 'category': case 'servi
 // Internal entity links return ( <Link href={item.url || '#'} className={className ||
 item.cssClass} > {item.icon && <span className="icon">{item.icon}</span>} {item.title} </Link> )
 
-    case 'external':
+    case 'external-link':
       // External links - open in new tab
       return (
         <a
@@ -32,7 +31,7 @@ item.cssClass} > {item.icon && <span className="icon">{item.icon}</span>} {item.
         </a>
       )
 
-    case 'custom':
+    case 'custom-link':
       // Custom internal links
       return (
         <Link
@@ -65,8 +64,7 @@ return ( <ul className="menu"> {items.map((item) => ( <li key={item.id} classNam
 
 ) }
 
-// ============================================ // Vue 3 Example //
-============================================
+# // ============================================ // Vue 3 Example //
 
 /\* <template>
 
@@ -88,7 +86,7 @@ return ( <ul className="menu"> {items.map((item) => ( <li key={item.id} classNam
 
       <!-- External Links -->
       <a
-        v-else-if="item.type === 'external'"
+        v-else-if="item.type === 'external-link'"
         :href="item.url"
         :target="item.target"
         rel="noopener noreferrer"
@@ -100,7 +98,7 @@ return ( <ul className="menu"> {items.map((item) => ( <li key={item.id} classNam
 
       <!-- Custom Links -->
       <router-link
-        v-else-if="item.type === 'custom'"
+        v-else-if="item.type === 'custom-link'"
         :to="item.url || '#'"
         :class="item.cssClass"
       >
@@ -138,16 +136,15 @@ const isEntityType = (type: string) => {
 
 \*/
 
-// ============================================ // Vanilla JavaScript/TypeScript //
-============================================
+# // ============================================ // Vanilla JavaScript/TypeScript //
 
 function renderMenuItem(item: MenuItem): string { const icon = item.icon ?
 `<span class="icon">${item.icon}</span>` : '' const cssClass = item.cssClass || ''
 
 switch (item.type) { case 'page': case 'post': case 'category': case 'service': case 'project': case
-'custom': return ` <a href="${item.url || '#'}" class="${cssClass}"> ${icon}${item.title} </a> `
+'custom-link': return `<a href="${item.url || '#'}" class="${cssClass}"> ${icon}${item.title} </a>`
 
-    case 'external':
+    case 'external-link':
       return `
         <a
           href="${item.url || '#'}"
@@ -180,8 +177,7 @@ function renderMenuTree(items: MenuItem[]): string { return
 
 ` }
 
-// ============================================ // Usage Example - Fetching and Rendering //
-============================================
+# // ============================================ // Usage Example - Fetching and Rendering //
 
 async function loadAndRenderMenu(menuSlug: string) { try { // Fetch menu from API const response =
 await fetch(`/api/menus/${menuSlug}`) const data = await response.json()
@@ -200,8 +196,7 @@ await fetch(`/api/menus/${menuSlug}`) const data = await response.json()
 
 } catch (error) { console.error('Failed to load menu:', error) } }
 
-// ============================================ // Helper Functions //
-============================================
+# // ============================================ // Helper Functions //
 
 /\*\*
 
@@ -262,8 +257,7 @@ function findPath(items: MenuItem[], targetId: string, currentPath: MenuItem[]):
 
 findPath(items, targetId, []) return path }
 
-// ============================================ // Styling Examples //
-============================================
+# // ============================================ // Styling Examples //
 
 /\* // CSS for menu rendering
 

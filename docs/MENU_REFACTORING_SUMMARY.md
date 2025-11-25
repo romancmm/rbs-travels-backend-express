@@ -114,7 +114,7 @@ All 9 menu items successfully migrated to new structure.
 
 ```typescript
 {
-  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom-link' | 'external-link'
   referenceId?: string  // For entity types
   url?: string          // For custom/external
   // Clear, single field for each purpose

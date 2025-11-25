@@ -18,9 +18,9 @@ export type MenuItemType =
   | 'category'
   | 'service'
   | 'project'
-  | 'custom' // Legacy: internal/external links
+  | 'custom-link' // Legacy: internal/external links
   | 'custom-link' // NEW: custom URL (internal or external)
-  | 'external' // Legacy: external links
+  | 'external-link' // Legacy: external links
   | 'external-link' // NEW: explicit external link with validation
 ```
 
@@ -28,11 +28,11 @@ export type MenuItemType =
 
 ```typescript
 export const isExternalMenuItem = (item: MenuItem): boolean => {
-  return ['external', 'external-link'].includes(item.type)
+  return ['external-link', 'external-link'].includes(item.type)
 }
 
 export const isCustomMenuItem = (item: MenuItem): boolean => {
-  return ['custom', 'custom-link', 'external', 'external-link'].includes(item.type)
+  return ['custom-link', 'custom-link', 'external-link', 'external-link'].includes(item.type)
 }
 ```
 
@@ -47,9 +47,9 @@ export const MenuItemTypeEnum = z.enum([
   'category',
   'service',
   'project',
-  'custom',
   'custom-link',
-  'external',
+  'custom-link',
+  'external-link',
   'external-link',
 ])
 ```
@@ -60,7 +60,7 @@ export const MenuItemTypeEnum = z.enum([
 1. **URL Requirement**: All link types require a URL
 
    ```typescript
-   if (['custom', 'custom-link', 'external', 'external-link'].includes(data.type)) {
+   if (['custom-link', 'custom-link', 'external-link', 'external-link'].includes(data.type)) {
      if (!data.url || data.url === null) {
        ctx.addIssue({
          code: z.ZodIssueCode.custom,
@@ -73,7 +73,7 @@ export const MenuItemTypeEnum = z.enum([
 
 2. **HTTP/HTTPS Validation**: External links must start with `http://` or `https://`
    ```typescript
-   else if (['external', 'external-link'].includes(data.type)) {
+   else if (['external-link', 'external-link'].includes(data.type)) {
      if (!data.url.startsWith('http://') && !data.url.startsWith('https://')) {
        ctx.addIssue({
          code: z.ZodIssueCode.custom,
@@ -91,7 +91,7 @@ export const MenuItemTypeEnum = z.enum([
 ```prisma
 model MenuItem {
   // ... fields
-  type        String     // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'custom-link' | 'external' | 'external-link'
+  type        String     // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom-link' | 'custom-link' | 'external-link' | 'external-link'
   reference   String?    // Slug of referenced entity (page/post/category/service/project)
   url         String?    // URL for custom/external links or resolved URL
   // ... rest of schema
@@ -104,7 +104,7 @@ model MenuItem {
 all supported types:
 
 ```typescript
-type: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'custom-link' | 'external' | 'external-link'
+type: string // 'page' | 'post' | 'category' | 'service' | 'project' | 'custom-link' | 'custom-link' | 'external-link' | 'external-link'
 ```
 
 ## Type Behavior
@@ -222,7 +222,7 @@ POST /api/v1/admin/menu/{menuId}/items
 ### 3. Test Legacy Types
 
 ```bash
-# Verify legacy 'custom' type still works
+# Verify legacy 'custom-link' type still works
 POST /api/v1/admin/menu/{menuId}/items
 {
   "title": "Legacy Custom",

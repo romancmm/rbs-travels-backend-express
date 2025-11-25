@@ -23,7 +23,7 @@ enterprise-grade approach used by major CMS platforms like WordPress, Drupal, an
 
 ```typescript
 {
-  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom' | 'external'
+  type: 'page' | 'post' | 'category' | 'service' | 'project' | 'custom-link' | 'external-link'
   referenceId?: string  // UUID for entity references
   url?: string          // URL for custom/external links
   // ✅ Clear, single-purpose fields
@@ -105,7 +105,7 @@ import type { MenuItem, MenuItemType, CreateMenuItemInput } from '@/types/menu.t
 
 const item: CreateMenuItemInput = {
   title: 'Services',
-  type: 'custom',
+  type: 'custom-link',
   url: '/services',
   order: 1,
 }
@@ -131,7 +131,7 @@ Example React component:
 import type { MenuItem } from '@/types/menu.types'
 
 function MenuLink({ item }: { item: MenuItem }) {
-  if (item.type === 'external') {
+  if (item.type === 'external-link') {
     return (
       <a href={item.url} target={item.target} rel="noopener">
         {item.title}

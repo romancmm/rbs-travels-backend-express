@@ -26,7 +26,7 @@ async function migrateMenuItemStructure() {
     for (const item of menuItems) {
       let url: string | null = null
       let referenceId: string | null = null
-      let newType = 'custom'
+      let newType = 'custom-link'
 
       // Determine the new structure based on old fields
       if (item.categoryId) {
@@ -43,11 +43,11 @@ async function migrateMenuItemStructure() {
         console.log(`✓ ${item.title}: Post → ${referenceId}`)
       } else if (item.link) {
         url = item.link
-        newType = item.link.startsWith('http') ? 'external' : 'custom'
+        newType = item.link.startsWith('http') ? 'external-link' : 'custom-link'
         console.log(`✓ ${item.title}: ${newType} → ${url}`)
       } else {
         // Custom/parent menu item
-        newType = 'custom'
+        newType = 'custom-link'
         console.log(`✓ ${item.title}: Custom menu item`)
       }
 
