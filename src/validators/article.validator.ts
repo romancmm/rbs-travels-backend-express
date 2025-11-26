@@ -35,7 +35,17 @@ export const createPostSchema = z.object({
   content: z.string().min(1, 'Content is required'),
   thumbnail: imageUrlSchema,
   gallery: z.array(z.string()).default([]),
-  categoryIds: z.array(uuidSchema).default([]),
+  categoryIds: z
+    .union([
+      z.array(uuidSchema),
+      z.string().transform((str) =>
+        str
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      ),
+    ])
+    .default([]),
   tags: z
     .union([
       z.array(z.string()),
@@ -60,7 +70,17 @@ export const updatePostSchema = z.object({
   content: z.string().min(1).optional(),
   thumbnail: imageUrlSchema,
   gallery: z.array(z.string()).optional(),
-  categoryIds: z.array(uuidSchema).optional(),
+  categoryIds: z
+    .union([
+      z.array(uuidSchema),
+      z.string().transform((str) =>
+        str
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      ),
+    ])
+    .optional(),
   tags: z
     .union([
       z.array(z.string()),
@@ -79,8 +99,28 @@ export const updatePostSchema = z.object({
 
 // Post query params schema
 export const postQuerySchema = paginationQuerySchema.extend({
-  categoryIds: z.array(uuidSchema).optional(),
-  categorySlugs: z.array(z.string()).optional(),
+  categoryIds: z
+    .union([
+      z.array(uuidSchema),
+      z.string().transform((str) =>
+        str
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean)
+      ),
+    ])
+    .optional(),
+  categorySlugs: z
+    .union([
+      z.array(z.string()),
+      z.string().transform((str) =>
+        str
+          .split(',')
+          .map((slug) => slug.trim())
+          .filter(Boolean)
+      ),
+    ])
+    .optional(),
   tag: z.string().optional(),
   authorId: uuidSchema.optional(),
   isPublished: booleanQuerySchema.optional(),

@@ -19,20 +19,15 @@ paths:
         - in: query
           name: categoryIds
           schema:
-            type: array
-            items: { type: string, format: uuid }
-          style: form
-          explode: true
-          description: Filter by multiple category IDs (e.g., ?categoryIds=uuid1&categoryIds=uuid2)
+            type: string
+          description: Filter by multiple category IDs (comma-separated)
+          example: '3fa85f64-5717-4562-b3fc-2c963f66afa6,223e4567-e89b-12d3-a456-426614174001'
         - in: query
           name: categorySlugs
           schema:
-            type: array
-            items: { type: string }
-          style: form
-          explode: true
-          description:
-            Filter by multiple category slugs (e.g., ?categorySlugs=tech&categorySlugs=business)
+            type: string
+          description: Filter by multiple category slugs (comma-separated)
+          example: 'technology,business,design'
         - in: query
           name: tag
           schema: { type: string }
@@ -77,10 +72,14 @@ paths:
                       type: array
                       items: { type: string }
                 categoryIds:
-                  type: array
-                  items: { type: string, format: uuid }
+                  oneOf:
+                    - type: array
+                      items: { type: string, format: uuid }
+                    - type: string
+                      description: Comma-separated category UUIDs
                   default: []
-                  description: Array of category UUIDs to assign to the post
+                  description: Category UUIDs (array or comma-separated string)
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa6,223e4567-e89b-12d3-a456-426614174001'
                 tags:
                   type: array
                   items: { type: string }
@@ -137,7 +136,14 @@ paths:
                     keywords:
                       type: array
                       items: { type: string }
-                categoryId: { type: string, format: uuid }
+                categoryIds:
+                  oneOf:
+                    - type: array
+                      items: { type: string, format: uuid }
+                    - type: string
+                      description: Comma-separated category UUIDs
+                  description: Category UUIDs (array or comma-separated string)
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa6,223e4567-e89b-12d3-a456-426614174001'
                 tags:
                   type: array
                   items: { type: string }
