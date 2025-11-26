@@ -62,22 +62,15 @@ paths:
         - in: query
           name: categoryIds
           schema:
-            type: array
-            items: { type: string, format: uuid }
-          style: form
-          explode: true
-          description: Filter by multiple category IDs (e.g., ?categoryIds=uuid1&categoryIds=uuid2)
-          example: ['123e4567-e89b-12d3-a456-426614174000', '223e4567-e89b-12d3-a456-426614174001']
+            type: string
+          description: Filter by multiple category IDs (comma-separated)
+          example: '3fa85f64-5717-4562-b3fc-2c963f66afa6,223e4567-e89b-12d3-a456-426614174001'
         - in: query
           name: categorySlugs
           schema:
-            type: array
-            items: { type: string }
-          style: form
-          explode: true
-          description:
-            Filter by multiple category slugs (e.g., ?categorySlugs=tech&categorySlugs=business)
-          example: ['technology', 'business']
+            type: string
+          description: Filter by multiple category slugs (comma-separated)
+          example: 'technology,business,design'
         - in: query
           name: tag
           schema: { type: string }
