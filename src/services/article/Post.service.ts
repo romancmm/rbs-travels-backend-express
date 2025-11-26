@@ -14,8 +14,8 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
       page = 1,
       perPage = 10,
       q,
-      categoryId,
-      categorySlug,
+      categoryIds,
+      categorySlugs,
       tag,
       isPublished,
       authorId,
@@ -24,8 +24,17 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
     const where: any = {}
 
     if (typeof isPublished === 'boolean') where.isPublished = isPublished
-    if (categoryId) where.categories = { some: { id: categoryId } }
-    if (categorySlug) where.categories = { some: { slug: categorySlug } }
+
+    // Filter by multiple category IDs
+    if (categoryIds && categoryIds.length > 0) {
+      where.categories = { some: { id: { in: categoryIds } } }
+    }
+
+    // Filter by multiple category slugs
+    if (categorySlugs && categorySlugs.length > 0) {
+      where.categories = { some: { slug: { in: categorySlugs } } }
+    }
+
     if (authorId) where.authorId = authorId
     if (tag) where.tags = { has: tag }
     if (q) {

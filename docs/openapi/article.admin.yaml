@@ -17,8 +17,22 @@ paths:
           schema: { type: string }
           description: Search in title, excerpt, and content
         - in: query
-          name: categoryId
-          schema: { type: string }
+          name: categoryIds
+          schema:
+            type: array
+            items: { type: string, format: uuid }
+          style: form
+          explode: true
+          description: Filter by multiple category IDs (e.g., ?categoryIds=uuid1&categoryIds=uuid2)
+        - in: query
+          name: categorySlugs
+          schema:
+            type: array
+            items: { type: string }
+          style: form
+          explode: true
+          description:
+            Filter by multiple category slugs (e.g., ?categorySlugs=tech&categorySlugs=business)
         - in: query
           name: tag
           schema: { type: string }
@@ -62,7 +76,11 @@ paths:
                     keywords:
                       type: array
                       items: { type: string }
-                categoryId: { type: string, format: uuid }
+                categoryIds:
+                  type: array
+                  items: { type: string, format: uuid }
+                  default: []
+                  description: Array of category UUIDs to assign to the post
                 tags:
                   type: array
                   items: { type: string }

@@ -79,8 +79,8 @@ export const updatePostSchema = z.object({
 
 // Post query params schema
 export const postQuerySchema = paginationQuerySchema.extend({
-  categoryId: uuidSchema.optional(),
-  categorySlug: z.string().optional(),
+  categoryIds: z.array(uuidSchema).optional(),
+  categorySlugs: z.array(z.string()).optional(),
   tag: z.string().optional(),
   authorId: uuidSchema.optional(),
   isPublished: booleanQuerySchema.optional(),
