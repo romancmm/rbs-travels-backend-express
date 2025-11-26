@@ -44,7 +44,7 @@ model Page {
   updatedAt   DateTime @updatedAt
   isPublished Boolean  @default(false)
 }
-
+ 
 model Post {
   id          String     @id @default(uuid())
   title       String
@@ -118,6 +118,7 @@ model Setting {
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  @@ignore // to be excluded from migrations
 }
 
 model Menu {
