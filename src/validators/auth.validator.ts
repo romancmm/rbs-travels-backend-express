@@ -38,7 +38,7 @@ export const resetPasswordSchema = z.object({
 
 // Change password schema (authenticated user)
 export const changePasswordSchema = z.object({
-  oldPassword: z.string().min(1, 'Old password is required'),
+  currentPassword: z.string().min(1, 'Old password is required'),
   newPassword: adminPasswordSchema,
   // confirmPassword: z.string().min(1, 'Password confirmation is required'),
 })

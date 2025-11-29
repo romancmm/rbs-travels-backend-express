@@ -125,9 +125,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [oldPassword, newPassword]
+              required: [currentPassword, newPassword]
               properties:
-                oldPassword: { type: string }
+                currentPassword: { type: string }
                 newPassword: { type: string }
       responses:
         '200': { description: Password changed }

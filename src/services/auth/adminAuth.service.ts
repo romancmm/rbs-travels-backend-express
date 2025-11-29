@@ -255,20 +255,20 @@ export const resetPasswordAdminService = async (data: { email: string; newPasswo
 
 export const changePasswordAdminService = async (
   userId: string | undefined,
-  data: { oldPassword: string; newPassword: string }
+  data: { currentPassword: string; newPassword: string }
 ) => {
   try {
     if (!userId) throw createError(ErrorMessages.UNAUTHORIZED, 401, 'UNAUTHORIZED')
 
-    const { oldPassword, newPassword } = data || {}
-    if (!oldPassword || !newPassword)
-      throw createError('oldPassword and newPassword are required', 400, 'VALIDATION_ERROR')
+    const { currentPassword, newPassword } = data || {}
+    if (!currentPassword || !newPassword)
+      throw createError('currentPassword and newPassword are required', 400, 'VALIDATION_ERROR')
 
     const user = await prisma.user.findUnique({ where: { id: userId } })
     if (!user || !user.isAdmin)
       throw createError(ErrorMessages.NOT_FOUND('Admin'), 404, 'NOT_FOUND')
 
-    const valid = await comparePassword(oldPassword, user.password)
+    const valid = await comparePassword(currentPassword, user.password)
     if (!valid) throw createError('Old password is incorrect', 400, 'INVALID_PASSWORD')
 
     const hashed = await hashPassword(newPassword)
