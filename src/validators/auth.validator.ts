@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { emailSchema, imageUrlSchema, passwordSchema } from './common.validator'
+import { adminPasswordSchema, emailSchema, imageUrlSchema } from './common.validator'
 
 /**
  * Auth Validation Schemas
@@ -9,7 +9,7 @@ import { emailSchema, imageUrlSchema, passwordSchema } from './common.validator'
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
   email: emailSchema,
-  password: passwordSchema,
+  password: adminPasswordSchema,
   avatar: imageUrlSchema.optional(),
 })
 
@@ -27,26 +27,25 @@ export const refreshTokenSchema = z.object({
 // Reset password request schema (direct reset by email + new password)
 export const resetPasswordRequestSchema = z.object({
   email: emailSchema,
-  newPassword: passwordSchema,
+  newPassword: adminPasswordSchema,
 })
 
 // Reset password schema (with token)
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Reset token is required'),
-  newPassword: passwordSchema,
+  newPassword: adminPasswordSchema,
 })
 
 // Change password schema (authenticated user)
-export const changePasswordSchema = z
-  .object({
-    oldPassword: z.string().min(1, 'Old password is required'),
-    newPassword: passwordSchema,
-    confirmPassword: z.string().min(1, 'Password confirmation is required'),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  })
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Old password is required'),
+  newPassword: adminPasswordSchema,
+  // confirmPassword: z.string().min(1, 'Password confirmation is required'),
+})
+// .refine((data) => data.newPassword === data.confirmPassword, {
+//   message: 'Passwords do not match',
+//   path: ['confirmPassword'],
+// })
 
 // Admin login schema (same as regular login but kept separate for clarity)
 export const adminLoginSchema = z.object({

@@ -13,10 +13,12 @@ export const emailSchema = z.string().email({ message: 'Invalid email address' }
 // Password validation (min 8 chars, at least 1 uppercase, 1 lowercase, 1 number)
 export const passwordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters')
+  .min(6, 'Password must be at least 6 characters')
   .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
   .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
   .regex(/[0-9]/, 'Password must contain at least one number')
+
+export const adminPasswordSchema = z.string().min(6, 'Password must be at least 6 characters')
 
 // Slug validation (lowercase, hyphens allowed)
 // Now optional - backend will auto-generate/purify slugs
