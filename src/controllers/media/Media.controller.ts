@@ -10,6 +10,7 @@ import {
   deleteFileService,
   deleteFolderService,
   deleteFolderWithContentsService,
+  deleteItemService,
   getFileDetailsService,
   getMediaLibraryStructureService,
   listMediaService,
@@ -74,6 +75,19 @@ export const deleteFile = async (req: Request, res: Response, next: NextFunction
   try {
     const { fileId } = req.params as { fileId: string }
     const data = await deleteFileService(fileId)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const deleteItem = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params as { id: string }
+    const { force } = (req as any).query as { force?: string }
+    const forceDelete = force === 'true'
+
+    const data = await deleteItemService(id, forceDelete)
     res.json(data)
   } catch (e) {
     next(e)
