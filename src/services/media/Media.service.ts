@@ -52,21 +52,11 @@ export const listMediaService = async (query: MediaListQuery) => {
 
     console.log('📁 ImageKit List Options:', options)
 
-    const files = await imagekit.listFiles(options)
+    const allItems = await imagekit.listFiles(options)
 
-    // Also get folder information for the current path
-    let folders: any[] = []
-    try {
-      // Get folders at current path level
-      const folderOptions = {
-        path: path || '/',
-        includeFolder: true,
-        type: 'folder',
-      }
-      folders = await imagekit.listFiles(folderOptions)
-    } catch (folderErr) {
-      console.warn('Could not fetch folders:', folderErr)
-    }
+    // Separate folders and files from the result
+    const folders = allItems.filter((item: any) => item.type === 'folder')
+    const files = allItems.filter((item: any) => item.type === 'file')
 
     // Format items to return only necessary fields
     const formattedFolders = folders.map(formatMediaItem)
@@ -74,8 +64,8 @@ export const listMediaService = async (query: MediaListQuery) => {
     const formattedItems = [...formattedFolders, ...formattedFiles]
 
     // ImageKit doesn't provide total count, so we estimate pagination
-    const hasMore = files.length === perPage
-    const totalEstimate = skip + files.length + (hasMore ? 1 : 0)
+    const hasMore = allItems.length === perPage
+    const totalEstimate = skip + allItems.length + (hasMore ? 1 : 0)
 
     return {
       items: formattedItems,
