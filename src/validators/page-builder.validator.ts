@@ -6,6 +6,12 @@ export const componentSchema = z.object({
   type: z.string().min(1, 'Component type is required'),
   order: z.number().int().min(0).default(0),
   props: z.record(z.string(), z.any()), // Component-specific configuration
+  settings: z
+    .object({
+      className: z.string().optional(),
+    })
+    .catchall(z.any())
+    .optional(),
 })
 
 // Column Schema
@@ -13,7 +19,14 @@ export const columnSchema = z.object({
   id: z.string().uuid().optional(),
   width: z.number().int().min(1).max(12).default(12),
   order: z.number().int().min(0).default(0),
-  settings: z.record(z.string(), z.any()).optional(),
+  settings: z
+    .object({
+      className: z.string().optional(),
+      background: z.string().optional(),
+      verticalAlign: z.string().optional(),
+    })
+    .catchall(z.any())
+    .optional(),
   components: z.array(componentSchema).optional().default([]),
 })
 
@@ -21,7 +34,13 @@ export const columnSchema = z.object({
 export const rowSchema = z.object({
   id: z.string().uuid().optional(),
   order: z.number().int().min(0).default(0),
-  settings: z.record(z.string(), z.any()).optional(),
+  settings: z
+    .object({
+      className: z.string().optional(),
+      columnsGap: z.string().optional(),
+    })
+    .catchall(z.any())
+    .optional(),
   columns: z.array(columnSchema).optional().default([]),
 })
 
@@ -30,7 +49,20 @@ export const sectionSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(1, 'Section name is required'),
   order: z.number().int().min(0).default(0),
-  settings: z.record(z.string(), z.any()).optional(),
+  settings: z
+    .object({
+      className: z.string().optional(),
+      padding: z
+        .object({
+          top: z.string().optional(),
+          right: z.string().optional(),
+          bottom: z.string().optional(),
+          left: z.string().optional(),
+        })
+        .optional(),
+    })
+    .catchall(z.any())
+    .optional(),
   rows: z.array(rowSchema).optional().default([]),
 })
 
