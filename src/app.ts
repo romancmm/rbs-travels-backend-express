@@ -28,7 +28,7 @@ const limiter = rateLimit({
 })
 app.use(limiter)
 
-// API ROUTES
+// API ROUTES V1
 app.use('/api/v1', routes)
 
 // Protect Swagger UI with Basic Auth

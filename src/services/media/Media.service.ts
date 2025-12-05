@@ -52,21 +52,11 @@ export const listMediaService = async (query: MediaListQuery) => {
 
     console.log('📁 ImageKit List Options:', options)
 
-    const files = await imagekit.listFiles(options)
+    const allItems = await imagekit.listFiles(options)
 
-    // Also get folder information for the current path
-    let folders: any[] = []
-    try {
-      // Get folders at current path level
-      const folderOptions = {
-        path: path || '/',
-        includeFolder: true,
-        type: 'folder',
-      }
-      folders = await imagekit.listFiles(folderOptions)
-    } catch (folderErr) {
-      console.warn('Could not fetch folders:', folderErr)
-    }
+    // Separate folders and files from the result
+    const folders = allItems.filter((item: any) => item.type === 'folder')
+    const files = allItems.filter((item: any) => item.type === 'file')
 
     // Format items to return only necessary fields
     const formattedFolders = folders.map(formatMediaItem)
@@ -74,8 +64,8 @@ export const listMediaService = async (query: MediaListQuery) => {
     const formattedItems = [...formattedFolders, ...formattedFiles]
 
     // ImageKit doesn't provide total count, so we estimate pagination
-    const hasMore = files.length === perPage
-    const totalEstimate = skip + files.length + (hasMore ? 1 : 0)
+    const hasMore = allItems.length === perPage
+    const totalEstimate = skip + allItems.length + (hasMore ? 1 : 0)
 
     return {
       items: formattedItems,
@@ -291,9 +281,74 @@ export const deleteFileService = async (fileId: string) => {
   }
 }
 
+export const deleteItemService = async (id: string, force: boolean = false) => {
+  try {
+    // First, try to delete as a file
+    try {
+      const fileDetails = await imagekit.getFileDetails(id)
+      if (fileDetails) {
+        const result = await imagekit.deleteFile(id)
+        return {
+          success: true,
+          type: 'file',
+          fileId: id,
+          fileName: fileDetails.name,
+          message: `File "${fileDetails.name}" deleted successfully`,
+        }
+      }
+    } catch (fileErr) {
+      // Not a file, continue to try as folder
+    }
+
+    // If not a file, try to delete as a folder
+    const data = force
+      ? await deleteFolderWithContentsService(id, true)
+      : await deleteFolderService(id)
+
+    return {
+      ...data,
+      type: 'folder',
+    }
+  } catch (err: any) {
+    console.error('Delete item error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to delete item: ${message}`)
+  }
+}
+
 export const deleteFolderService = async (folderPath: string) => {
   try {
-    const normalizedPath = folderPath.startsWith('/') ? folderPath : `/${folderPath}`
+    // Check if it's a folderId (looks like a MongoDB ObjectId) or a path
+    const isFolderId = /^[a-f\d]{24}$/i.test(folderPath)
+
+    let normalizedPath = folderPath
+
+    if (isFolderId) {
+      // If it's a folderId, we need to get the folder details first to get the path
+      try {
+        // ImageKit doesn't have a direct getFolderDetails, so we need to list all folders
+        const allFolders = await imagekit.listFiles({
+          path: '/',
+          includeFolder: true,
+          limit: 1000,
+        })
+
+        const folder = allFolders.find(
+          (item: any) => item.type === 'folder' && item.folderId === folderPath
+        )
+
+        if (!folder) {
+          throw new Error(`Folder with ID "${folderPath}" not found`)
+        }
+
+        normalizedPath = (folder as any).folderPath
+      } catch (err) {
+        console.error('Error finding folder by ID:', err)
+        throw new Error(`Folder with ID "${folderPath}" not found`)
+      }
+    } else {
+      normalizedPath = folderPath.startsWith('/') ? folderPath : `/${folderPath}`
+    }
 
     // Check if folder exists and get its contents
     const folderContents = await imagekit.listFiles({
@@ -332,7 +387,36 @@ export const deleteFolderWithContentsService = async (
   force: boolean = false
 ) => {
   try {
-    const normalizedPath = folderPath.startsWith('/') ? folderPath : `/${folderPath}`
+    // Check if it's a folderId (looks like a MongoDB ObjectId) or a path
+    const isFolderId = /^[a-f\d]{24}$/i.test(folderPath)
+
+    let normalizedPath = folderPath
+
+    if (isFolderId) {
+      // If it's a folderId, we need to get the folder details first to get the path
+      try {
+        const allFolders = await imagekit.listFiles({
+          path: '/',
+          includeFolder: true,
+          limit: 1000,
+        })
+
+        const folder = allFolders.find(
+          (item: any) => item.type === 'folder' && item.folderId === folderPath
+        )
+
+        if (!folder) {
+          throw new Error(`Folder with ID "${folderPath}" not found`)
+        }
+
+        normalizedPath = (folder as any).folderPath
+      } catch (err) {
+        console.error('Error finding folder by ID:', err)
+        throw new Error(`Folder with ID "${folderPath}" not found`)
+      }
+    } else {
+      normalizedPath = folderPath.startsWith('/') ? folderPath : `/${folderPath}`
+    }
 
     if (!force) {
       // Use regular delete service if not forcing
