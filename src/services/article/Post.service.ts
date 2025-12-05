@@ -132,9 +132,8 @@ export const updatePostService = async (id: string, data: UpdatePostInput) => {
         ...postData,
         ...(slug && { slug }),
         ...(categoryIds !== undefined && {
-          categories: {
-            set: categoryIds.map((id) => ({ id })),
-          },
+          category:
+            categoryIds.length > 0 ? { connect: { id: categoryIds[0] } } : { disconnect: true },
         }),
       },
       include: { categories: true },
