@@ -7,6 +7,10 @@ import { paginationQuerySchema } from './common.validator'
 export const mediaListQuerySchema = paginationQuerySchema.extend({
   path: z.string().default('/').optional(),
   fileType: z.enum(['all', 'image', 'video', 'audio', 'raw']).optional().default('all'),
+  withItems: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true'),
 })
 
 /**
