@@ -28,6 +28,136 @@ paths:
         200:
           description: Menus retrieved successfully
 
+  /menus/item/{slug}:
+    get:
+      tags:
+        - Menu (Public)
+      summary: Get menu item by slug
+      description:
+        Retrieve a published menu item by its unique slug (e.g., /about, /contact). Returns the menu
+        item with its children and parent menu information.
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+          description: Menu item slug (e.g., "about", "contact", "services")
+          example: about
+      responses:
+        200:
+          description: Menu item retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Menu item fetched successfully
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      menuId:
+                        type: string
+                        format: uuid
+                      title:
+                        type: string
+                        example: About Us
+                      slug:
+                        type: string
+                        example: about
+                      type:
+                        type: string
+                        enum:
+                          - category-articles
+                          - single-article
+                          - page
+                          - service
+                          - project
+                          - custom-link
+                          - external-link
+                        example: page
+                      reference:
+                        oneOf:
+                          - type: string
+                          - type: array
+                            items:
+                              type: string
+                        example: about-us
+                      url:
+                        type: string
+                        nullable: true
+                        example: /about
+                      icon:
+                        type: string
+                        nullable: true
+                      target:
+                        type: string
+                        enum: [_self, _blank]
+                        default: _self
+                      cssClass:
+                        type: string
+                        nullable: true
+                      parentId:
+                        type: string
+                        format: uuid
+                        nullable: true
+                      order:
+                        type: integer
+                        example: 0
+                      isPublished:
+                        type: boolean
+                        example: true
+                      meta:
+                        type: object
+                        nullable: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                      updatedAt:
+                        type: string
+                        format: date-time
+                      menu:
+                        type: object
+                        properties:
+                          id:
+                            type: string
+                            format: uuid
+                          name:
+                            type: string
+                            example: Main Menu
+                          slug:
+                            type: string
+                            example: main-menu
+                          position:
+                            type: string
+                            example: header
+                      children:
+                        type: array
+                        items:
+                          type: object
+                          description: Child menu items (nested up to 2 levels)
+        404:
+          description: Menu item not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Menu item not found
+
   /menus/{identifier}:
     get:
       tags:
