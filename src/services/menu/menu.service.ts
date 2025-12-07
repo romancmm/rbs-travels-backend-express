@@ -194,6 +194,47 @@ export class MenuService {
   }
 
   /**
+   * Get menu item by slug (Public API)
+   * Returns published menu item with its children
+   */
+  async getMenuItemBySlug(slug: string) {
+    const menuItem = await prisma.menuItem.findFirst({
+      where: {
+        slug,
+        isPublished: true,
+        menu: {
+          isPublished: true, // Only from published menus
+        },
+      },
+      include: {
+        children: {
+          where: { isPublished: true },
+          include: {
+            children: {
+              where: { isPublished: true },
+            },
+          },
+          orderBy: { order: 'asc' },
+        },
+        menu: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            position: true,
+          },
+        },
+      },
+    })
+
+    if (!menuItem) {
+      throw createError(ErrorMessages.NOT_FOUND('Menu item'), 404)
+    }
+
+    return menuItem
+  }
+
+  /**
    * Get menu by position (e.g., "header", "footer")
    */
   async getMenuByPosition(position: string, useCache: boolean = true) {

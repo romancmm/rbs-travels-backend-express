@@ -14,6 +14,11 @@ export const MenuItemTypeEnum = z.enum([
 // Menu Item Target Enum
 export const MenuItemTargetEnum = z.enum(['_self', '_blank'])
 
+// Get Menu Item By Slug Params
+export const getMenuItemBySlugParamsSchema = z.object({
+  slug: z.string().min(1, 'Slug is required'),
+})
+
 // Menu Item Schema (for nested items)
 const menuItemSchema: z.ZodType<any> = z.lazy(() =>
   z

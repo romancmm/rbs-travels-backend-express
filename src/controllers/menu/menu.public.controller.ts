@@ -42,3 +42,22 @@ export const getMenu: RequestHandler = async (req, res) => {
     return error(res, err.message, err.status || 400)
   }
 }
+
+/**
+ * Get menu item by slug
+ */
+export const getMenuItem: RequestHandler = async (req, res) => {
+  try {
+    const { slug } = req.params
+
+    if (!slug) {
+      return error(res, 'Menu item slug is required', 400)
+    }
+
+    const data = await menuService.getMenuItemBySlug(slug)
+
+    return success(res, data, 'Menu item fetched successfully')
+  } catch (err: any) {
+    return error(res, err.message, err.status || 400)
+  }
+}
