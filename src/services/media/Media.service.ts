@@ -32,7 +32,7 @@ const formatMediaItem = (item: any) => {
 }
 
 export const listMediaService = async (query: MediaListQuery) => {
-  const { page = 1, perPage = 50, path = '/', fileType = 'all' } = query
+  const { page = 1, perPage = 50, path = '/', fileType = 'all', withItems = false } = query
   const skip = (page - 1) * perPage
 
   try {
@@ -59,8 +59,31 @@ export const listMediaService = async (query: MediaListQuery) => {
     const files = allItems.filter((item: any) => item.type === 'file')
 
     // Format items to return only necessary fields
-    const formattedFolders = folders.map(formatMediaItem)
+    let formattedFolders = folders.map(formatMediaItem)
     const formattedFiles = files.map(formatMediaItem)
+
+    // If withItems=true, fetch first 4 items for each folder
+    if (withItems && formattedFolders.length > 0) {
+      formattedFolders = await Promise.all(
+        formattedFolders.map(async (folder: any) => {
+          try {
+            const folderItems = await imagekit.listFiles({
+              path: folder.folderPath,
+              limit: 4,
+              sort: 'DESC_CREATED',
+            })
+            return {
+              ...folder,
+              items: folderItems.filter((item: any) => item.type === 'file').map(formatMediaItem),
+            }
+          } catch (err) {
+            console.error(`Error fetching items for folder ${folder.folderPath}:`, err)
+            return { ...folder, items: [] }
+          }
+        })
+      )
+    }
+
     const formattedItems = [...formattedFolders, ...formattedFiles]
 
     // ImageKit doesn't provide total count, so we estimate pagination
