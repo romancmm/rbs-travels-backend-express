@@ -5,8 +5,7 @@ export const MenuItemTypeEnum = z.enum([
   'category-articles',
   'single-article',
   'page',
-  'service',
-  'project',
+  'gallery',
   'custom-link',
   'external-link',
 ])
@@ -59,7 +58,7 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
       }
 
       // Entity types require single string reference
-      if (['single-article', 'page', 'service', 'project'].includes(data.type)) {
+      if (['single-article', 'page', 'gallery'].includes(data.type)) {
         if (!data.reference || typeof data.reference !== 'string') {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -171,7 +170,7 @@ export const createMenuItemBodySchema = z
     }
 
     // Entity types require single string reference
-    if (['single-article', 'page', 'service', 'project'].includes(data.type)) {
+    if (['single-article', 'page', 'gallery'].includes(data.type)) {
       if (!data.reference || typeof data.reference !== 'string') {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -247,7 +246,7 @@ export const updateMenuItemBodySchema = z
 
     // Entity types validation
     if (data.type && data.reference !== undefined) {
-      if (['single-article', 'page', 'service', 'project'].includes(data.type)) {
+      if (['single-article', 'page', 'gallery'].includes(data.type)) {
         if (data.reference !== null && typeof data.reference !== 'string') {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
