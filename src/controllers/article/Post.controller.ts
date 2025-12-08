@@ -13,19 +13,11 @@ export const list: RequestHandler = async (req, res) => {
   try {
     const { page, perPage, categoryIds, categorySlugs, tag, authorId, isPublished, q } = req.query
 
-    // Parse array parameters
-    const parseCategoryIds = categoryIds
-      ? ((Array.isArray(categoryIds) ? categoryIds : [categoryIds]) as string[])
-      : undefined
-    const parseCategorySlugs = categorySlugs
-      ? ((Array.isArray(categorySlugs) ? categorySlugs : [categorySlugs]) as string[])
-      : undefined
-
     const data = await listPostsService({
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
-      categoryIds: parseCategoryIds,
-      categorySlugs: parseCategorySlugs,
+      categoryIds: categoryIds as string[] | undefined,
+      categorySlugs: categorySlugs as string[] | undefined,
       tag: tag as string,
       authorId: authorId as string,
       isPublished: typeof isPublished === 'string' ? isPublished === 'true' : undefined,
@@ -42,19 +34,11 @@ export const listPublished: RequestHandler = async (req, res) => {
   try {
     const { page, perPage, categoryIds, categorySlugs, tag, authorId, q } = req.query
 
-    // Parse array parameters
-    const parseCategoryIds = categoryIds
-      ? ((Array.isArray(categoryIds) ? categoryIds : [categoryIds]) as string[])
-      : undefined
-    const parseCategorySlugs = categorySlugs
-      ? ((Array.isArray(categorySlugs) ? categorySlugs : [categorySlugs]) as string[])
-      : undefined
-
     const data = await listPostsService({
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
-      categoryIds: parseCategoryIds,
-      categorySlugs: parseCategorySlugs,
+      categoryIds: categoryIds as string[] | undefined,
+      categorySlugs: categorySlugs as string[] | undefined,
       tag: tag as string,
       authorId: authorId as string,
       isPublished: true, // Always filter for published on public routes
