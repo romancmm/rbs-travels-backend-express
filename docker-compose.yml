@@ -34,8 +34,18 @@ services:
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d rbs_db']
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
+
+    # Add memory limit for Postgres
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 1G
+          cpus: '1'
 
 volumes:
   postgres_data:
