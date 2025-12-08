@@ -10,6 +10,13 @@ import morgan from 'morgan'
 import path from 'node:path'
 
 const app = express()
+
+// Trust proxy - enables Express to trust reverse proxy headers
+// Use 'true' if behind a single proxy (nginx, Apache)
+// Use number for specific number of hops (e.g., 1, 2)
+// Use 'loopback' for localhost proxy only
+app.set('trust proxy', true)
+
 app.use(express.json()) // <--- must be before routes
 
 // Serve static files from public directory
