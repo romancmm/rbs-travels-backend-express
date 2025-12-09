@@ -7,8 +7,7 @@ export type MenuItemType =
   | 'category-articles' // Category listing page (multiple categories via references[])
   | 'single-article' // Single article/post (via reference)
   | 'page' // Single page (via reference)
-  | 'service' // Single service (via reference)
-  | 'project' // Single project (via reference)
+  | 'gallery' // Gallery (via reference)
   | 'custom-link' // Custom URL (internal or external)
   | 'external-link' // External link with validation
 
@@ -99,7 +98,7 @@ export interface UpdateMenuInput {
  * Type guards for menu items
  */
 export const isEntityMenuItem = (item: MenuItem): boolean => {
-  return ['single-article', 'page', 'service', 'project'].includes(item.type)
+  return ['single-article', 'page', 'gallery'].includes(item.type)
 }
 
 export const isCategoryArticlesMenuItem = (item: MenuItem): boolean => {
@@ -132,7 +131,7 @@ export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
   }
 
   // Entity types require single string reference
-  if (['single-article', 'page', 'service', 'project'].includes(item.type)) {
+  if (['single-article', 'page', 'gallery'].includes(item.type)) {
     if (!item.reference || typeof item.reference !== 'string') {
       errors.push(`Reference (slug) is required for ${item.type} type`)
     }
@@ -182,10 +181,8 @@ export const getMenuItemUrl = (item: MenuItem): string | null => {
         return `/articles/${item.reference}`
       case 'page':
         return `/${item.reference}`
-      case 'service':
-        return `/services/${item.reference}`
-      case 'project':
-        return `/projects/${item.reference}`
+      case 'gallery':
+        return `/galleries/${item.reference}`
     }
   }
 

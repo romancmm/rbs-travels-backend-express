@@ -146,7 +146,7 @@ model MenuItem {
   menuId      String
   title       String
   slug        String     @unique
-  type        String     // 'category-articles' | 'single-article' | 'page' | 'service' | 'project' | 'custom-link' | 'external-link'
+  type        String     // 'category-articles' | 'single-article' | 'page' | 'gallery' | 'custom-link' | 'external-link'
   reference   Json?      // String for single entity OR Array for multiple (category-articles): 'about-us' OR ['tech', 'business']
   url         String?    // URL for custom/external links or resolved URL
   icon        String?

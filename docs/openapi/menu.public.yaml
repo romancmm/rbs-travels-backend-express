@@ -79,8 +79,7 @@ paths:
                           - category-articles
                           - single-article
                           - page
-                          - service
-                          - project
+                          - gallery
                           - custom-link
                           - external-link
                         example: page
