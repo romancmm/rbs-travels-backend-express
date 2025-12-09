@@ -10,6 +10,7 @@ import type {
 
 export const listPostsService = async (params: PostQueryParams = {}) => {
   try {
+    console.log('listPostsService params:', JSON.stringify(params, null, 2))
     const {
       page = 1,
       perPage = 10,
@@ -22,6 +23,14 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
     } = params
     const { skip, take } = paginate(page, perPage)
     const where: any = {}
+    console.log('Building where clause with:', {
+      categoryIds,
+      categorySlugs,
+      tag,
+      isPublished,
+      authorId,
+      q,
+    })
 
     if (typeof isPublished === 'boolean') where.isPublished = isPublished
 
@@ -132,8 +141,9 @@ export const updatePostService = async (id: string, data: UpdatePostInput) => {
         ...postData,
         ...(slug && { slug }),
         ...(categoryIds !== undefined && {
-          category:
-            categoryIds.length > 0 ? { connect: { id: categoryIds[0] } } : { disconnect: true },
+          categories: {
+            set: categoryIds.map((id) => ({ id })),
+          },
         }),
       },
       include: { categories: true },
