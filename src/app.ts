@@ -32,6 +32,13 @@ app.use(morgan('combined'))
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting for trusted proxies or disable if needed
+  skip: (req) => {
+    // Skip rate limiting for localhost in development
+    return req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1'
+  },
 })
 app.use(limiter)
 

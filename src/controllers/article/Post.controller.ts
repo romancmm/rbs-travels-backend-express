@@ -12,11 +12,9 @@ import type { RequestHandler } from 'express'
 export const list: RequestHandler = async (req, res) => {
   try {
     // Query params are already validated and transformed by Zod middleware
-    console.log('Controller req.query:', JSON.stringify(req.query, null, 2))
     const data = await listPostsService(req.query)
     return success(res, data, 'Posts fetched')
   } catch (err: any) {
-    console.error('Controller error:', err)
     return error(res, err.message, err.status || 400)
   }
 }

@@ -10,7 +10,6 @@ import type {
 
 export const listPostsService = async (params: PostQueryParams = {}) => {
   try {
-    console.log('listPostsService params:', JSON.stringify(params, null, 2))
     const {
       page = 1,
       perPage = 10,
@@ -23,25 +22,29 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
     } = params
     const { skip, take } = paginate(page, perPage)
     const where: any = {}
-    console.log('Building where clause with:', {
-      categoryIds,
-      categorySlugs,
-      tag,
-      isPublished,
-      authorId,
-      q,
-    })
 
     if (typeof isPublished === 'boolean') where.isPublished = isPublished
 
-    // Filter by multiple category IDs
-    if (categoryIds && categoryIds.length > 0) {
-      where.categories = { some: { id: { in: categoryIds } } }
-    }
+    // Filter by categories - handle both IDs and slugs
+    // Ensure arrays are always arrays (handle both string and array inputs)
+    const categoryIdsArray = categoryIds ? (Array.isArray(categoryIds) ? categoryIds : [categoryIds]) : []
+    const categorySlugsArray = categorySlugs ? (Array.isArray(categorySlugs) ? categorySlugs : [categorySlugs]) : []
 
-    // Filter by multiple category slugs
-    if (categorySlugs && categorySlugs.length > 0) {
-      where.categories = { some: { slug: { in: categorySlugs } } }
+    if (categoryIdsArray.length > 0 || categorySlugsArray.length > 0) {
+      const categoryFilters = []
+
+      if (categoryIdsArray.length > 0) {
+        categoryFilters.push({ id: { in: categoryIdsArray } })
+      }
+
+      if (categorySlugsArray.length > 0) {
+        categoryFilters.push({ slug: { in: categorySlugsArray } })
+      }
+
+      // If both filters exist, use OR; otherwise use the single filter
+      where.categories = {
+        some: categoryFilters.length > 1 ? { OR: categoryFilters } : categoryFilters[0],
+      }
     }
 
     if (authorId) where.authorId = authorId
