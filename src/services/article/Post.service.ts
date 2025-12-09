@@ -27,8 +27,16 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
 
     // Filter by categories - handle both IDs and slugs
     // Ensure arrays are always arrays (handle both string and array inputs)
-    const categoryIdsArray = categoryIds ? (Array.isArray(categoryIds) ? categoryIds : [categoryIds]) : []
-    const categorySlugsArray = categorySlugs ? (Array.isArray(categorySlugs) ? categorySlugs : [categorySlugs]) : []
+    const categoryIdsArray = categoryIds
+      ? Array.isArray(categoryIds)
+        ? categoryIds
+        : [categoryIds]
+      : []
+    const categorySlugsArray = categorySlugs
+      ? Array.isArray(categorySlugs)
+        ? categorySlugs
+        : [categorySlugs]
+      : []
 
     if (categoryIdsArray.length > 0 || categorySlugsArray.length > 0) {
       const categoryFilters = []
