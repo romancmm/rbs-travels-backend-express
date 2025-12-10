@@ -33,7 +33,10 @@ paths:
                   description: Array of files to upload (use this OR file)
                 folder:
                   type: string
-                  description: Optional folder path in ImageKit
+                  description:
+                    Folder path in ImageKit where files will be uploaded. If browsing '/gallery',
+                    set this to '/gallery' to upload files there.
+                  example: '/gallery'
                 existing:
                   type: string
                   description:
