@@ -25,14 +25,38 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
 
     if (typeof isPublished === 'boolean') where.isPublished = isPublished
 
-    // Filter by multiple category IDs
-    if (categoryIds && categoryIds.length > 0) {
-      where.categories = { some: { id: { in: categoryIds } } }
+    // Filter by categories - handle both IDs and slugs
+    // Normalize to arrays: handle string (single or comma-separated) or array inputs
+    const normalizeCategoryArray = (value: any): string[] => {
+      if (!value) return []
+      if (Array.isArray(value)) return value
+      if (typeof value === 'string') {
+        return value
+          .split(',')
+          .map((item: string) => item.trim())
+          .filter(Boolean)
+      }
+      return [String(value)]
     }
 
-    // Filter by multiple category slugs
-    if (categorySlugs && categorySlugs.length > 0) {
-      where.categories = { some: { slug: { in: categorySlugs } } }
+    const categoryIdsArray = normalizeCategoryArray(categoryIds)
+    const categorySlugsArray = normalizeCategoryArray(categorySlugs)
+
+    if (categoryIdsArray.length > 0 || categorySlugsArray.length > 0) {
+      const categoryFilters = []
+
+      if (categoryIdsArray.length > 0) {
+        categoryFilters.push({ id: { in: categoryIdsArray } })
+      }
+
+      if (categorySlugsArray.length > 0) {
+        categoryFilters.push({ slug: { in: categorySlugsArray } })
+      }
+
+      // If both filters exist, use OR; otherwise use the single filter
+      where.categories = {
+        some: categoryFilters.length > 1 ? { OR: categoryFilters } : categoryFilters[0],
+      }
     }
 
     if (authorId) where.authorId = authorId
@@ -132,8 +156,9 @@ export const updatePostService = async (id: string, data: UpdatePostInput) => {
         ...postData,
         ...(slug && { slug }),
         ...(categoryIds !== undefined && {
-          category:
-            categoryIds.length > 0 ? { connect: { id: categoryIds[0] } } : { disconnect: true },
+          categories: {
+            set: categoryIds.map((id) => ({ id })),
+          },
         }),
       },
       include: { categories: true },

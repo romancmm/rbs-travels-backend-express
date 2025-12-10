@@ -11,18 +11,8 @@ import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res) => {
   try {
-    const { page, perPage, categoryIds, categorySlugs, tag, authorId, isPublished, q } = req.query
-
-    const data = await listPostsService({
-      page: page ? Number(page) : undefined,
-      perPage: perPage ? Number(perPage) : undefined,
-      categoryIds: categoryIds as string[] | undefined,
-      categorySlugs: categorySlugs as string[] | undefined,
-      tag: tag as string,
-      authorId: authorId as string,
-      isPublished: typeof isPublished === 'string' ? isPublished === 'true' : undefined,
-      q: q as string,
-    })
+    // Query params are already validated and transformed by Zod middleware
+    const data = await listPostsService(req.query)
     return success(res, data, 'Posts fetched')
   } catch (err: any) {
     return error(res, err.message, err.status || 400)
@@ -32,18 +22,9 @@ export const list: RequestHandler = async (req, res) => {
 // Public list - only show published posts
 export const listPublished: RequestHandler = async (req, res) => {
   try {
-    const { page, perPage, categoryIds, categorySlugs, tag, authorId, q } = req.query
-
-    const data = await listPostsService({
-      page: page ? Number(page) : undefined,
-      perPage: perPage ? Number(perPage) : undefined,
-      categoryIds: categoryIds as string[] | undefined,
-      categorySlugs: categorySlugs as string[] | undefined,
-      tag: tag as string,
-      authorId: authorId as string,
-      isPublished: true, // Always filter for published on public routes
-      q: q as string,
-    })
+    // Query params are already validated and transformed by Zod middleware
+    // Override isPublished to always be true for public routes
+    const data = await listPostsService({ ...req.query, isPublished: true })
     return success(res, data, 'Posts fetched')
   } catch (err: any) {
     return error(res, err.message, err.status || 400)
