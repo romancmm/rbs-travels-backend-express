@@ -26,17 +26,21 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
     if (typeof isPublished === 'boolean') where.isPublished = isPublished
 
     // Filter by categories - handle both IDs and slugs
-    // Ensure arrays are always arrays (handle both string and array inputs)
-    const categoryIdsArray = categoryIds
-      ? Array.isArray(categoryIds)
-        ? categoryIds
-        : [categoryIds]
-      : []
-    const categorySlugsArray = categorySlugs
-      ? Array.isArray(categorySlugs)
-        ? categorySlugs
-        : [categorySlugs]
-      : []
+    // Normalize to arrays: handle string (single or comma-separated) or array inputs
+    const normalizeCategoryArray = (value: any): string[] => {
+      if (!value) return []
+      if (Array.isArray(value)) return value
+      if (typeof value === 'string') {
+        return value
+          .split(',')
+          .map((item: string) => item.trim())
+          .filter(Boolean)
+      }
+      return [String(value)]
+    }
+
+    const categoryIdsArray = normalizeCategoryArray(categoryIds)
+    const categorySlugsArray = normalizeCategoryArray(categorySlugs)
 
     if (categoryIdsArray.length > 0 || categorySlugsArray.length > 0) {
       const categoryFilters = []
