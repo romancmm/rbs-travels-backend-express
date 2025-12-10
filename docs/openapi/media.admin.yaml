@@ -146,7 +146,8 @@ paths:
         - in: query
           name: path
           schema: { type: string, default: '/' }
-          description: Folder path to browse
+          description: Folder path to browse (e.g., '/', '/gallery', '/documents')
+          example: '/gallery'
         - in: query
           name: page
           schema: { type: integer, minimum: 1, default: 1 }
@@ -162,6 +163,11 @@ paths:
             enum: [all, image, video, audio, raw]
             default: all
           description: Filter by file type
+        - in: query
+          name: withItems
+          schema: { type: string, enum: ['true', 'false'] }
+          description: Include first 4 items from each folder in the response
+          example: 'true'
       responses:
         '200':
           description: Media library content retrieved successfully
@@ -303,8 +309,10 @@ paths:
                 parentPath:
                   type: string
                   default: '/'
-                  description: Parent directory path
-                  example: '/albums'
+                  description:
+                    Parent directory path where the new folder will be created. If browsing
+                    '/gallery', set this to '/gallery' to create a subfolder inside it.
+                  example: '/gallery'
               required: [folderName]
             examples:
               rootFolder:
@@ -312,10 +320,10 @@ paths:
                 value:
                   folderName: 'documents'
               nestedFolder:
-                summary: Create nested folder
+                summary: Create nested folder inside gallery
                 value:
                   folderName: 'vacation-photos'
-                  parentPath: '/albums'
+                  parentPath: '/gallery'
       responses:
         '201':
           description: Folder created successfully
