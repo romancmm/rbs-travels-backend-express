@@ -37,16 +37,6 @@ services:
       timeout: 10s
       retries: 5
 
-    # Add memory limit for Postgres
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.5'
-        reservations:
-          memory: 1G
-          cpus: '1'
-
 volumes:
   postgres_data:
     driver: local
