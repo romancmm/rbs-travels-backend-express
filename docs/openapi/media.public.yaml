@@ -90,6 +90,11 @@ paths:
             enum: [all, image, video, audio, raw]
             default: all
           description: Filter by file type
+        - in: query
+          name: withItems
+          schema: { type: string, enum: ['true', 'false'] }
+          description: Include first 4 items from each folder in the response
+          example: 'true'
       responses:
         '200':
           description: Media library content retrieved successfully

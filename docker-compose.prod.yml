@@ -10,6 +10,15 @@ services:
       POSTGRES_HOST_AUTH_METHOD: md5
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
+    # Add memory limit for Postgres
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.5'
+        reservations:
+          memory: 1G
+          cpus: '1'
 
 volumes:
   postgres_prod_data:
