@@ -19,6 +19,12 @@ model User {
   updatedAt DateTime @updatedAt
   posts     Post[]
   roles     Role[]   @relation("UserRoles")
+
+  @@index([email])
+  @@index([isActive])
+  @@index([isAdmin])
+  @@index([createdAt])
+  @@index([isActive, isAdmin])
 }
 
 model Role {
@@ -43,6 +49,11 @@ model Page {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   isPublished Boolean  @default(false)
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([createdAt])
+  @@index([isPublished, createdAt])
 }
  
 model Post {
@@ -62,6 +73,15 @@ model Post {
   updatedAt   DateTime   @updatedAt
   author      User       @relation(fields: [authorId], references: [id])
   categories  Category[] @relation("PostCategories")
+
+  @@index([slug])
+  @@index([authorId])
+  @@index([isPublished])
+  @@index([publishedAt])
+  @@index([createdAt])
+  @@index([isPublished, publishedAt])
+  @@index([isPublished, createdAt])
+  @@index([authorId, isPublished])
 }
 
 model Category {
@@ -72,6 +92,9 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   posts       Post[]   @relation("PostCategories")
+
+  @@index([slug])
+  @@index([name])
 }
 
 model Service {
@@ -88,6 +111,12 @@ model Service {
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([order])
+  @@index([isPublished, order])
+  @@index([createdAt])
 }
 
 model Project {
@@ -107,6 +136,15 @@ model Project {
   order       Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([isFeatured])
+  @@index([order])
+  @@index([category])
+  @@index([isPublished, isFeatured])
+  @@index([isPublished, order])
+  @@index([createdAt])
 }
 
 model Setting {
@@ -118,6 +156,11 @@ model Setting {
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([group])
+  @@index([isPublic])
+  @@index([group, isPublic])
 }
 
 model Menu {
