@@ -1,5 +1,4 @@
 import * as ServiceController from '@/controllers/service/Service.controller'
-import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { requirePermission } from '@/middlewares/rbac.middleware'
 import { validate, validateMultiple } from '@/middlewares/validation.middleware'
 import { idParamSchema } from '@/validators/common.validator'
@@ -11,9 +10,6 @@ import {
 import { Router } from 'express'
 
 const router = Router()
-
-// All admin service routes require authentication
-router.use(adminAuthMiddleware)
 
 // Services - admin CRUD
 router.get(

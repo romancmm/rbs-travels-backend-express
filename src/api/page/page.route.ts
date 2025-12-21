@@ -1,6 +1,5 @@
-import { Router } from 'express'
 import * as Page from '@/controllers/page/Page.controller'
-import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
+import { Router } from 'express'
 
 const router = Router()
 
@@ -9,8 +8,8 @@ router.get('/', Page.list)
 router.get('/:id', Page.get)
 
 // Admin: create/update/delete
-router.post('/', adminAuthMiddleware, Page.create)
-router.patch('/:id', adminAuthMiddleware, Page.update)
-router.delete('/:id', adminAuthMiddleware, Page.remove)
+router.post('/', Page.create)
+router.patch('/:id', Page.update)
+router.delete('/:id', Page.remove)
 
 export default router

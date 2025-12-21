@@ -1,5 +1,4 @@
 import * as MenuController from '@/controllers/menu/menu.admin.controller'
-import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { requirePermission } from '@/middlewares/rbac.middleware'
 import { validate, validateMultiple } from '@/middlewares/validation.middleware'
 import {
@@ -20,9 +19,6 @@ import {
 import { Router } from 'express'
 
 const router = Router()
-
-// All admin menu routes require authentication
-router.use(adminAuthMiddleware)
 
 // Menu CRUD
 router.get(
