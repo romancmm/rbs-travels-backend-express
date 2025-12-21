@@ -42,8 +42,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: rbs-redis
-  redis_data:
-    driver: local
     restart: unless-stopped
     ports:
       - '6379:6379'
@@ -60,6 +58,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
   app_files:
     driver: local
