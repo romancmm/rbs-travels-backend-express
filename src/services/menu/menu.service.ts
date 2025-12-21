@@ -1,3 +1,4 @@
+import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { Prisma } from '@prisma/client'
 import prisma from '../../config/db'
@@ -291,6 +292,9 @@ export class MenuService {
         },
       })
 
+      // Invalidate menu cache
+      await CacheService.invalidatePattern('public:/menus*')
+
       return menu
     } catch (error) {
       handleServiceError(error, 'Menu')
@@ -335,6 +339,9 @@ export class MenuService {
         },
       })
 
+      // Invalidate menu cache
+      await CacheService.invalidatePattern('public:/menus*')
+
       return updated
     } catch (error) {
       handleServiceError(error, 'Menu')
@@ -354,6 +361,9 @@ export class MenuService {
 
       // Cascade will delete all menu items
       await prisma.menu.delete({ where: { id } })
+
+      // Invalidate menu cache
+      await CacheService.invalidatePattern('public:/menus*')
     } catch (error) {
       handleServiceError(error, 'Menu')
     }

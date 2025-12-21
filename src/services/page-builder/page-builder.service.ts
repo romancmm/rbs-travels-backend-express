@@ -1,3 +1,4 @@
+import CacheService from '@/services/cache.service'
 import { Prisma } from '@prisma/client'
 import prisma from '../../config/db'
 import { paginate } from '../../utils/paginator'
@@ -147,7 +148,7 @@ export class PageBuilderService {
     const content = data.content ?? { sections: [] }
     const cacheKey = `page:${slug}:v1`
 
-    return await prisma.pageBuilder.create({
+    const page = await prisma.pageBuilder.create({
       data: {
         title: data.title,
         slug,
@@ -163,6 +164,11 @@ export class PageBuilderService {
         cacheKey,
       },
     })
+
+    // Invalidate page cache
+    await CacheService.invalidatePattern('public:/pages*')
+
+    return page
   }
 
   /**
@@ -214,10 +220,16 @@ export class PageBuilderService {
       }
     }
 
-    return await prisma.pageBuilder.update({
-      where: { id },
-      data: updateData,
-    })
+    return await prisma.pageBuilder
+      .update({
+        where: { id },
+        data: updateData,
+      })
+      .then(async (page) => {
+        // Invalidate page cache
+        await CacheService.invalidatePattern('public:/pages*')
+        return page
+      })
   }
 
   /**
@@ -230,18 +242,24 @@ export class PageBuilderService {
       throw new Error('Page not found')
     }
 
-    return await prisma.pageBuilder.update({
-      where: { id },
-      data: {
-        isPublished: true,
-        isDraft: false,
-        publishedAt: new Date(),
-        publishedContent: pageData.content as any,
-        version: { increment: 1 },
-        cacheKey: `page:${pageData.slug}:v${pageData.version + 1}`,
-        lastCached: null,
-      },
-    })
+    return await prisma.pageBuilder
+      .update({
+        where: { id },
+        data: {
+          isPublished: true,
+          isDraft: false,
+          publishedAt: new Date(),
+          publishedContent: pageData.content as any,
+          version: { increment: 1 },
+          cacheKey: `page:${pageData.slug}:v${pageData.version + 1}`,
+          lastCached: null,
+        },
+      })
+      .then(async (page) => {
+        // Invalidate page cache
+        await CacheService.invalidatePattern('public:/pages*')
+        return page
+      })
   }
 
   /**
@@ -274,6 +292,9 @@ export class PageBuilderService {
     }
 
     await prisma.pageBuilder.delete({ where: { id } })
+
+    // Invalidate page cache
+    await CacheService.invalidatePattern('public:/pages*')
   }
 
   /**

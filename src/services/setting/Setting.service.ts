@@ -1,3 +1,4 @@
+import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
@@ -112,6 +113,10 @@ export const createSettingService = async (data: CreateSettingInput) => {
     const payload: any = { ...data }
     if (payload.value === null) payload.value = Prisma.JsonNull
     const setting = await prisma.setting.create({ data: payload })
+
+    // Invalidate settings cache
+    await CacheService.invalidatePattern('public:/settings*')
+
     return setting
   } catch (error) {
     handleServiceError(error, 'Setting')
@@ -123,6 +128,10 @@ export const updateSettingService = async (id: string, data: UpdateSettingInput)
     const payload: any = { ...data }
     if ('value' in payload && payload.value === null) payload.value = Prisma.JsonNull
     const setting = await prisma.setting.update({ where: { id }, data: payload })
+
+    // Invalidate settings cache
+    await CacheService.invalidatePattern('public:/settings*')
+
     return setting
   } catch (error) {
     handleServiceError(error, 'Setting')
@@ -135,6 +144,10 @@ export const updateSettingByKeyService = async (key: string, value: any) => {
       where: { key },
       data: { value },
     })
+
+    // Invalidate settings cache
+    await CacheService.invalidatePattern('public:/settings*')
+
     return setting
   } catch (error) {
     handleServiceError(error, 'Setting')
@@ -144,6 +157,10 @@ export const updateSettingByKeyService = async (key: string, value: any) => {
 export const deleteSettingService = async (id: string) => {
   try {
     await prisma.setting.delete({ where: { id } })
+
+    // Invalidate settings cache
+    await CacheService.invalidatePattern('public:/settings*')
+
     return { id, deleted: true }
   } catch (error) {
     handleServiceError(error, 'Setting')

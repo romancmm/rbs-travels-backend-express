@@ -1,3 +1,4 @@
+import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
@@ -45,6 +46,10 @@ export const createPageService = async (data: CreatePageInput) => {
     if (payload.content === null) payload.content = Prisma.JsonNull
     if (payload.meta === null) payload.meta = Prisma.JsonNull
     const page = await prisma.page.create({ data: payload })
+
+    // Invalidate page cache
+    await CacheService.invalidatePattern('public:/page*')
+
     return page
   } catch (error) {
     handleServiceError(error, 'Page')
@@ -67,6 +72,10 @@ export const updatePageService = async (id: string, data: UpdatePageInput) => {
     if ('content' in payload && payload.content === null) payload.content = Prisma.JsonNull
     if ('meta' in payload && payload.meta === null) payload.meta = Prisma.JsonNull
     const page = await prisma.page.update({ where: { id }, data: payload })
+
+    // Invalidate page cache
+    await CacheService.invalidatePattern('public:/page*')
+
     return page
   } catch (error) {
     handleServiceError(error, 'Page')
@@ -76,6 +85,10 @@ export const updatePageService = async (id: string, data: UpdatePageInput) => {
 export const deletePageService = async (id: string) => {
   try {
     await prisma.page.delete({ where: { id } })
+
+    // Invalidate page cache
+    await CacheService.invalidatePattern('public:/page*')
+
     return { id, deleted: true }
   } catch (error) {
     handleServiceError(error, 'Page')

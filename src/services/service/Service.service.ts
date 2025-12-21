@@ -1,3 +1,4 @@
+import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
@@ -69,6 +70,10 @@ export const createServiceService = async (data: CreateServiceInput) => {
         slug,
       },
     })
+
+    // Invalidate service cache
+    await CacheService.invalidatePattern('public:/services*')
+
     return service
   } catch (error) {
     handleServiceError(error, 'Service')
@@ -94,6 +99,10 @@ export const updateServiceService = async (id: string, data: UpdateServiceInput)
         ...(slug && { slug }),
       },
     })
+
+    // Invalidate service cache
+    await CacheService.invalidatePattern('public:/services*')
+
     return service
   } catch (error) {
     handleServiceError(error, 'Service')
@@ -103,6 +112,10 @@ export const updateServiceService = async (id: string, data: UpdateServiceInput)
 export const deleteServiceService = async (id: string) => {
   try {
     await prisma.service.delete({ where: { id } })
+
+    // Invalidate service cache
+    await CacheService.invalidatePattern('public:/services*')
+
     return { id, deleted: true }
   } catch (error) {
     handleServiceError(error, 'Service')

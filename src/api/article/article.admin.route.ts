@@ -1,6 +1,5 @@
 import * as CategoryController from '@/controllers/article/Category.controller'
 import * as PostController from '@/controllers/article/Post.controller'
-import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { requirePermission } from '@/middlewares/rbac.middleware'
 import { validate, validateMultiple } from '@/middlewares/validation.middleware'
 import {
@@ -17,7 +16,6 @@ import { Router } from 'express'
 const router = Router()
 
 // All admin article routes require authentication
-router.use(adminAuthMiddleware)
 
 // Posts - admin CRUD
 router.get(
