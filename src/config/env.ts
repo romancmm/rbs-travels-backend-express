@@ -3,6 +3,7 @@ import 'dotenv/config'
 export const PORT = Number(process.env.PORT) || 4000
 export const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey'
 export const DATABASE_URL = process.env.DATABASE_URL || ''
+export const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379'
 
 export const NODE_ENV = process.env.NODE_ENV || ''
 export const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || ''

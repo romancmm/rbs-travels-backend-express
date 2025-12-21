@@ -1,3 +1,4 @@
+import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
@@ -54,6 +55,10 @@ export const createCategoryService = async (data: CreateCategoryInput) => {
         slug,
       },
     })
+
+    // Invalidate article cache on category create
+    await CacheService.invalidatePattern('public:/articles*')
+
     return category
   } catch (error) {
     handleServiceError(error, 'Category')
@@ -79,6 +84,10 @@ export const updateCategoryService = async (id: string, data: UpdateCategoryInpu
         ...(slug && { slug }),
       },
     })
+
+    // Invalidate article cache on category update
+    await CacheService.invalidatePattern('public:/articles*')
+
     return category
   } catch (error) {
     handleServiceError(error, 'Category')
@@ -88,6 +97,10 @@ export const updateCategoryService = async (id: string, data: UpdateCategoryInpu
 export const deleteCategoryService = async (id: string) => {
   try {
     await prisma.category.delete({ where: { id } })
+
+    // Invalidate article cache on category delete
+    await CacheService.invalidatePattern('public:/articles*')
+
     return { id, deleted: true }
   } catch (error) {
     handleServiceError(error, 'Category')

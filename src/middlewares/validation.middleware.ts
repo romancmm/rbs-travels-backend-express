@@ -1,46 +1,77 @@
 import { error } from '@/utils/response'
 import type { NextFunction, Request, Response } from 'express'
-import { type ZodSchema, ZodError } from 'zod'
+import { type ZodSchema, ZodError, ZodType } from 'zod'
 
 /**
  * Middleware to validate request data using Zod schemas
  * @param schema - Zod schema to validate against
  * @param source - Which part of the request to validate ('body', 'query', 'params')
  */
-export const validate = (schema: ZodSchema, source: 'body' | 'query' | 'params' = 'body') => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const dataToValidate = req[source]
-      const validated = await schema.parseAsync(dataToValidate)
-      // In Express 5, req.query/req.params are getters; do not reassign the property.
-      // Instead, mutate the existing object so downstream reads get validated values.
-      if (source === 'query' || source === 'params') {
-        const target = (req as any)[source] || {}
-        // Clear existing keys to avoid stale values, then assign validated
-        for (const k of Object.keys(target)) delete target[k]
-        Object.assign(target, validated)
-      } else {
-        // body is safe to replace
-        ;(req as any).body = validated
-      }
-      next()
-    } catch (err) {
-      console.log('err :>> ', err)
-      if (err instanceof ZodError) {
-        const errorMessage = err.issues
-          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-          .join(', ')
+// export const validate = (schema: ZodSchema, source: 'body' | 'query' | 'params' = 'body') => {
+//   return async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const dataToValidate = req[source]
+//       const validated = await schema.parseAsync(dataToValidate)
+//       // In Express 5, req.query/req.params are getters; do not reassign the property.
+//       // Instead, mutate the existing object so downstream reads get validated values.
+//       if (source === 'query' || source === 'params') {
+//         const target = (req as any)[source] || {}
+//         // Clear existing keys to avoid stale values, then assign validated
+//         for (const k of Object.keys(target)) delete target[k]
+//         Object.assign(target, validated)
+//       } else {
+//         // body is safe to replace
+//         req.body = validated
+//       }
+//       next()
+//     } catch (error) {
+//       if (error instanceof ZodError) {
+//         return res.status(400).json({
+//           success: false,
+//           status: 'error',
+//           message: 'Validation failed',
+//           errors: error.issues.map((err) => ({
+//             path: err.path.join('.'),
+//             message: err.message,
+//           })),
+//         })
+//       }
+//       return next(error)
+//     }
+//   }
+// }
 
-        return res.status(422).json({
+export const validate =
+  (schema: ZodType, reqPart: 'body' | 'query' | 'params' = 'body') =>
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Ensure we always have at least an empty object to validate
+      const dataToValidate = req[reqPart] || {}
+      const parsed = await schema.parseAsync(dataToValidate)
+      // Use Object.assign to update readonly properties like req.query
+      if (reqPart === 'query') {
+        Object.assign(req['query'], parsed)
+      } else {
+        req[reqPart] = parsed
+      }
+      return next()
+    } catch (error) {
+      console.log('error', error)
+      if (error instanceof ZodError) {
+        return res.status(400).json({
           success: false,
+          status: 'error',
           message: 'Validation failed',
-          errors: err.issues,
+          errors: error.issues.map((err) => ({
+            path: err.path.length > 0 ? err.path.join('.') : reqPart,
+            message: err.message,
+            code: err.code,
+          })),
         })
       }
-      return error(res, 'Validation error', 400)
+      return next(error)
     }
   }
-}
 
 /**
  * Validate multiple sources in one middleware
