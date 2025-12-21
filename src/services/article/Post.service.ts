@@ -1,3 +1,4 @@
+import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
@@ -130,6 +131,10 @@ export const createPostService = async (data: CreatePostInput, authorId: string)
       },
       include: { categories: true },
     })
+
+    // Invalidate article cache on create
+    await CacheService.invalidatePattern('public:/articles*')
+
     return post
   } catch (error) {
     handleServiceError(error, 'Post')
@@ -163,11 +168,18 @@ export const updatePostService = async (id: string, data: UpdatePostInput) => {
       },
       include: { categories: true },
     })
+
+    // Invalidate article cache on update
+    await CacheService.invalidatePattern('public:/articles*')
+
     return post
   } catch (error) {
     handleServiceError(error, 'Post')
   }
 }
+
+// Invalidate article cache on delete
+await CacheService.invalidatePattern('public:/articles*')
 
 export const deletePostService = async (id: string) => {
   try {

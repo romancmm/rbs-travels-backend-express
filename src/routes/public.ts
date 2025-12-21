@@ -7,9 +7,13 @@ import projectPublicRoutes from '@/api/project/project.public.route'
 import servicePublicRoutes from '@/api/service/service.public.route'
 import settingPublicRoutes from '@/api/setting/setting.public.route'
 import uploadPublicRoutes from '@/api/upload/upload.public.route'
+import cacheMiddleware from '@/middlewares/cache.middleware'
 import { Router } from 'express'
 
 const routes = Router()
+
+// Apply cache middleware to all public routes (5 minutes TTL)
+routes.use(cacheMiddleware(1800))
 
 // health & root (must be before sub-routers to avoid conflicts)
 routes.get('/health', (_req, res) => res.json({ ok: true }))

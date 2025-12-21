@@ -1,5 +1,4 @@
 import * as PageBuilderController from '@/controllers/page-builder/page-builder.admin.controller'
-import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { requirePermission } from '@/middlewares/rbac.middleware'
 import { validate, validateMultiple } from '@/middlewares/validation.middleware'
 import {
@@ -14,9 +13,6 @@ import {
 import { Router } from 'express'
 
 const router = Router()
-
-// All admin page builder routes require authentication
-router.use(adminAuthMiddleware)
 
 // Page CRUD
 router.get(

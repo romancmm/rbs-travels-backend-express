@@ -1,5 +1,4 @@
 import * as AdminController from '@/controllers/admin/Admin.controller'
-import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { requirePermission } from '@/middlewares/rbac.middleware'
 import { validate, validateMultiple } from '@/middlewares/validation.middleware'
 import { idParamSchema } from '@/validators/common.validator'
@@ -13,9 +12,6 @@ const router = Router()
 const assignRoleSchema = z.object({
   roleId: z.string().uuid(),
 })
-
-// All admin user routes require authentication
-router.use(adminAuthMiddleware)
 
 // Admin Users Management - CRUD for admin/staff users only
 router.get(
