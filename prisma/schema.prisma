@@ -25,6 +25,9 @@ model User {
   @@index([isAdmin])
   @@index([createdAt])
   @@index([isActive, isAdmin])
+  @@index([email])
+  @@index([name])
+  @@index([updatedAt])
 }
 
 model Role {
@@ -32,12 +35,16 @@ model Role {
   name        String       @unique
   permissions Permission[] @relation("RolePermissions")
   users       User[]       @relation("UserRoles")
+  
+  @@index([name])
 }
 
 model Permission {
   id    String @id @default(uuid())
   name  String @unique
   roles Role[] @relation("RolePermissions")
+  
+  @@index([name])
 }
  
 model Post {
@@ -70,6 +77,11 @@ model Post {
   @@index([isPublished, createdAt])
   @@index([authorId, isPublished])
   @@index([viewCount])
+  @@index([slug])
+  @@index([title])
+  @@index([tags])
+  @@index([isPublished, viewCount])
+  @@index([updatedAt])
 }
 
 model Category {
@@ -81,6 +93,11 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   posts       Post[]   @relation("PostCategories")
+  
+  @@index([name])
+  @@index([slug])
+  @@index([postCount])
+  @@index([createdAt])
 }
 
 model Setting {
@@ -115,6 +132,9 @@ model Menu {
 
   @@index([position])
   @@index([isPublished])
+  @@index([position, isPublished])
+  @@index([slug])
+  @@index([name])
 }
 
 model MenuItem {
@@ -143,6 +163,12 @@ model MenuItem {
   @@index([type])
   @@index([order])
   @@index([isPublished])
+  @@index([menuId, parentId])
+  @@index([menuId, isPublished])
+  @@index([menuId, order])
+  @@index([parentId, isPublished])
+  @@index([slug])
+  @@index([title])
 }
 
 model PageBuilder {
@@ -168,6 +194,12 @@ model PageBuilder {
   @@index([isPublished])
   @@index([isDraft])
   @@index([publishedAt])
+  @@index([slug])
+  @@index([title])
+  @@index([viewCount])
+  @@index([isPublished, publishedAt])
+  @@index([isPublished, isDraft])
+  @@index([createdAt])
 }
 
 
@@ -185,6 +217,9 @@ model Page {
   @@index([isPublished])
   @@index([createdAt])
   @@index([isPublished, createdAt])
+  @@index([slug])
+  @@index([title])
+  @@index([updatedAt])
 }
 
 model Service {
@@ -206,6 +241,10 @@ model Service {
   @@index([order])
   @@index([isPublished, order])
   @@index([createdAt])
+  @@index([slug])
+  @@index([title])
+  @@index([updatedAt])
+  @@index([price])
 }
 
 model Project {
@@ -233,4 +272,11 @@ model Project {
   @@index([isPublished, isFeatured])
   @@index([isPublished, order])
   @@index([createdAt])
+  @@index([slug])
+  @@index([title])
+  @@index([tags])
+  @@index([updatedAt])
+  @@index([completedAt])
+  @@index([client])
+  @@index([category, isPublished])
 }
