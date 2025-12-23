@@ -1,4 +1,4 @@
-import { createError, ErrorMessages, handleServiceError } from '@/utils/error-handler'
+import { createError, ErrorMessages } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import prisma from '@/utils/prisma'
 import type {
@@ -20,43 +20,27 @@ export const listPermissionsService = async (params: PermissionQueryParams = {})
 }
 
 export const getPermissionByIdService = async (id: string) => {
-  try {
-    const permission = await prisma.permission.findUnique({
-      where: { id },
-      include: { roles: { select: { id: true, name: true } } },
-    })
-    if (!permission) {
-      throw createError(ErrorMessages.NOT_FOUND('Permission'), 404, 'NOT_FOUND')
-    }
-    return permission
-  } catch (error) {
-    handleServiceError(error, 'Permission')
+  const permission = await prisma.permission.findUnique({
+    where: { id },
+    include: { roles: { select: { id: true, name: true } } },
+  })
+  if (!permission) {
+    throw createError(ErrorMessages.NOT_FOUND('Permission'), 404, 'NOT_FOUND')
   }
+  return permission
 }
 
 export const createPermissionService = async (data: CreatePermissionInput) => {
-  try {
-    const permission = await prisma.permission.create({ data })
-    return permission
-  } catch (error) {
-    handleServiceError(error, 'Permission')
-  }
+  const permission = await prisma.permission.create({ data })
+  return permission
 }
 
 export const updatePermissionService = async (id: string, data: UpdatePermissionInput) => {
-  try {
-    const permission = await prisma.permission.update({ where: { id }, data })
-    return permission
-  } catch (error) {
-    handleServiceError(error, 'Permission')
-  }
+  const permission = await prisma.permission.update({ where: { id }, data })
+  return permission
 }
 
 export const deletePermissionService = async (id: string) => {
-  try {
-    await prisma.permission.delete({ where: { id } })
-    return { id, deleted: true }
-  } catch (error) {
-    handleServiceError(error, 'Permission')
-  }
+  await prisma.permission.delete({ where: { id } })
+  return { id, deleted: true }
 }

@@ -1,11 +1,11 @@
 import menuService from '@/services/menu/menu.service'
-import { error, success } from '@/utils/response'
+import { success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 /**
  * List published menus only
  */
-export const listMenus: RequestHandler = async (req, res) => {
+export const listMenus: RequestHandler = async (req, res, next) => {
   try {
     const { page, limit } = req.query
 
@@ -15,49 +15,55 @@ export const listMenus: RequestHandler = async (req, res) => {
     )
 
     return success(res, data, 'Menus fetched successfully')
-  } catch (err: any) {
-    return error(res, err.message, err.status || 400)
+  } catch (err) {
+    next(err)
   }
 }
 
 /**
  * Get published menu by ID or slug
  */
-export const getMenu: RequestHandler = async (req, res) => {
+export const getMenu: RequestHandler = async (req, res, next) => {
   try {
     const { identifier } = req.params
 
     if (!identifier) {
-      return error(res, 'Menu identifier is required', 400)
+      const error = new Error('Menu identifier is required') as any
+      error.status = 400
+      throw error
     }
 
     const data = await menuService.getPublicMenu(identifier) // Uses cache
 
     if (!data) {
-      return error(res, 'Menu not found', 404)
+      const error = new Error('Menu not found') as any
+      error.status = 404
+      throw error
     }
 
     return success(res, data, 'Menu fetched successfully')
-  } catch (err: any) {
-    return error(res, err.message, err.status || 400)
+  } catch (err) {
+    next(err)
   }
 }
 
 /**
  * Get menu item by slug
  */
-export const getMenuItem: RequestHandler = async (req, res) => {
+export const getMenuItem: RequestHandler = async (req, res, next) => {
   try {
     const { slug } = req.params
 
     if (!slug) {
-      return error(res, 'Menu item slug is required', 400)
+      const error = new Error('Menu item slug is required') as any
+      error.status = 400
+      throw error
     }
 
     const data = await menuService.getMenuItemBySlug(slug)
 
     return success(res, data, 'Menu item fetched successfully')
-  } catch (err: any) {
-    return error(res, err.message, err.status || 400)
+  } catch (err) {
+    next(err)
   }
 }
