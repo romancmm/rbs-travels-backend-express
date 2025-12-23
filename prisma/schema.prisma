@@ -15,6 +15,7 @@ model User {
   avatar    String?
   isActive  Boolean  @default(true)
   isAdmin   Boolean  @default(false)
+  postCount Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   posts     Post[]
@@ -40,22 +41,26 @@ model Permission {
 }
  
 model Post {
-  id          String     @id @default(uuid())
-  title       String
-  slug        String     @unique
-  excerpt     String?
-  content     String
-  thumbnail   String?
-  gallery     String[]   @default([])
-  seo         Json?
-  authorId    String
-  tags        String[]   @default([])
-  isPublished Boolean    @default(false)
-  publishedAt DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  author      User       @relation(fields: [authorId], references: [id])
-  categories  Category[] @relation("PostCategories")
+  id            String     @id @default(uuid())
+  title         String
+  slug          String     @unique
+  excerpt       String?
+  content       String
+  thumbnail     String?
+  gallery       String[]   @default([])
+  seo           Json?
+  authorId      String
+  authorName    String?
+  tags          String[]   @default([])
+  isPublished   Boolean    @default(false)
+  publishedAt   DateTime?
+  viewCount     Int        @default(0)
+  commentCount  Int        @default(0)
+  categoryCount Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  author        User       @relation(fields: [authorId], references: [id])
+  categories    Category[] @relation("PostCategories")
 
   @@index([authorId])
   @@index([isPublished])
@@ -64,6 +69,7 @@ model Post {
   @@index([isPublished, publishedAt])
   @@index([isPublished, createdAt])
   @@index([authorId, isPublished])
+  @@index([viewCount])
 }
 
 model Category {
@@ -71,6 +77,7 @@ model Category {
   name        String   @unique
   slug        String   @unique
   description String?
+  postCount   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   posts       Post[]   @relation("PostCategories")

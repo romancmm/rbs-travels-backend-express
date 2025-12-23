@@ -6,6 +6,11 @@ import {
   listPostsService,
   updatePostService,
 } from '@/services/article/Post.service'
+import {
+  getTopPostsByViewsService,
+  incrementPostViewBySlugService,
+  incrementPostViewService,
+} from '@/services/article/PostAnalytics.service'
 import { success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
@@ -71,6 +76,37 @@ export const remove: RequestHandler = async (req, res, next) => {
   try {
     const data = await deletePostService(req.params.id as string)
     return success(res, data, 'Post deleted')
+  } catch (err) {
+    next(err)
+  }
+}
+
+// Track post views (for analytics)
+export const trackView: RequestHandler = async (req, res, next) => {
+  try {
+    const data = await incrementPostViewService(req.params.id as string)
+    return success(res, data, 'View tracked')
+  } catch (err) {
+    next(err)
+  }
+}
+
+// Track post views by slug (public endpoint)
+export const trackViewBySlug: RequestHandler = async (req, res, next) => {
+  try {
+    const data = await incrementPostViewBySlugService(req.params.slug as string)
+    return success(res, data, 'View tracked')
+  } catch (err) {
+    next(err)
+  }
+}
+
+// Get top posts by views
+export const getTopPosts: RequestHandler = async (req, res, next) => {
+  try {
+    const limit = req.query.limit ? Number(req.query.limit) : 10
+    const data = await getTopPostsByViewsService(limit)
+    return success(res, data, 'Top posts fetched')
   } catch (err) {
     next(err)
   }

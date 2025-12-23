@@ -106,11 +106,19 @@ export const createPostService = async (data: CreatePostInput, authorId: string)
 
   const { categoryIds, ...postData } = data
 
+  // Get author name for de-normalized field
+  const author = await prisma.user.findUnique({ where: { id: authorId }, select: { name: true } })
+  if (!author) throw createError(ErrorMessages.NOT_FOUND('Author'), 404, 'NOT_FOUND')
+
+  const categoryCount = categoryIds?.length || 0
+
   const post = await prisma.post.create({
     data: {
       ...postData,
       slug,
       authorId,
+      authorName: author.name,
+      categoryCount,
       categories:
         categoryIds && categoryIds.length > 0
           ? { connect: categoryIds.map((id) => ({ id })) }
@@ -119,6 +127,20 @@ export const createPostService = async (data: CreatePostInput, authorId: string)
     include: { categories: true },
   })
 
+  // Update User.postCount (de-normalized)
+  await prisma.user.update({
+    where: { id: authorId },
+    data: { postCount: { increment: 1 } },
+  })
+
+  // Update Category.postCount for each category (de-normalized)
+  if (categoryIds && categoryIds.length > 0) {
+    await prisma.category.updateMany({
+      where: { id: { in: categoryIds } },
+      data: { postCount: { increment: 1 } },
+    })
+  }
+
   // Invalidate article cache on create
   await CacheService.invalidatePattern('public:/articles*')
 
@@ -126,23 +148,57 @@ export const createPostService = async (data: CreatePostInput, authorId: string)
 }
 
 export const updatePostService = async (id: string, data: UpdatePostInput) => {
+  // Get existing post to compare category changes
+  const existingPost = await prisma.post.findUnique({
+    where: { id },
+    include: { categories: { select: { id: true } } },
+  })
+  if (!existingPost) throw createError(ErrorMessages.NOT_FOUND('Post'), 404, 'NOT_FOUND')
+
   // Handle slug if title or slug is being updated
   let slug = data.slug
   if (data.title || data.slug) {
-    const post = await prisma.post.findUnique({ where: { id } })
-    if (!post) throw createError(ErrorMessages.NOT_FOUND('Post'), 404, 'NOT_FOUND')
-
-    const title = data.title || post.title
+    const title = data.title || existingPost.title
     slug = await handleSlug('post', title, data.slug, id)
   }
 
   const { categoryIds, ...postData } = data
+
+  // Calculate category changes for de-normalized postCount
+  let oldCategoryIds: string[] = []
+  let newCategoryIds: string[] = []
+  if (categoryIds !== undefined) {
+    oldCategoryIds = existingPost.categories.map((c) => c.id)
+    newCategoryIds = categoryIds
+
+    // Categories to remove (decrement postCount)
+    const removedCategories = oldCategoryIds.filter((id) => !newCategoryIds.includes(id))
+    if (removedCategories.length > 0) {
+      await prisma.category.updateMany({
+        where: { id: { in: removedCategories } },
+        data: { postCount: { decrement: 1 } },
+      })
+    }
+
+    // Categories to add (increment postCount)
+    const addedCategories = newCategoryIds.filter((id) => !oldCategoryIds.includes(id))
+    if (addedCategories.length > 0) {
+      await prisma.category.updateMany({
+        where: { id: { in: addedCategories } },
+        data: { postCount: { increment: 1 } },
+      })
+    }
+  }
+
+  const categoryCount =
+    categoryIds !== undefined ? categoryIds.length : existingPost.categories.length
 
   const post = await prisma.post.update({
     where: { id },
     data: {
       ...postData,
       ...(slug && { slug }),
+      ...(categoryIds !== undefined && { categoryCount }),
       ...(categoryIds !== undefined && {
         categories: {
           set: categoryIds.map((id) => ({ id })),
@@ -159,7 +215,29 @@ export const updatePostService = async (id: string, data: UpdatePostInput) => {
 }
 
 export const deletePostService = async (id: string) => {
+  // Get post with author and categories before deletion
+  const post = await prisma.post.findUnique({
+    where: { id },
+    include: { categories: { select: { id: true } } },
+  })
+  if (!post) throw createError(ErrorMessages.NOT_FOUND('Post'), 404, 'NOT_FOUND')
+
   await prisma.post.delete({ where: { id } })
+
+  // Decrement User.postCount (de-normalized)
+  await prisma.user.update({
+    where: { id: post.authorId },
+    data: { postCount: { decrement: 1 } },
+  })
+
+  // Decrement Category.postCount for each category (de-normalized)
+  if (post.categories.length > 0) {
+    await prisma.category.updateMany({
+      where: { id: { in: post.categories.map((c) => c.id) } },
+      data: { postCount: { decrement: 1 } },
+    })
+  }
+
   // Invalidate article cache on delete
   await CacheService.invalidatePattern('public:/articles*')
   return { id, deleted: true }
