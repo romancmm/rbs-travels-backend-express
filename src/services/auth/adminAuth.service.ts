@@ -58,7 +58,7 @@ export const registerAdminService = async (data: RegisterInput & { roleIds?: str
     },
   })
 
-  const permissionNames = permissions.map((p) => p.name)
+  const permissionNames = permissions.map((p: any) => p.name)
   const isSuperAdmin = user.email === 'superadmin@gmail.com'
 
   return { user: { ...user, permissions: permissionNames, isSuperAdmin }, ...tokens }
@@ -106,7 +106,7 @@ export const loginAdminService = async (data: AdminLoginInput) => {
     },
   })
 
-  const permissionNames = permissions.map((p) => p.name)
+  const permissionNames = permissions.map((p: any) => p.name)
   const isSuperAdmin = user.email === 'superadmin@gmail.com'
 
   // Remove password from response
@@ -163,7 +163,7 @@ export const refreshAdminService = async (data: { refreshToken: string }) => {
     },
   })
 
-  const permissionNames = permissions.map((p) => p.name)
+  const permissionNames = permissions.map((p: any) => p.name)
   const isSuperAdmin = user.email === 'superadmin@gmail.com'
 
   return { user: { ...user, permissions: permissionNames, isSuperAdmin }, ...tokens }
@@ -211,7 +211,7 @@ export const getAdminProfileService = async (userId?: string) => {
     },
   })
 
-  const permissionNames = permissions.map((p) => p.name)
+  const permissionNames = permissions.map((p: any) => p.name)
   const isSuperAdmin = user.email === 'superadmin@gmail.com'
 
   return { ...user, permissions: permissionNames, isSuperAdmin }

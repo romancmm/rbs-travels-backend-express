@@ -112,34 +112,40 @@ export const createPostService = async (data: CreatePostInput, authorId: string)
 
   const categoryCount = categoryIds?.length || 0
 
-  const post = await prisma.post.create({
-    data: {
-      ...postData,
-      slug,
-      authorId,
-      authorName: author.name,
-      categoryCount,
-      categories:
-        categoryIds && categoryIds.length > 0
-          ? { connect: categoryIds.map((id) => ({ id })) }
-          : undefined,
-    },
-    include: { categories: true },
-  })
+  // ✅ ACID-compliant: Use transaction to ensure atomicity
+  const post = await prisma.$transaction(async (tx: any) => {
+    // Create post
+    const newPost = await tx.post.create({
+      data: {
+        ...postData,
+        slug,
+        authorId,
+        authorName: author.name,
+        categoryCount,
+        categories:
+          categoryIds && categoryIds.length > 0
+            ? { connect: categoryIds.map((id) => ({ id })) }
+            : undefined,
+      },
+      include: { categories: true },
+    })
 
-  // Update User.postCount (de-normalized)
-  await prisma.user.update({
-    where: { id: authorId },
-    data: { postCount: { increment: 1 } },
-  })
-
-  // Update Category.postCount for each category (de-normalized)
-  if (categoryIds && categoryIds.length > 0) {
-    await prisma.category.updateMany({
-      where: { id: { in: categoryIds } },
+    // Update User.postCount (de-normalized)
+    await tx.user.update({
+      where: { id: authorId },
       data: { postCount: { increment: 1 } },
     })
-  }
+
+    // Update Category.postCount for each category (de-normalized)
+    if (categoryIds && categoryIds.length > 0) {
+      await tx.category.updateMany({
+        where: { id: { in: categoryIds } },
+        data: { postCount: { increment: 1 } },
+      })
+    }
+
+    return newPost
+  })
 
   // Invalidate article cache on create
   await CacheService.invalidatePattern('public:/articles*')
@@ -165,47 +171,51 @@ export const updatePostService = async (id: string, data: UpdatePostInput) => {
   const { categoryIds, ...postData } = data
 
   // Calculate category changes for de-normalized postCount
-  let oldCategoryIds: string[] = []
-  let newCategoryIds: string[] = []
-  if (categoryIds !== undefined) {
-    oldCategoryIds = existingPost.categories.map((c) => c.id)
-    newCategoryIds = categoryIds
+  const oldCategoryIds = existingPost.categories.map((c: any) => c.id)
+  const newCategoryIds = categoryIds !== undefined ? categoryIds : oldCategoryIds
 
-    // Categories to remove (decrement postCount)
-    const removedCategories = oldCategoryIds.filter((id) => !newCategoryIds.includes(id))
-    if (removedCategories.length > 0) {
-      await prisma.category.updateMany({
-        where: { id: { in: removedCategories } },
-        data: { postCount: { decrement: 1 } },
-      })
+  const categoryCount = newCategoryIds.length
+
+  // ✅ ACID-compliant: Use transaction
+  const post = await prisma.$transaction(async (tx: any) => {
+    // Update post
+    const updatedPost = await tx.post.update({
+      where: { id },
+      data: {
+        ...postData,
+        ...(slug && { slug }),
+        categoryCount,
+        ...(categoryIds !== undefined && {
+          categories: {
+            set: categoryIds.map((id) => ({ id })),
+          },
+        }),
+      },
+      include: { categories: true },
+    })
+
+    // Update category counts only if categories changed
+    if (categoryIds !== undefined) {
+      // Categories to remove (decrement postCount)
+      const removedCategories = oldCategoryIds.filter((id: string) => !newCategoryIds.includes(id))
+      if (removedCategories.length > 0) {
+        await tx.category.updateMany({
+          where: { id: { in: removedCategories } },
+          data: { postCount: { decrement: 1 } },
+        })
+      }
+
+      // Categories to add (increment postCount)
+      const addedCategories = newCategoryIds.filter((id: string) => !oldCategoryIds.includes(id))
+      if (addedCategories.length > 0) {
+        await tx.category.updateMany({
+          where: { id: { in: addedCategories } },
+          data: { postCount: { increment: 1 } },
+        })
+      }
     }
 
-    // Categories to add (increment postCount)
-    const addedCategories = newCategoryIds.filter((id) => !oldCategoryIds.includes(id))
-    if (addedCategories.length > 0) {
-      await prisma.category.updateMany({
-        where: { id: { in: addedCategories } },
-        data: { postCount: { increment: 1 } },
-      })
-    }
-  }
-
-  const categoryCount =
-    categoryIds !== undefined ? categoryIds.length : existingPost.categories.length
-
-  const post = await prisma.post.update({
-    where: { id },
-    data: {
-      ...postData,
-      ...(slug && { slug }),
-      ...(categoryIds !== undefined && { categoryCount }),
-      ...(categoryIds !== undefined && {
-        categories: {
-          set: categoryIds.map((id) => ({ id })),
-        },
-      }),
-    },
-    include: { categories: true },
+    return updatedPost
   })
 
   // Invalidate article cache on update
@@ -222,21 +232,25 @@ export const deletePostService = async (id: string) => {
   })
   if (!post) throw createError(ErrorMessages.NOT_FOUND('Post'), 404, 'NOT_FOUND')
 
-  await prisma.post.delete({ where: { id } })
+  // ✅ ACID-compliant: Use transaction
+  await prisma.$transaction(async (tx: any) => {
+    // Delete post
+    await tx.post.delete({ where: { id } })
 
-  // Decrement User.postCount (de-normalized)
-  await prisma.user.update({
-    where: { id: post.authorId },
-    data: { postCount: { decrement: 1 } },
-  })
-
-  // Decrement Category.postCount for each category (de-normalized)
-  if (post.categories.length > 0) {
-    await prisma.category.updateMany({
-      where: { id: { in: post.categories.map((c) => c.id) } },
+    // Decrement User.postCount (de-normalized)
+    await tx.user.update({
+      where: { id: post.authorId },
       data: { postCount: { decrement: 1 } },
     })
-  }
+
+    // Decrement Category.postCount for each category (de-normalized)
+    if (post.categories.length > 0) {
+      await tx.category.updateMany({
+        where: { id: { in: post.categories.map((c: any) => c.id) } },
+        data: { postCount: { decrement: 1 } },
+      })
+    }
+  })
 
   // Invalidate article cache on delete
   await CacheService.invalidatePattern('public:/articles*')

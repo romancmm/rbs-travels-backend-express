@@ -1,4 +1,8 @@
-import { Prisma } from '@prisma/client'
+import {
+  PrismaClientInitializationError,
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library'
 import type { NextFunction, Request, Response } from 'express'
 import { ZodError } from 'zod'
 
@@ -29,7 +33,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
   }
 
   // Handle Prisma known request errors
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+  if (err instanceof PrismaClientKnownRequestError) {
     // P2002: Unique constraint violation
     if (err.code === 'P2002') {
       const fields = (err.meta?.target as string[]) || []
@@ -88,7 +92,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
   }
 
   // Handle Prisma validation errors
-  if (err instanceof Prisma.PrismaClientValidationError) {
+  if (err instanceof PrismaClientValidationError) {
     return res.status(400).json({
       success: false,
       message: 'Invalid data provided',
@@ -97,7 +101,7 @@ export function errorHandler(err: any, _req: Request, res: Response, _next: Next
   }
 
   // Handle Prisma initialization errors
-  if (err instanceof Prisma.PrismaClientInitializationError) {
+  if (err instanceof PrismaClientInitializationError) {
     return res.status(503).json({
       success: false,
       message: 'Database connection failed',

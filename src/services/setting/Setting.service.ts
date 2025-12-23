@@ -53,7 +53,7 @@ export const getSettingsByKeysService = async (keys: string[]) => {
     where: { key: { in: keys } },
   })
   // Return as key-value object
-  return settings.reduce((acc: any, setting) => {
+  return settings.reduce((acc: any, setting: any) => {
     acc[setting.key] = setting.value
     return acc
   }, {})
@@ -75,7 +75,7 @@ export const getPublicSettingsService = async () => {
     select: { key: true, value: true, group: true },
   })
   // Return as key-value object grouped by group
-  return settings.reduce((acc: any, setting) => {
+  return settings.reduce((acc: any, setting: any) => {
     if (!acc[setting.group || 'general']) {
       acc[setting.group || 'general'] = {}
     }
