@@ -1,11 +1,11 @@
 import pageBuilderService from '@/services/page-builder/page-builder.service'
-import { error, success } from '@/utils/response'
+import { success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 /**
  * List published pages only
  */
-export const listPages: RequestHandler = async (req, res) => {
+export const listPages: RequestHandler = async (req, res, next) => {
   try {
     const { page, limit, search } = req.query
 
@@ -19,30 +19,34 @@ export const listPages: RequestHandler = async (req, res) => {
     )
 
     return success(res, data, 'Pages fetched successfully')
-  } catch (err: any) {
-    return error(res, err.message, err.status || 400)
+  } catch (err) {
+    next(err)
   }
 }
 
 /**
  * Get published page by ID or slug
  */
-export const getPage: RequestHandler = async (req, res) => {
+export const getPage: RequestHandler = async (req, res, next) => {
   try {
     const { identifier } = req.params
 
     if (!identifier) {
-      return error(res, 'Page identifier is required', 400)
+      const error = new Error('Page identifier is required') as any
+      error.status = 400
+      throw error
     }
 
     const data = await pageBuilderService.getPublishedPage(identifier) // Uses cache
 
     if (!data) {
-      return error(res, 'Page not found', 404)
+      const error = new Error('Page not found') as any
+      error.status = 404
+      throw error
     }
 
     return success(res, data, 'Page fetched successfully')
-  } catch (err: any) {
-    return error(res, err.message, err.status || 400)
+  } catch (err) {
+    next(err)
   }
 }

@@ -15,8 +15,6 @@ import { Router } from 'express'
 
 const router = Router()
 
-// All admin article routes require authentication
-
 // Posts - admin CRUD
 router.get(
   '/posts',
@@ -24,24 +22,28 @@ router.get(
   validate(postQuerySchema, 'query'),
   PostController.list
 )
+
 router.get(
   '/posts/:id',
   requirePermission('post.read'),
   validate(idParamSchema, 'params'),
   PostController.getById
 )
+
 router.post(
   '/posts',
   requirePermission('post.create'),
   validate(createPostSchema),
   PostController.create
 )
+
 router.put(
   '/posts/:id',
   requirePermission('post.update'),
   validateMultiple({ params: idParamSchema, body: updatePostSchema }),
   PostController.update
 )
+
 router.delete(
   '/posts/:id',
   requirePermission('post.delete'),
@@ -56,24 +58,28 @@ router.get(
   validate(categoryQuerySchema, 'query'),
   CategoryController.list
 )
+
 router.get(
   '/categories/:id',
   requirePermission('category.read'),
   validate(idParamSchema, 'params'),
   CategoryController.get
 )
+
 router.post(
   '/categories',
   requirePermission('category.create'),
   validate(createCategorySchema),
   CategoryController.create
 )
+
 router.put(
   '/categories/:id',
   requirePermission('category.update'),
   validateMultiple({ params: idParamSchema, body: updateCategorySchema }),
   CategoryController.update
 )
+
 router.delete(
   '/categories/:id',
   requirePermission('category.delete'),
