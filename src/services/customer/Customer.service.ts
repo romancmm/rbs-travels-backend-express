@@ -44,11 +44,13 @@ export const createCustomerService = async (data: CreateCustomerInput) => {
     throw createError('Name, email, and password are required', 422, 'VALIDATION_ERROR')
 
   const hashed = await hashPassword(password)
-  const user = await prisma.user.create({
+  const createdUser = await prisma.user.create({
     data: { name, email, password: hashed, avatar, isAdmin: false },
   })
-  const { password: _p, ...safe } = user as any
-  return safe
+
+  // Remove password from response
+  const { password: _, ...user } = createdUser
+  return user
 }
 
 export const updateCustomerService = async (id: string, data: UpdateCustomerInput) => {

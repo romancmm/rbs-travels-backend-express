@@ -21,13 +21,7 @@ export const updateProfileService = async (userId: string, data: UpdateProfileIn
   const user = await prisma.user.update({
     where: { id: userId },
     data: payload,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
+    include: {
       roles: {
         select: {
           id: true,
@@ -35,11 +29,12 @@ export const updateProfileService = async (userId: string, data: UpdateProfileIn
           permissions: { select: { id: true, name: true } },
         },
       },
-      createdAt: true,
-      updatedAt: true,
     },
   })
-  return user
+
+  // Remove password from response
+  const { password, ...safeUser } = user
+  return safeUser
 }
 
 export const updateCustomerProfileService = async (
@@ -74,34 +69,20 @@ export const uploadAvatarService = async (userId: string, avatarUrl: string) => 
   const user = await prisma.user.update({
     where: { id: userId },
     data: { avatar: avatarUrl },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   })
-  return user
+
+  // Remove password from response
+  const { password, ...safeUser } = user
+  return safeUser
 }
 
 export const removeAvatarService = async (userId: string) => {
   const user = await prisma.user.update({
     where: { id: userId },
     data: { avatar: null },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
-      createdAt: true,
-      updatedAt: true,
-    },
   })
-  return user
+
+  // Remove password from response
+  const { password, ...safeUser } = user
+  return safeUser
 }

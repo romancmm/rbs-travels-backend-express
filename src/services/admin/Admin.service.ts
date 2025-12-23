@@ -23,19 +23,13 @@ export const listAdminsService = async (params: UserQueryParams = {}) => {
     ]
   }
 
-  const [items, total] = await Promise.all([
+  const [users, total] = await Promise.all([
     prisma.user.findMany({
       where,
       skip,
       take,
       orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        avatar: true,
-        isActive: true,
-        isAdmin: true,
+      include: {
         roles: {
           select: {
             id: true,
@@ -43,25 +37,20 @@ export const listAdminsService = async (params: UserQueryParams = {}) => {
             permissions: { select: { id: true, name: true } },
           },
         },
-        createdAt: true,
-        updatedAt: true,
       },
     }),
     prisma.user.count({ where }),
   ])
+
+  // Remove password from all items
+  const items = users.map(({ password, ...user }) => user)
   return { items, page, perPage, total }
 }
 
 export const getAdminByIdService = async (id: string) => {
   const user = await prisma.user.findUnique({
     where: { id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
+    include: {
       roles: {
         select: {
           id: true,
@@ -69,12 +58,13 @@ export const getAdminByIdService = async (id: string) => {
           permissions: { select: { id: true, name: true } },
         },
       },
-      createdAt: true,
-      updatedAt: true,
     },
   })
   if (!user) throw createError(ErrorMessages.NOT_FOUND('User'), 404, 'NOT_FOUND')
-  return user
+
+  // Remove password from response
+  const { password, ...safeUser } = user
+  return safeUser
 }
 
 export const createAdminService = async (data: CreateUserInput) => {
@@ -105,8 +95,11 @@ export const createAdminService = async (data: CreateUserInput) => {
     }
   }
 
-  const user = await prisma.user.create({
-    data: payload,
+  const createdUser = await prisma.user.create({ data: payload })
+
+  // Fetch with relations for response
+  const user = await prisma.user.findUnique({
+    where: { id: createdUser.id },
     select: {
       id: true,
       name: true,
@@ -167,13 +160,7 @@ export const updateAdminService = async (id: string, data: UpdateUserInput) => {
   const user = await prisma.user.update({
     where: { id },
     data: payload,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
+    include: {
       roles: {
         select: {
           id: true,
@@ -181,11 +168,12 @@ export const updateAdminService = async (id: string, data: UpdateUserInput) => {
           permissions: { select: { id: true, name: true } },
         },
       },
-      createdAt: true,
-      updatedAt: true,
     },
   })
-  return user
+
+  // Remove password from response
+  const { password: _, ...safeUser } = user
+  return safeUser
 }
 
 export const deleteAdminService = async (id: string) => {
@@ -200,13 +188,7 @@ export const toggleAdminStatusService = async (id: string) => {
   const updated = await prisma.user.update({
     where: { id },
     data: { isActive: !user.isActive },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
+    include: {
       roles: {
         select: {
           id: true,
@@ -214,11 +196,12 @@ export const toggleAdminStatusService = async (id: string) => {
           permissions: { select: { id: true, name: true } },
         },
       },
-      createdAt: true,
-      updatedAt: true,
     },
   })
-  return updated
+
+  // Remove password from response
+  const { password, ...safeUser } = updated
+  return safeUser
 }
 
 export const assignRolesToAdminService = async (userId: string, roleIds: string[]) => {
@@ -229,13 +212,7 @@ export const assignRolesToAdminService = async (userId: string, roleIds: string[
         set: roleIds.map((id) => ({ id })),
       },
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
+    include: {
       roles: {
         select: {
           id: true,
@@ -243,9 +220,10 @@ export const assignRolesToAdminService = async (userId: string, roleIds: string[
           permissions: { select: { id: true, name: true } },
         },
       },
-      createdAt: true,
-      updatedAt: true,
     },
   })
-  return user
+
+  // Remove password from response
+  const { password, ...safeUser } = user
+  return safeUser
 }

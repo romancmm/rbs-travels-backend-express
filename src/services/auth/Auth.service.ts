@@ -17,9 +17,12 @@ export const registerCustomerService = async (data: RegisterInput) => {
     throw createError(ErrorMessages.ALREADY_EXISTS('User', 'email'), 409, 'DUPLICATE_ENTRY')
 
   const hashed = await hashPassword(password)
-  const user = await prisma.user.create({
+  const createdUser = await prisma.user.create({
     data: { name, email, password: hashed, avatar, isAdmin: false },
   })
+
+  // Remove password from response
+  const { password: _, ...user } = createdUser
   const tokens = generateTokens({ id: user.id, isAdmin: false })
   return { user, ...tokens }
 }
@@ -33,8 +36,10 @@ export const loginCustomerService = async (data: LoginInput) => {
   const valid = await comparePassword(password, user.password)
   if (!valid) throw createError(ErrorMessages.INVALID_CREDENTIALS, 401, 'INVALID_CREDENTIALS')
 
-  const tokens = generateTokens({ id: user.id, isAdmin: false })
-  return { user, ...tokens }
+  // Remove password from response
+  const { password: _, ...safeUser } = user
+  const tokens = generateTokens({ id: safeUser.id, isAdmin: false })
+  return { user: safeUser, ...tokens }
 }
 
 export const refreshCustomerService = async (data: RefreshTokenInput) => {

@@ -25,19 +25,10 @@ export const registerAdminService = async (data: RegisterInput & { roleIds?: str
     }
   }
 
-  const user = await prisma.user.create({
-    data: userData,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
+  const createdUser = await prisma.user.create({ data: userData })
+
+  // Remove password from response
+  const { password: _, ...user } = createdUser
   const tokens = generateTokens({ id: user.id, isAdmin: true })
 
   // Fetch permissions separately (more efficient than including full roles)
@@ -66,20 +57,8 @@ export const registerAdminService = async (data: RegisterInput & { roleIds?: str
 
 export const loginAdminService = async (data: AdminLoginInput) => {
   const { email, password } = data
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      password: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
+  const user = await prisma.user.findUnique({ where: { email } })
+
   if (!user || !user.isAdmin)
     throw createError(ErrorMessages.INVALID_CREDENTIALS, 401, 'INVALID_CREDENTIALS')
 
@@ -127,23 +106,13 @@ export const refreshAdminService = async (data: { refreshToken: string }) => {
     throw createError('Invalid or expired refresh token', 401, 'INVALID_TOKEN')
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: payload.id as string },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
+  const user = await prisma.user.findUnique({ where: { id: payload.id as string } })
 
   if (!user || !user.isAdmin) throw createError(ErrorMessages.NOT_FOUND('Admin'), 404, 'NOT_FOUND')
 
-  const tokens = generateTokens({ id: user.id, isAdmin: true })
+  // Remove password from response
+  const { password: _, ...safeUser } = user
+  const tokens = generateTokens({ id: safeUser.id, isAdmin: true })
 
   // Fetch permissions
   const permissions = await prisma.permission.findMany({
@@ -164,9 +133,9 @@ export const refreshAdminService = async (data: { refreshToken: string }) => {
   })
 
   const permissionNames = permissions.map((p: any) => p.name)
-  const isSuperAdmin = user.email === 'superadmin@gmail.com'
+  const isSuperAdmin = safeUser.email === 'superadmin@gmail.com'
 
-  return { user: { ...user, permissions: permissionNames, isSuperAdmin }, ...tokens }
+  return { user: { ...safeUser, permissions: permissionNames, isSuperAdmin }, ...tokens }
 }
 
 export const logoutAdminService = async (_data: unknown) => {
@@ -177,21 +146,12 @@ export const logoutAdminService = async (_data: unknown) => {
 export const getAdminProfileService = async (userId?: string) => {
   if (!userId) throw createError(ErrorMessages.UNAUTHORIZED, 401, 'UNAUTHORIZED')
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-      isActive: true,
-      isAdmin: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  })
+  const user = await prisma.user.findUnique({ where: { id: userId } })
 
   if (!user || !user.isAdmin) throw createError(ErrorMessages.NOT_FOUND('Admin'), 404, 'NOT_FOUND')
+
+  // Remove password from response
+  const { password: _, ...safeUser } = user
 
   // Fetch permissions
   const permissions = await prisma.permission.findMany({
@@ -212,9 +172,9 @@ export const getAdminProfileService = async (userId?: string) => {
   })
 
   const permissionNames = permissions.map((p: any) => p.name)
-  const isSuperAdmin = user.email === 'superadmin@gmail.com'
+  const isSuperAdmin = safeUser.email === 'superadmin@gmail.com'
 
-  return { ...user, permissions: permissionNames, isSuperAdmin }
+  return { ...safeUser, permissions: permissionNames, isSuperAdmin }
 }
 
 export const resetPasswordAdminService = async (data: { email: string; newPassword: string }) => {
