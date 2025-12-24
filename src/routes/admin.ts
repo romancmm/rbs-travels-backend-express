@@ -12,13 +12,12 @@ import roleAdminRoutes from '@/api/role/role.admin.route'
 import serviceAdminRoutes from '@/api/service/service.admin.route'
 import settingAdminRoutes from '@/api/setting/setting.admin.route'
 import uploadAdminRoutes from '@/api/upload/upload.admin.route'
-import { adminAuthMiddleware } from '@/middlewares/auth.middleware'
 import { Router } from 'express'
 
 const routes = Router()
 
 // All admin setting routes require authentication
-routes.use(adminAuthMiddleware)
+// routes.use(adminAuthMiddleware)
 
 routes.use('/page', pageAdminRoutes)
 routes.use('/menu', menuAdminRoutes)
