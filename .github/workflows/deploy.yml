@@ -14,9 +14,9 @@ jobs:
       - name: Set up SSH agent & Run Deploy CI script
         uses: appleboy/ssh-action@v1.1.0
         with:
-          host: ${{ secrets.HOST_2 }}
+          host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY_2 }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             echo "SSH setup completed."
             cd apps/rbs-travels-backend-express
