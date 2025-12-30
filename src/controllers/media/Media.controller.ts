@@ -6,6 +6,7 @@ import {
   bulkRemoveTagsService,
   copyFileService,
   copyFolderService,
+  copyItemService,
   createFolderService,
   deleteFileService,
   deleteFolderService,
@@ -16,7 +17,9 @@ import {
   listMediaService,
   moveFileService,
   moveFolderService,
+  moveItemService,
   renameFolderService,
+  renameItemService,
   searchMediaService,
   updateFileService,
 } from '@/services/media/Media.service'
@@ -54,6 +57,20 @@ export const renameFolder = async (req: Request, res: Response, next: NextFuncti
   try {
     const { oldPath, newFolderName } = req.body as { oldPath: string; newFolderName: string }
     const data = await renameFolderService(oldPath, newFolderName)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const renameItem = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, newName, type } = req.body as {
+      id: string
+      newName: string
+      type?: 'file' | 'folder'
+    }
+    const data = await renameItemService(id, newName, type)
     res.json(data)
   } catch (e) {
     next(e)
@@ -165,6 +182,34 @@ export const copyFolder = async (req: Request, res: Response, next: NextFunction
       destinationPath: string
     }
     const data = await copyFolderService(sourcePath, destinationPath)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const moveItem = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, destinationPath, type } = req.body as {
+      id: string
+      destinationPath: string
+      type?: 'file' | 'folder'
+    }
+    const data = await moveItemService(id, destinationPath, type)
+    res.json(data)
+  } catch (e) {
+    next(e)
+  }
+}
+
+export const copyItem = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id, destinationPath, type } = req.body as {
+      id: string
+      destinationPath: string
+      type?: 'file' | 'folder'
+    }
+    const data = await copyItemService(id, destinationPath, type)
     res.json(data)
   } catch (e) {
     next(e)

@@ -280,6 +280,39 @@ export const updateFileService = async (
   }
 }
 
+// ============================================================================
+// UNIFIED RENAME - Handles both files and folders
+// ============================================================================
+
+export const renameItemService = async (id: string, newName: string, type?: 'file' | 'folder') => {
+  try {
+    // Auto-detect type if not provided
+    let itemType = type
+
+    if (!itemType) {
+      // Check if it's a fileId (ImageKit fileIds are typically alphanumeric)
+      // or a folder path (starts with /)
+      itemType = id.startsWith('/') ? 'folder' : 'file'
+    }
+
+    if (itemType === 'folder') {
+      // Use existing folder rename logic
+      return await renameFolderService(id, newName)
+    } else {
+      // Rename file using updateFileService
+      const result = await updateFileService(id, { name: newName })
+      return {
+        ...result,
+        message: `File renamed to "${newName}" successfully`,
+      }
+    }
+  } catch (err: any) {
+    console.error('Rename item error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to rename item: ${message}`)
+  }
+}
+
 export const deleteFileService = async (fileId: string) => {
   try {
     // Verify file exists before deletion
@@ -576,6 +609,60 @@ export const copyFileService = async (fileId: string, destinationPath: string) =
     console.error('Copy file error:', err)
     const message = err?.message || 'Unknown error occurred'
     throw new Error(`Failed to copy file: ${message}`)
+  }
+}
+
+// ============================================================================
+// UNIFIED MOVE & COPY - Handles both files and folders
+// ============================================================================
+
+export const moveItemService = async (
+  id: string,
+  destinationPath: string,
+  type?: 'file' | 'folder'
+) => {
+  try {
+    // Auto-detect type if not provided
+    let itemType = type
+
+    if (!itemType) {
+      itemType = id.startsWith('/') ? 'folder' : 'file'
+    }
+
+    if (itemType === 'folder') {
+      return await moveFolderService(id, destinationPath)
+    } else {
+      return await moveFileService(id, destinationPath)
+    }
+  } catch (err: any) {
+    console.error('Move item error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to move item: ${message}`)
+  }
+}
+
+export const copyItemService = async (
+  id: string,
+  destinationPath: string,
+  type?: 'file' | 'folder'
+) => {
+  try {
+    // Auto-detect type if not provided
+    let itemType = type
+
+    if (!itemType) {
+      itemType = id.startsWith('/') ? 'folder' : 'file'
+    }
+
+    if (itemType === 'folder') {
+      return await copyFolderService(id, destinationPath)
+    } else {
+      return await copyFileService(id, destinationPath)
+    }
+  } catch (err: any) {
+    console.error('Copy item error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to copy item: ${message}`)
   }
 }
 

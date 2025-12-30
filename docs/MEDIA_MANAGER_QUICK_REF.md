@@ -1,5 +1,8 @@
 # Media Manager Quick Reference
 
+> **Note:** This API now uses unified endpoints for files and folders. See
+> [MEDIA_API_UNIFIED.md](./MEDIA_API_UNIFIED.md) for the new unified approach.
+
 ## 🚀 Quick Start Commands
 
 ### List Files
@@ -24,13 +27,40 @@ POST /admin/media/folder
 }
 ```
 
-### Move File
+### Rename Any Item (Unified)
 
 ```bash
-PUT /admin/media/file/:fileId/move
+PUT /admin/media/rename
 {
+  "id": "abc123 or /folder/path",
+  "newName": "new-name"
+}
+```
+
+### Move Any Item (Unified)
+
+```bash
+PUT /admin/media/move
+{
+  "id": "abc123 or /folder/path",
   "destinationPath": "/new-location"
 }
+```
+
+### Copy Any Item (Unified)
+
+```bash
+PUT /admin/media/copy
+{
+  "id": "abc123 or /folder/path",
+  "destinationPath": "/backup"
+}
+```
+
+### Delete Any Item (Unified)
+
+```bash
+DELETE /admin/media/:id?force=true
 ```
 
 ### Bulk Delete
@@ -54,21 +84,23 @@ POST /admin/media/bulk/tags/add
 
 ## 📋 All Available Endpoints
 
+### ✨ Unified Operations (Recommended)
+
+- `PUT /admin/media/rename` - Rename file or folder
+- `PUT /admin/media/move` - Move file or folder
+- `PUT /admin/media/copy` - Copy file or folder
+- `DELETE /admin/media/:id` - Delete file or folder
+
 ### Folder Management
 
 - `POST /admin/media/folder` - Create folder
-- `PUT /admin/media/folder/rename` - Rename folder
-- `PUT /admin/media/folder/move` - Move folder
-- `PUT /admin/media/folder/copy` - Copy folder
-- `DELETE /admin/media/folder?path=...&force=true` - Delete folder
 
-### File Operations
+### File Operations (Legacy - for backward compatibility)
 
 - `GET /admin/media/file/:fileId` - Get file details
 - `PUT /admin/media/file/:fileId` - Update file metadata
 - `PUT /admin/media/file/:fileId/move` - Move file
 - `PUT /admin/media/file/:fileId/copy` - Copy file
-- `DELETE /admin/media/file/:fileId` - Delete file
 
 ### Bulk Operations
 
@@ -105,18 +137,26 @@ searchMediaService(query)
 
 // Folders
 createFolderService(folderName, parentPath)
-renameFolderService(oldPath, newFolderName)
-moveFolderService(sourcePath, destinationPath)
-copyFolderService(sourcePath, destinationPath)
 deleteFolderService(folderPath)
 deleteFolderWithContentsService(folderPath, force)
+
+// ✨ Unified Operations (Recommended)
+renameItemService(id, newName, type?)         // Files & Folders
+moveItemService(id, destinationPath, type?)   // Files & Folders
+copyItemService(id, destinationPath, type?)   // Files & Folders
+deleteItemService(id, forceDelete?)           // Files & Folders
 
 // Files
 getFileDetailsService(fileId)
 updateFileService(fileId, updateData)
+deleteFileService(fileId)
+
+// Legacy (Backward Compatibility)
+renameFolderService(oldPath, newFolderName)
+moveFolderService(sourcePath, destinationPath)
+copyFolderService(sourcePath, destinationPath)
 moveFileService(fileId, destinationPath)
 copyFileService(fileId, destinationPath)
-deleteFileService(fileId)
 
 // Bulk Operations
 bulkDeleteFilesService(fileIds)
