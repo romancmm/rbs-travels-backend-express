@@ -184,12 +184,12 @@ paths:
       summary: Delete a file or folder (unified endpoint)
       description: |
         Automatically detects if the ID is a fileId or folderId and deletes accordingly.
-        
+
         **Folder Deletion Safety:**
         - Empty folders: Deleted immediately
         - Non-empty folders: Deletion blocked by default with detailed error message
         - Use `?force=true` to delete non-empty folders with all contents
-        
+
         **Examples:**
         - Delete file: `DELETE /admin/media/abc123def456`
         - Delete empty folder: `DELETE /admin/media/folder_xyz789`
@@ -228,12 +228,14 @@ paths:
                     type: folder
                     folderPath: /my-folder
                     message: Folder "/my-folder" deleted successfully
-        '400': 
+        '400':
           description: Bad request - folder not empty
           content:
             application/json:
               example:
-                error: Cannot delete folder "/my-folder": folder is not empty. It contains 5 files and 2 folders. Use force=true to delete with all contents.
+                error:
+                  'Cannot delete folder "/my-folder": folder is not empty. It contains 5 files and 2
+                  folders. Use force=true to delete with all contents.'
         '401': { description: Unauthorized }
         '403': { description: Insufficient permissions }
         '404': { description: Item not found }
