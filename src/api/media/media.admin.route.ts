@@ -10,8 +10,6 @@ import {
   copyFileSchema,
   copyFolderSchema,
   createFolderSchema,
-  deleteFileParamsSchema,
-  deleteFolderQuerySchema,
   fileDetailsParamsSchema,
   mediaListQuerySchema,
   moveFileSchema,
@@ -84,13 +82,6 @@ router.put(
   MediaController.copyFolder
 )
 
-router.delete(
-  '/folder',
-  requirePermission('media.delete'),
-  validate(deleteFolderQuerySchema, 'query'),
-  MediaController.deleteFolder
-)
-
 // ============================================================================
 // FILE OPERATIONS
 // ============================================================================
@@ -121,13 +112,6 @@ router.put(
   requirePermission('media.create'),
   validate(copyFileSchema),
   MediaController.copyFile
-)
-
-router.delete(
-  '/file/:fileId',
-  requirePermission('media.delete'),
-  validate(deleteFileParamsSchema, 'params'),
-  MediaController.deleteFile
 )
 
 // ============================================================================

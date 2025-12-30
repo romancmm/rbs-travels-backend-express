@@ -206,53 +206,51 @@ Content-Type: application/json
 }
 ```
 
-### 6. Delete File
+### 6. Delete File or Folder (Unified)
 
-Delete a single file from the media library.
+Delete a file or folder using a single endpoint that automatically detects the type.
 
 ```http
-DELETE /admin/media/file/abc123def456
+DELETE /admin/media/:id
 ```
 
-**Response:**
+**Path Parameters:**
+
+- `id` (string, required): File ID or folder path to delete
+
+**Query Parameters (for folders only):**
+
+- `force` (boolean, optional): Set to true to force delete folder with contents (default: false)
+
+**Response (File Deletion):**
 
 ```json
 {
   "success": true,
+  "type": "file",
   "fileId": "abc123def456",
   "fileName": "image.jpg",
   "message": "File 'image.jpg' deleted successfully"
 }
 ```
 
-### 7. Delete Folder
-
-Delete a folder (empty folders only by default).
-
-```http
-DELETE /admin/media/folder?path=/old-albums
-```
-
-**Query Parameters:**
-
-- `path` (string, required): Full path of folder to delete
-- `force` (string, optional): Set to "true" to force delete folder with contents
-
 **Response (Empty Folder):**
 
 ```json
 {
   "success": true,
+  "type": "folder",
   "folderPath": "/old-albums",
   "message": "Folder '/old-albums' deleted successfully"
 }
 ```
 
-**Response (Force Delete with Contents):**
+**Response (Force Delete Folder with Contents):**
 
 ```json
 {
   "success": true,
+  "type": "folder",
   "folderPath": "/old-albums",
   "deletedFiles": 15,
   "deletedFolders": 3,
@@ -260,7 +258,7 @@ DELETE /admin/media/folder?path=/old-albums
 }
 ```
 
-**Error Response (Non-empty Folder):**
+**Error Response (Non-empty Folder without force):**
 
 ```json
 {
@@ -300,11 +298,19 @@ curl -X PUT "/api/v1/admin/media/file/abc123" \
   }'
 ```
 
-### Batch Folder Cleanup
+### Delete Files and Folders
 
 ```bash
-# Force delete old folder with all contents
-curl -X DELETE "/api/v1/admin/media/folder?path=/temp-files&force=true" \
+# Delete a file by ID
+curl -X DELETE "/api/v1/admin/media/abc123def456" \
+  -H "Authorization: Bearer <token>"
+
+# Delete an empty folder
+curl -X DELETE "/api/v1/admin/media/%2Ftemp-files" \
+  -H "Authorization: Bearer <token>"
+
+# Force delete folder with all contents
+curl -X DELETE "/api/v1/admin/media/%2Ftemp-files?force=true" \
   -H "Authorization: Bearer <token>"
 ```
 
