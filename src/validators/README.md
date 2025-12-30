@@ -324,7 +324,7 @@ export const login: RequestHandler = async (req, res) => {
 ```typescript
 // services/auth/Auth.service.ts
 import type { LoginInput } from '@/validators'
-import prisma from '@/utils/prisma'
+import prisma from '@/config/db'
 import { comparePassword } from '@/utils/password'
 import { generateTokens } from '@/utils/jwt'
 
