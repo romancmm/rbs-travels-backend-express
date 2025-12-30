@@ -280,6 +280,39 @@ export const updateFileService = async (
   }
 }
 
+// ============================================================================
+// UNIFIED RENAME - Handles both files and folders
+// ============================================================================
+
+export const renameItemService = async (id: string, newName: string, type?: 'file' | 'folder') => {
+  try {
+    // Auto-detect type if not provided
+    let itemType = type
+
+    if (!itemType) {
+      // Check if it's a fileId (ImageKit fileIds are typically alphanumeric)
+      // or a folder path (starts with /)
+      itemType = id.startsWith('/') ? 'folder' : 'file'
+    }
+
+    if (itemType === 'folder') {
+      // Use existing folder rename logic
+      return await renameFolderService(id, newName)
+    } else {
+      // Rename file using updateFileService
+      const result = await updateFileService(id, { name: newName })
+      return {
+        ...result,
+        message: `File renamed to "${newName}" successfully`,
+      }
+    }
+  } catch (err: any) {
+    console.error('Rename item error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to rename item: ${message}`)
+  }
+}
+
 export const deleteFileService = async (fileId: string) => {
   try {
     // Verify file exists before deletion
@@ -380,13 +413,23 @@ export const deleteFolderService = async (folderPath: string) => {
       limit: 1000,
     })
 
+    // Block deletion if folder contains any files or subfolders
     if (folderContents.length > 0) {
-      const hasFiles = folderContents.some((item: any) => item.type === 'file')
-      const hasSubfolders = folderContents.some((item: any) => item.type === 'folder')
+      const files = folderContents.filter((item: any) => item.type === 'file')
+      const subfolders = folderContents.filter((item: any) => item.type === 'folder')
 
-      if (hasFiles || hasSubfolders) {
+      const fileCount = files.length
+      const folderCount = subfolders.length
+
+      if (fileCount > 0 || folderCount > 0) {
+        const details = []
+        if (fileCount > 0) details.push(`${fileCount} file${fileCount > 1 ? 's' : ''}`)
+        if (folderCount > 0) details.push(`${folderCount} folder${folderCount > 1 ? 's' : ''}`)
+
         throw new Error(
-          `Cannot delete folder "${normalizedPath}": folder is not empty. It contains ${folderContents.length} items.`
+          `Cannot delete folder "${normalizedPath}": folder is not empty. It contains ${details.join(
+            ' and '
+          )}. Use force=true to delete with all contents.`
         )
       }
     }
@@ -576,6 +619,60 @@ export const copyFileService = async (fileId: string, destinationPath: string) =
     console.error('Copy file error:', err)
     const message = err?.message || 'Unknown error occurred'
     throw new Error(`Failed to copy file: ${message}`)
+  }
+}
+
+// ============================================================================
+// UNIFIED MOVE & COPY - Handles both files and folders
+// ============================================================================
+
+export const moveItemService = async (
+  id: string,
+  destinationPath: string,
+  type?: 'file' | 'folder'
+) => {
+  try {
+    // Auto-detect type if not provided
+    let itemType = type
+
+    if (!itemType) {
+      itemType = id.startsWith('/') ? 'folder' : 'file'
+    }
+
+    if (itemType === 'folder') {
+      return await moveFolderService(id, destinationPath)
+    } else {
+      return await moveFileService(id, destinationPath)
+    }
+  } catch (err: any) {
+    console.error('Move item error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to move item: ${message}`)
+  }
+}
+
+export const copyItemService = async (
+  id: string,
+  destinationPath: string,
+  type?: 'file' | 'folder'
+) => {
+  try {
+    // Auto-detect type if not provided
+    let itemType = type
+
+    if (!itemType) {
+      itemType = id.startsWith('/') ? 'folder' : 'file'
+    }
+
+    if (itemType === 'folder') {
+      return await copyFolderService(id, destinationPath)
+    } else {
+      return await copyFileService(id, destinationPath)
+    }
+  } catch (err: any) {
+    console.error('Copy item error:', err)
+    const message = err?.message || 'Unknown error occurred'
+    throw new Error(`Failed to copy item: ${message}`)
   }
 }
 

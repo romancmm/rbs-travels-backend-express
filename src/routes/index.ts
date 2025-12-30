@@ -1,8 +1,8 @@
-import { Router } from 'express'
 import adminRouter from '@/routes/admin'
-import publicRouter from '@/routes/public'
 import authRouter from '@/routes/auth'
- 
+import publicRouter from '@/routes/public'
+import { Router } from 'express'
+
 const routes = Router()
 
 routes.use('/auth', authRouter)

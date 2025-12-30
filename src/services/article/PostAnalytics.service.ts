@@ -1,5 +1,5 @@
+import prisma from '@/config/db'
 import { createError, ErrorMessages } from '@/utils/error-handler'
-import prisma from '@/utils/prisma'
 
 /**
  * Increment view count for a post (de-normalized analytics)

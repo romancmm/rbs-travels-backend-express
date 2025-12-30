@@ -1,5 +1,5 @@
+import prisma from '../src/config/db'
 import { hashPassword } from '../src/utils/password'
-import prisma from '../src/utils/prisma'
 
 async function main() {
   const permissionNames = [

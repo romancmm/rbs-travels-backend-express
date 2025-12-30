@@ -184,8 +184,16 @@ paths:
       summary: Delete a file or folder (unified endpoint)
       description: |
         Automatically detects if the ID is a fileId or folderId and deletes accordingly.
-        This is the recommended endpoint for deleting media items as it handles both files and folders.
-        For folders, use ?force=true to delete non-empty folders with all contents.
+
+        **Folder Deletion Safety:**
+        - Empty folders: Deleted immediately
+        - Non-empty folders: Deletion blocked by default with detailed error message
+        - Use `?force=true` to delete non-empty folders with all contents
+
+        **Examples:**
+        - Delete file: `DELETE /admin/media/abc123def456`
+        - Delete empty folder: `DELETE /admin/media/folder_xyz789`
+        - Delete non-empty folder: `DELETE /admin/media/folder_xyz789?force=true`
       security: [{ bearerAuth: [] }]
       parameters:
         - in: path
@@ -197,7 +205,9 @@ paths:
         - in: query
           name: force
           schema: { type: boolean, default: false }
-          description: Force delete folder with all contents (only for folders)
+          description: |
+            Force delete folder with all contents. Only applies to folders.
+            If false (default), deletion will be blocked if folder contains any files or subfolders.
       responses:
         '200':
           description: Item deleted successfully
@@ -218,6 +228,14 @@ paths:
                     type: folder
                     folderPath: /my-folder
                     message: Folder "/my-folder" deleted successfully
+        '400':
+          description: Bad request - folder not empty
+          content:
+            application/json:
+              example:
+                error:
+                  'Cannot delete folder "/my-folder": folder is not empty. It contains 5 files and 2
+                  folders. Use force=true to delete with all contents.'
         '401': { description: Unauthorized }
         '403': { description: Insufficient permissions }
         '404': { description: Item not found }
@@ -334,40 +352,17 @@ paths:
         '401': { description: Unauthorized }
         '403': { description: Insufficient permissions }
         '500': { description: Server error }
-    delete:
-      tags: [Media - Admin]
-      summary: Delete a folder
-      description: Delete a folder (empty folders only, unless force=true)
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - in: query
-          name: path
-          required: true
-          schema: { type: string }
-          description: Full path of folder to delete
-          example: '/albums/old-photos'
-        - in: query
-          name: force
-          schema: { type: string, enum: ['true', 'false'] }
-          description: Force delete folder with all contents
-          example: 'true'
-      responses:
-        '200':
-          description: Folder deleted successfully
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/DeleteResponse' }
-        '400': { description: Invalid path or folder not empty }
-        '401': { description: Unauthorized }
-        '403': { description: Insufficient permissions }
-        '404': { description: Folder not found }
-        '500': { description: Server error }
 
-  /admin/media/folder/rename:
+  /admin/media/rename:
     put:
       tags: [Media - Admin]
-      summary: Rename a folder
-      description: Rename a folder with unique name validation
+      summary: Rename a file or folder (unified endpoint)
+      description: |
+        Unified endpoint for renaming both files and folders.
+        Automatically detects the type based on the ID:
+        - If ID starts with '/', it's treated as a folder path
+        - Otherwise, it's treated as a file ID
+        You can also explicitly specify the type if needed.
       security: [{ bearerAuth: [] }]
       requestBody:
         required: true
@@ -376,20 +371,47 @@ paths:
             schema:
               type: object
               properties:
-                oldPath:
+                id:
                   type: string
-                  description: Current full path of the folder
-                  example: '/albums/vacation-photos'
-                newFolderName:
+                  description: File ID or folder path to rename
+                  example: 'abc123def456'
+                newName:
                   type: string
                   minLength: 1
-                  maxLength: 50
-                  description: New name for the folder
-                  example: 'summer-vacation'
-              required: [oldPath, newFolderName]
+                  maxLength: 100
+                  description: New name for the item
+                  example: 'new-name'
+                type:
+                  type: string
+                  enum: [file, folder]
+                  description: Optional - explicitly specify item type (auto-detected if omitted)
+              required: [id, newName]
+            examples:
+              renameFile:
+                summary: Rename a file (auto-detect)
+                value:
+                  id: 'abc123def456'
+                  newName: 'beach-sunset'
+              renameFolder:
+                summary: Rename a folder (auto-detect)
+                value:
+                  id: '/vacation/photos'
+                  newName: 'summer-2024'
+              renameFileExplicit:
+                summary: Rename a file (explicit type)
+                value:
+                  id: 'abc123def456'
+                  newName: 'company-logo'
+                  type: 'file'
+              renameFolderExplicit:
+                summary: Rename a folder (explicit type)
+                value:
+                  id: '/projects'
+                  newName: 'archived-projects'
+                  type: 'folder'
       responses:
         '200':
-          description: Folder renamed successfully
+          description: Item renamed successfully
           content:
             application/json:
               schema:
@@ -399,10 +421,27 @@ paths:
                     properties:
                       oldPath: { type: string }
                       newPath: { type: string }
+                      file: { $ref: '#/components/schemas/MediaFile' }
+              examples:
+                fileRenamed:
+                  value:
+                    success: true
+                    file:
+                      fileId: abc123def456
+                      name: new-filename
+                      url: https://example.com/new-filename.jpg
+                    message: File renamed to "new-filename" successfully
+                folderRenamed:
+                  value:
+                    success: true
+                    oldPath: /albums/vacation-photos
+                    newPath: /albums/summer-vacation
+                    message:
+                      Folder renamed from "/albums/vacation-photos" to "/albums/summer-vacation"
         '400': { description: Invalid request or name conflict }
         '401': { description: Unauthorized }
         '403': { description: Insufficient permissions }
-        '404': { description: Folder not found }
+        '404': { description: Item not found }
         '500': { description: Server error }
 
   /admin/media/folder/move:
@@ -557,34 +596,6 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/FileUpdateResponse' }
         '400': { description: Invalid request parameters }
-        '401': { description: Unauthorized }
-        '403': { description: Insufficient permissions }
-        '404': { description: File not found }
-        '500': { description: Server error }
-    delete:
-      tags: [Media - Admin]
-      summary: Delete a file
-      description: Permanently delete a media file from the library
-      security: [{ bearerAuth: [] }]
-      parameters:
-        - in: path
-          name: fileId
-          required: true
-          schema: { type: string }
-          description: Unique identifier of the file to delete
-          example: 'abc123def456'
-      responses:
-        '200':
-          description: File deleted successfully
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
-                  - type: object
-                    properties:
-                      fileId: { type: string }
-                      fileName: { type: string }
         '401': { description: Unauthorized }
         '403': { description: Insufficient permissions }
         '404': { description: File not found }

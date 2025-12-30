@@ -1,6 +1,5 @@
+import prisma from '@/config/db'
 import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
 
 /**
  * Slug Utility - Comprehensive slug management system

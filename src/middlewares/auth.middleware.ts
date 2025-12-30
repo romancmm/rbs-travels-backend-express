@@ -1,5 +1,5 @@
+import prisma from '@/config/db'
 import { verifyAccessToken } from '@/utils/jwt'
-import prisma from '@/utils/prisma'
 import type { NextFunction, Request, Response } from 'express'
 
 export function authenticateToken(

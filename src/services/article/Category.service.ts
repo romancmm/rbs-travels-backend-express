@@ -1,7 +1,7 @@
+import prisma from '@/config/db'
 import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
-import prisma from '@/utils/prisma'
 import { handleSlug } from '@/utils/slug.util'
 import type {
   CategoryQueryParams,

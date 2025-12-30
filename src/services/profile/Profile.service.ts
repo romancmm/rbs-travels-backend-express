@@ -1,5 +1,5 @@
+import prisma from '@/config/db'
 import { createError, ErrorMessages } from '@/utils/error-handler'
-import prisma from '@/utils/prisma'
 import type { UpdateCustomerProfileInput } from '@/validators/customer.validator'
 import type { UpdateProfileInput } from '@/validators/user.validator'
 

@@ -30,14 +30,30 @@ export const createFolderSchema = z.object({
   parentPath: z.string().optional().default('/'),
 })
 
-export const renameFolderSchema = z.object({
-  oldPath: z.string().min(1, 'Old path is required'),
-  newFolderName: z.string().min(1, 'New folder name is required').max(50, 'Folder name too long'),
-})
-
 export const deleteFolderQuerySchema = z.object({
   path: z.string().min(1, 'Path is required'),
   force: z.string().optional(), // 'true' to force delete with contents
+})
+
+/**
+ * Unified Operations Schemas (supports both files and folders)
+ */
+export const renameItemSchema = z.object({
+  id: z.string().min(1, 'ID or path is required'),
+  newName: z.string().min(1, 'New name is required').max(100, 'Name too long'),
+  type: z.enum(['file', 'folder']).optional(), // Auto-detect if not provided
+})
+
+export const moveItemSchema = z.object({
+  id: z.string().min(1, 'ID or path is required'),
+  destinationPath: z.string().min(1, 'Destination path is required'),
+  type: z.enum(['file', 'folder']).optional(), // Auto-detect if not provided
+})
+
+export const copyItemSchema = z.object({
+  id: z.string().min(1, 'ID or path is required'),
+  destinationPath: z.string().min(1, 'Destination path is required'),
+  type: z.enum(['file', 'folder']).optional(), // Auto-detect if not provided
 })
 
 /**
@@ -57,23 +73,13 @@ export const deleteMultipleFilesSchema = z.object({
 })
 
 /**
- * Move/Copy Operations Schemas
+ * Legacy File/Folder Operations (kept for backward compatibility)
  */
 export const moveFileSchema = z.object({
   destinationPath: z.string().min(1, 'Destination path is required'),
 })
 
 export const copyFileSchema = z.object({
-  destinationPath: z.string().min(1, 'Destination path is required'),
-})
-
-export const moveFolderSchema = z.object({
-  sourcePath: z.string().min(1, 'Source path is required'),
-  destinationPath: z.string().min(1, 'Destination path is required'),
-})
-
-export const copyFolderSchema = z.object({
-  sourcePath: z.string().min(1, 'Source path is required'),
   destinationPath: z.string().min(1, 'Destination path is required'),
 })
 
@@ -134,19 +140,17 @@ export const fileDetailsParamsSchema = z.object({
 export type MediaListQuery = z.infer<typeof mediaListQuerySchema>
 export type UploadMediaInput = z.infer<typeof uploadMediaSchema>
 export type CreateFolderInput = z.infer<typeof createFolderSchema>
-export type RenameFolderInput = z.infer<typeof renameFolderSchema>
+export type RenameItemInput = z.infer<typeof renameItemSchema>
+export type MoveItemInput = z.infer<typeof moveItemSchema>
+export type CopyItemInput = z.infer<typeof copyItemSchema>
 export type DeleteFolderQuery = z.infer<typeof deleteFolderQuerySchema>
 export type UpdateFileInput = z.infer<typeof updateFileSchema>
 export type DeleteFileParams = z.infer<typeof deleteFileParamsSchema>
-export type DeleteMultipleFilesInput = z.infer<typeof deleteMultipleFilesSchema>
 export type MoveFileInput = z.infer<typeof moveFileSchema>
 export type CopyFileInput = z.infer<typeof copyFileSchema>
-export type MoveFolderInput = z.infer<typeof moveFolderSchema>
-export type CopyFolderInput = z.infer<typeof copyFolderSchema>
 export type BulkDeleteFilesInput = z.infer<typeof bulkDeleteFilesSchema>
 export type BulkMoveFilesInput = z.infer<typeof bulkMoveFilesSchema>
 export type BulkCopyFilesInput = z.infer<typeof bulkCopyFilesSchema>
 export type BulkAddTagsInput = z.infer<typeof bulkAddTagsSchema>
 export type BulkRemoveTagsInput = z.infer<typeof bulkRemoveTagsSchema>
 export type SearchMediaQuery = z.infer<typeof searchMediaSchema>
-export type FileDetailsParams = z.infer<typeof fileDetailsParamsSchema>

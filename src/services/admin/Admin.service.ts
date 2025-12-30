@@ -1,7 +1,7 @@
+import prisma from '@/config/db'
 import { createError, ErrorMessages } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
 import { hashPassword } from '@/utils/password'
-import prisma from '@/utils/prisma'
 import type { CreateUserInput, UpdateUserInput, UserQueryParams } from '@/validators/user.validator'
 
 // List admin/staff users (User model represents admin users, not customers)

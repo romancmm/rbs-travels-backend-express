@@ -8,15 +8,13 @@ import {
   bulkMoveFilesSchema,
   bulkRemoveTagsSchema,
   copyFileSchema,
-  copyFolderSchema,
+  copyItemSchema,
   createFolderSchema,
-  deleteFileParamsSchema,
-  deleteFolderQuerySchema,
   fileDetailsParamsSchema,
   mediaListQuerySchema,
   moveFileSchema,
-  moveFolderSchema,
-  renameFolderSchema,
+  moveItemSchema,
+  renameItemSchema,
   searchMediaSchema,
   updateFileSchema,
 } from '@/validators/media.validator'
@@ -63,36 +61,35 @@ router.post(
   MediaController.createFolder
 )
 
+// ============================================================================
+// UNIFIED OPERATIONS (Files & Folders)
+// ============================================================================
+
 router.put(
-  '/folder/rename',
+  '/rename',
   requirePermission('media.update'),
-  validate(renameFolderSchema),
-  MediaController.renameFolder
+  validate(renameItemSchema),
+  MediaController.renameItem
 )
 
 router.put(
-  '/folder/move',
+  '/move',
   requirePermission('media.update'),
-  validate(moveFolderSchema),
-  MediaController.moveFolder
+  validate(moveItemSchema),
+  MediaController.moveItem
 )
 
 router.put(
-  '/folder/copy',
+  '/copy',
   requirePermission('media.create'),
-  validate(copyFolderSchema),
-  MediaController.copyFolder
+  validate(copyItemSchema),
+  MediaController.copyItem
 )
 
-router.delete(
-  '/folder',
-  requirePermission('media.delete'),
-  validate(deleteFolderQuerySchema, 'query'),
-  MediaController.deleteFolder
-)
+router.delete('/:id', requirePermission('media.delete'), MediaController.deleteItem)
 
 // ============================================================================
-// FILE OPERATIONS
+// FILE OPERATIONS (Legacy - for backward compatibility)
 // ============================================================================
 
 router.get(
@@ -122,19 +119,6 @@ router.put(
   validate(copyFileSchema),
   MediaController.copyFile
 )
-
-router.delete(
-  '/file/:fileId',
-  requirePermission('media.delete'),
-  validate(deleteFileParamsSchema, 'params'),
-  MediaController.deleteFile
-)
-
-// ============================================================================
-// UNIFIED DELETE - Handles both files and folders
-// ============================================================================
-
-router.delete('/:id', requirePermission('media.delete'), MediaController.deleteItem)
 
 // ============================================================================
 // BULK OPERATIONS
