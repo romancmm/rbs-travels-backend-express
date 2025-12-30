@@ -172,6 +172,12 @@ PUT /admin/media/copy
 
 **Description:** Delete any file or folder with a single endpoint.
 
+**Folder Deletion Safety:**
+
+- ✅ **Empty folders**: Deleted immediately
+- 🚫 **Non-empty folders**: Deletion blocked by default
+- ⚠️ **Force delete**: Use `?force=true` to delete folder with all contents
+
 **Parameters:**
 
 - `id` (path): File ID or folder ID
@@ -183,14 +189,20 @@ PUT /admin/media/copy
 // Delete file
 DELETE /admin/media/abc123def456
 
-// Delete empty folder
+// Delete empty folder (succeeds)
 DELETE /admin/media/folder_xyz789
 
-// Delete folder with contents
+// Try to delete non-empty folder (blocked)
+DELETE /admin/media/folder_xyz789
+// Response: 400 Bad Request
+// Error: Cannot delete folder "/gallery": folder is not empty.
+//        It contains 15 files and 3 folders. Use force=true to delete with all contents.
+
+// Force delete folder with contents
 DELETE /admin/media/folder_xyz789?force=true
 ```
 
-**Response:**
+**Success Response:**
 
 ```json
 {
@@ -199,6 +211,14 @@ DELETE /admin/media/folder_xyz789?force=true
   "fileId": "abc123def456",
   "fileName": "image.jpg",
   "message": "File \"image.jpg\" deleted successfully"
+}
+```
+
+**Error Response (Non-empty folder):**
+
+```json
+{
+  "error": "Cannot delete folder \"/gallery\": folder is not empty. It contains 15 files and 3 folders. Use force=true to delete with all contents."
 }
 ```
 

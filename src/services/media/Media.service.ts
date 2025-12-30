@@ -413,13 +413,23 @@ export const deleteFolderService = async (folderPath: string) => {
       limit: 1000,
     })
 
+    // Block deletion if folder contains any files or subfolders
     if (folderContents.length > 0) {
-      const hasFiles = folderContents.some((item: any) => item.type === 'file')
-      const hasSubfolders = folderContents.some((item: any) => item.type === 'folder')
+      const files = folderContents.filter((item: any) => item.type === 'file')
+      const subfolders = folderContents.filter((item: any) => item.type === 'folder')
 
-      if (hasFiles || hasSubfolders) {
+      const fileCount = files.length
+      const folderCount = subfolders.length
+
+      if (fileCount > 0 || folderCount > 0) {
+        const details = []
+        if (fileCount > 0) details.push(`${fileCount} file${fileCount > 1 ? 's' : ''}`)
+        if (folderCount > 0) details.push(`${folderCount} folder${folderCount > 1 ? 's' : ''}`)
+
         throw new Error(
-          `Cannot delete folder "${normalizedPath}": folder is not empty. It contains ${folderContents.length} items.`
+          `Cannot delete folder "${normalizedPath}": folder is not empty. It contains ${details.join(
+            ' and '
+          )}. Use force=true to delete with all contents.`
         )
       }
     }

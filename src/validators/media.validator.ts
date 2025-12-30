@@ -58,6 +58,16 @@ export const copyItemSchema = z.object({
 
 /**
  * File Management Schemas
+ */
+export const updateFileSchema = z.object({
+  name: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+})
+
+export const deleteFileParamsSchema = z.object({
+  fileId: z.string().min(1, 'fileId is required'),
+})
+
 export const deleteMultipleFilesSchema = z.object({
   fileIds: z.array(z.string().min(1)).min(1, 'At least one file ID is required'),
 })
@@ -71,16 +81,6 @@ export const moveFileSchema = z.object({
 
 export const copyFileSchema = z.object({
   destinationPath: z.string().min(1, 'Destination path is required'),
-})
-
-/**
- * Bulk Operations Schemas
- */
-
-export const copyItemSchema = z.object({
-  id: z.string().min(1, 'ID or path is required'),
-  destinationPath: z.string().min(1, 'Destination path is required'),
-  type: z.enum(['file', 'folder']).optional(), // Auto-detect if not provided
 })
 
 /**
@@ -134,28 +134,6 @@ export const fileDetailsParamsSchema = z.object({
   fileId: z.string().min(1, 'fileId is required'),
 })
 
-/**
- * TypeScript Types
- */
-export type MediaListQuery = z.infer<typeof mediaListQuerySchema>
-export type UploadMediaInput = z.infer<typeof uploadMediaSchema>
-export type CreateFolderInput = z.infer<typeof createFolderSchema>
-export type RenameFolderInput = z.infer<typeof renameFolderSchema>
-export type RenameItemInput = z.infer<typeof renameItemSchema>
-export type MoveItemInput = z.infer<typeof moveItemSchema>
-export type CopyItemInput = z.infer<typeof copyItemSchema>
-export type DeleteFolderQuery = z.infer<typeof deleteFolderQuerySchema>
-export type UpdateFileInput = z.infer<typeof updateFileSchema>
-export type DeleteFileParams = z.infer<typeof deleteFileParamsSchema>
-export type DeleteMultipleFilesInput = z.infer<typeof deleteMultipleFilesSchema>
-export type MoveFileInput = z.infer<typeof moveFileSchema>
-export type CopyFileInput = z.infer<typeof copyFileSchema>
-export type MoveFolderInput = z.infer<typeof moveFolderSchema>
-export type CopyFolderInput = z.infer<typeof copyFolderSchema>
-export type BulkDeleteFilesInput = z.infer<typeof bulkDeleteFilesSchema>
-export type BulkMoveFilesInput = z.infer<typeof bulkMoveFilesSchema>
-export type BulkCopyFilesInput = z.infer<typeof bulkCopyFilesSchema>
-export type BulkAddTagsInput = z.infer<typeof bulkAddTagsSchema>
 /**
  * TypeScript Types
  */
