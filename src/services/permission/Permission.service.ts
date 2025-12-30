@@ -1,6 +1,6 @@
+import prisma from '@/config/db'
 import { createError, ErrorMessages } from '@/utils/error-handler'
 import { paginate } from '@/utils/paginator'
-import prisma from '@/utils/prisma'
 import type {
   CreatePermissionInput,
   PermissionQueryParams,

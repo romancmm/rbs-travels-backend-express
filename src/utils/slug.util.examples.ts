@@ -5,7 +5,7 @@
  * These are examples only - not meant to be executed directly.
  */
 
-import prisma from './prisma'
+import prisma from '../config/db'
 import { generateSlug, handleSlug, isValidSlugFormat, purifySlug } from './slug.util'
 
 // ============================================

@@ -1,7 +1,7 @@
+import prisma from '@/config/db'
 import { createError, ErrorMessages } from '@/utils/error-handler'
 import { generateTokens, verifyRefreshToken } from '@/utils/jwt'
 import { comparePassword, hashPassword } from '@/utils/password'
-import prisma from '@/utils/prisma'
 import type {
   ChangePasswordInput,
   LoginInput,
