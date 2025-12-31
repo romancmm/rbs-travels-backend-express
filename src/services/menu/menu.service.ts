@@ -1,7 +1,7 @@
+import prisma from '@/config/db'
 import CacheService from '@/services/cache.service'
 import { createError, ErrorMessages } from '@/utils/error-handler'
 import type { Prisma } from '@prisma/client'
-import prisma from '../../config/db'
 import { paginate } from '../../utils/paginator'
 import { handleSlug } from '../../utils/slug.util'
 
