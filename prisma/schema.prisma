@@ -203,25 +203,6 @@ model PageBuilder {
 }
 
 
-
-model Page {
-  id          String   @id @default(uuid())
-  title       String
-  slug        String   @unique
-  content     Json
-  meta        Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isPublished Boolean  @default(false)
-
-  @@index([isPublished])
-  @@index([createdAt])
-  @@index([isPublished, createdAt])
-  @@index([slug])
-  @@index([title])
-  @@index([updatedAt])
-}
-
 model Service {
   id          String   @id @default(uuid())
   title       String

@@ -25,7 +25,6 @@ validators/
 ├── rbac.validator.ts         # Role and Permission schemas
 ├── service.validator.ts      # Service schemas
 ├── project.validator.ts      # Project schemas
-├── page.validator.ts         # Page schemas
 └── setting.validator.ts      # Setting schemas
 ```
 
@@ -198,12 +197,6 @@ export const login: RequestHandler = async (req, res) => {
 - `createProjectSchema` - Create project
 - `updateProjectSchema` - Update project
 - `projectQuerySchema` - Project list query params
-
-### Page Validators (`page.validator.ts`)
-
-- `createPageSchema` - Create page with JSON content
-- `updatePageSchema` - Update page
-- `pageQuerySchema` - Page list query params
 
 ### Setting Validators (`setting.validator.ts`)
 

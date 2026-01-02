@@ -24,9 +24,6 @@ export * from './service.validator'
 // Project validators and types
 export * from './project.validator'
 
-// Page validators and types
-export * from './page.validator'
-
 // Setting validators and types
 export * from './setting.validator'
 
