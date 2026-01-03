@@ -67,6 +67,35 @@ bun run docker:prod:up       # Start production services
 bun run docker:prod:down     # Stop production services
 ```
 
+## Deployment to VPS
+
+### Initial Setup
+
+1. Ensure `.env.production` exists on VPS with correct credentials
+2. Run deployment: `./deploy-ci.sh`
+
+### Troubleshooting
+
+If you encounter PostgreSQL authentication errors:
+
+```bash
+# Run diagnostics
+./diagnose.sh
+
+# If credentials don't match, reset database (WARNING: Deletes all data!)
+./reset-postgres.sh
+```
+
+**Important**: See [docs/POSTGRES_AUTH_FIX.md](docs/POSTGRES_AUTH_FIX.md) for detailed
+troubleshooting guide.
+
+### Common Issues
+
+- **Authentication failed**: Database credentials mismatch between `.env.production` and postgres
+  volume
+- **Container crashes on data access**: Database connection lost, check credentials
+- **Solution**: Run `./reset-postgres.sh` (WARNING: This deletes all database data)
+
 ## Next Steps
 
 - Implement models, controllers, and services for travel agency features
