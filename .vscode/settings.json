@@ -7,5 +7,6 @@
   "prettier.configPath": ".prettierrc.yml",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.fontFamily": "Fira Code, Monaco"
+  "editor.fontFamily": "Fira Code, Monaco",
+  "prisma.pinToPrisma6": true
 }
