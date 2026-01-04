@@ -54,6 +54,11 @@ async function main() {
     'menu.create',
     'menu.update',
     'menu.delete',
+    // Page Builder
+    'page.read',
+    'page.create',
+    'page.update',
+    'page.delete',
   ]
 
   // Upsert all permissions (in smaller batches to avoid connection pool limits)
