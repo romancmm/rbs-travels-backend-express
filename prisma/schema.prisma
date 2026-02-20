@@ -146,6 +146,8 @@ model MenuItem {
   reference   Json?      // String for single entity OR Array for multiple (category-articles): 'about-us' OR ['tech', 'business']
   url         String?    // URL for custom/external links or resolved URL
   icon        String?
+  bgImage     String?
+  showTitle   Boolean    @default(true)
   target      String     @default("_self")
   cssClass    String?
   parentId    String?

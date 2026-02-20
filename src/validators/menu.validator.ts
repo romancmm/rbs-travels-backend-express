@@ -37,6 +37,8 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
         .optional(), // String OR Array
       url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
       icon: z.string().optional(),
+      bgImage: z.string().nullable().optional(),
+      showTitle: z.boolean().default(true),
       target: MenuItemTargetEnum.default('_self'),
       cssClass: z.string().optional(),
       parentId: z.string().uuid().nullable().optional(),
@@ -150,6 +152,8 @@ export const createMenuItemBodySchema = z
       .optional(), // String OR Array
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
+    bgImage: z.string().nullable().optional(),
+    showTitle: z.boolean().default(true),
     target: MenuItemTargetEnum.default('_self'),
     cssClass: z.string().optional(),
     parentId: z.string().uuid().nullable().optional(),
@@ -223,6 +227,8 @@ export const updateMenuItemBodySchema = z
       .optional(), // String OR Array
     url: z.string().nullable().optional(), // URL for custom/external links or resolved URL
     icon: z.string().optional(),
+    bgImage: z.string().nullable().optional(),
+    showTitle: z.boolean().optional(),
     target: MenuItemTargetEnum.optional(),
     cssClass: z.string().optional(),
     parentId: z.string().uuid().nullable().optional(),
