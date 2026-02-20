@@ -30,23 +30,21 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
       POSTGRES_DB: ${POSTGRES_DB:-rbs_db}
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - rbs-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d rbs_db']
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-rbs_db}']
       interval: 10s
-      timeout: 10s
+      timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: rbs-redis
     restart: unless-stopped
-    ports:
-      - '6379:6379'
     volumes:
       - redis_data:/data
     networks:

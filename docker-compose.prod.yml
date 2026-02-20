@@ -14,6 +14,10 @@ services:
 
   postgres:
     restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: rbs_db
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     # PostgreSQL memory tuning for low-memory VPS
