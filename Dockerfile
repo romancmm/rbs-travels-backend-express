@@ -12,7 +12,7 @@ COPY . .
 
 # Generate Prisma client and build application
 # Set a placeholder DATABASE_URL for build time only
-ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder?schema=public"
+ENV DATABASE_URL="postgresql://postgres:postgres123@postgres:5432/rbs_db?schema=public"
 RUN bun run db:generate && bun run build
 ENV DATABASE_URL=""
 

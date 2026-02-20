@@ -328,6 +328,14 @@ components:
         icon:
           type: string
           nullable: true
+        bgImage:
+          type: string
+          nullable: true
+          description: Background image URL for the menu item
+        showTitle:
+          type: boolean
+          default: true
+          description: Whether to display the title on the menu item
         target:
           type: string
           enum: [_self, _blank]
@@ -379,6 +387,14 @@ components:
           example: '/about-us'
         icon:
           type: string
+        bgImage:
+          type: string
+          nullable: true
+          description: Background image URL for the menu item
+        showTitle:
+          type: boolean
+          default: true
+          description: Whether to display the title on the menu item
         target:
           type: string
           enum: [_self, _blank]

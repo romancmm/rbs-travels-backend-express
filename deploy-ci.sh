@@ -13,19 +13,26 @@ if [ ! -f .env.production ]; then
     echo -e "${YELLOW}Please create the .env.production file with your database credentials.${RESET}"
     exit 1
 fi
-
+ 
 # Load environment variables from .env.production
 export $(grep -v '^#' .env.production | xargs)
 
 # Display banner
 echo -e "${BLUE}======================================${RESET}"
-echo -e "${BLUE}   Node Bajar CI/CD Deployment     ${RESET}"
+echo -e "${BLUE}   RBS CI/CD Deployment     ${RESET}"
 echo -e "${BLUE}======================================${RESET}"
 
 # Create external volumes if they don't exist
 echo -e "${YELLOW}Checking and creating external volumes if needed...${RESET}"
 docker volume inspect postgres_prod_data >/dev/null 2>&1 || docker volume create postgres_prod_data
+docker volume inspect redis_prod_data >/dev/null 2>&1 || docker volume create redis_prod_data
 echo -e "${GREEN}External volumes are ready.${RESET}"
+
+# Important: If you're changing database credentials, you MUST remove the old volume first
+# Uncomment the lines below if you need to reset the database:
+# echo -e "${RED}WARNING: Removing postgres volume to reset credentials...${RESET}"
+# docker volume rm postgres_prod_data
+# docker volume create postgres_prod_data
 
 # Build production image
 echo -e "${YELLOW}Building production Docker image...${RESET}"

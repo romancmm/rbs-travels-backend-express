@@ -146,6 +146,8 @@ model MenuItem {
   reference   Json?      // String for single entity OR Array for multiple (category-articles): 'about-us' OR ['tech', 'business']
   url         String?    // URL for custom/external links or resolved URL
   icon        String?
+  bgImage     String?
+  showTitle   Boolean    @default(true)
   target      String     @default("_self")
   cssClass    String?
   parentId    String?
@@ -202,25 +204,6 @@ model PageBuilder {
   @@index([createdAt])
 }
 
-
-
-model Page {
-  id          String   @id @default(uuid())
-  title       String
-  slug        String   @unique
-  content     Json
-  meta        Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  isPublished Boolean  @default(false)
-
-  @@index([isPublished])
-  @@index([createdAt])
-  @@index([isPublished, createdAt])
-  @@index([slug])
-  @@index([title])
-  @@index([updatedAt])
-}
 
 model Service {
   id          String   @id @default(uuid())

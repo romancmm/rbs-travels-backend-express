@@ -5,7 +5,6 @@ import customerAdminRoutes from '@/api/customer/route'
 import mediaAdminRoutes from '@/api/media/media.admin.route'
 import menuAdminRoutes from '@/api/menu/menu.admin.route'
 import pageBuilderAdminRoutes from '@/api/page-builder/page-builder.admin.route'
-import pageAdminRoutes from '@/api/page/page.admin.route'
 import permissionAdminRoutes from '@/api/permission/permission.admin.route'
 import projectAdminRoutes from '@/api/project/project.admin.route'
 import roleAdminRoutes from '@/api/role/role.admin.route'
@@ -20,7 +19,6 @@ const routes = Router()
 // All admin setting routes require authentication
 routes.use(adminAuthMiddleware)
 
-routes.use('/page', pageAdminRoutes)
 routes.use('/menu', menuAdminRoutes)
 routes.use('/pages', pageBuilderAdminRoutes)
 routes.use('/customer', customerAdminRoutes)

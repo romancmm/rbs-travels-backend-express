@@ -22,6 +22,8 @@ export interface MenuItem {
   reference: string | string[] | null // String for single entity OR Array for category-articles
   url: string | null // URL for custom/external links or resolved URL
   icon?: string | null
+  bgImage?: string | null
+  showTitle: boolean
   target: MenuItemTarget
   cssClass?: string | null
   parentId?: string | null
@@ -40,6 +42,8 @@ export interface CreateMenuItemInput {
   reference?: string | string[] | null // String for single entity OR Array for category-articles
   url?: string
   icon?: string
+  bgImage?: string | null
+  showTitle?: boolean
   target?: MenuItemTarget
   cssClass?: string
   parentId?: string | null
@@ -55,6 +59,8 @@ export interface UpdateMenuItemInput {
   reference?: string | string[] | null // String for single entity OR Array for category-articles
   url?: string
   icon?: string
+  bgImage?: string | null
+  showTitle?: boolean
   target?: MenuItemTarget
   cssClass?: string
   parentId?: string | null

@@ -6,11 +6,11 @@ services:
     deploy:
       resources:
         limits:
+          memory: 1024M
+          cpus: '2'
+        reservations:
           memory: 512M
           cpus: '1'
-        reservations:
-          memory: 256M
-          cpus: '0.5'
 
   postgres:
     restart: always
@@ -18,7 +18,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
       POSTGRES_DB: rbs_db
-     # POSTGRES_HOST_AUTH_METHOD: md5 # should delete
     volumes:
       - postgres_prod_data:/var/lib/postgresql/data
     # PostgreSQL memory tuning for low-memory VPS
