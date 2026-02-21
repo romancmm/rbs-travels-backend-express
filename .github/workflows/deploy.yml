@@ -33,5 +33,6 @@ jobs:
 
             git pull --ff-only origin stage
             echo "Deploying commit: $(git rev-parse --short HEAD)"
-            ./deploy-ci.sh
+            chmod +x ./deploy-ci.sh || true
+            bash ./deploy-ci.sh
             echo "Github Actions Done in Deployment"
