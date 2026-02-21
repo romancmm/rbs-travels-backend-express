@@ -3,7 +3,7 @@ name: Deploy to Production
 on:
   push:
     branches:
-      - stage
+      - main
 
 jobs:
   deploy:
@@ -22,8 +22,8 @@ jobs:
             echo "SSH setup completed."
             cd apps/rbs-travels-backend-express
 
-            git fetch --prune origin stage
-            git checkout stage
+            git fetch --prune origin main
+            git checkout main
 
             if [ -n "$(git status --porcelain)" ]; then
               STASH_NAME="pre-deploy-$(date +%Y%m%d-%H%M%S)"
@@ -31,7 +31,7 @@ jobs:
               git stash push --include-untracked -m "${STASH_NAME}"
             fi
 
-            git pull --ff-only origin stage
+            git pull --ff-only origin main
             echo "Deploying commit: $(git rev-parse --short HEAD)"
             chmod +x ./deploy-ci.sh || true
             bash ./deploy-ci.sh
