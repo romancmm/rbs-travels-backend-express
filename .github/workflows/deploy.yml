@@ -18,8 +18,20 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            set -Eeuo pipefail
             echo "SSH setup completed."
             cd apps/rbs-travels-backend-express
-            git pull 
+
+            git fetch --prune origin stage
+            git checkout stage
+
+            if [ -n "$(git status --porcelain)" ]; then
+              STASH_NAME="pre-deploy-$(date +%Y%m%d-%H%M%S)"
+              echo "Local changes detected on VPS. Stashing as: ${STASH_NAME}"
+              git stash push --include-untracked -m "${STASH_NAME}"
+            fi
+
+            git pull --ff-only origin stage
+            echo "Deploying commit: $(git rev-parse --short HEAD)"
             ./deploy-ci.sh
             echo "Github Actions Done in Deployment"
