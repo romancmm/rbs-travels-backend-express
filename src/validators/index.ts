@@ -27,6 +27,9 @@ export * from './project.validator'
 // Setting validators and types
 export * from './setting.validator'
 
+// Cache validators and types
+export * from './cache.validator'
+
 // Customer validators and types
 export * from './customer.validator'
 

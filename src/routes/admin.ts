@@ -1,6 +1,7 @@
 import userAdminRoutes from '@/api/admin'
 import adminProfileRoutes from '@/api/admin/adminProfile.route'
 import articleAdminRoutes from '@/api/article/article.admin.route'
+import cacheAdminRoutes from '@/api/cache/cache.admin.route'
 import customerAdminRoutes from '@/api/customer/route'
 import mediaAdminRoutes from '@/api/media/media.admin.route'
 import menuAdminRoutes from '@/api/menu/menu.admin.route'
@@ -28,6 +29,7 @@ routes.use('/articles', articleAdminRoutes)
 routes.use('/service', serviceAdminRoutes)
 routes.use('/project', projectAdminRoutes)
 routes.use('/setting', settingAdminRoutes)
+routes.use('/cache', cacheAdminRoutes)
 routes.use('/user', userAdminRoutes)
 routes.use('/upload', uploadAdminRoutes)
 routes.use('/media', mediaAdminRoutes)
