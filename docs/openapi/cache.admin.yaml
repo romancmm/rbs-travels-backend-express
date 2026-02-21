@@ -1,0 +1,81 @@
+tags:
+  - name: Cache - Admin
+    description: Cache management endpoints for administrators
+
+paths:
+  /admin/cache:
+    get:
+      tags: [Cache - Admin]
+      summary: List cache keys
+      description: Returns cache keys using Redis SCAN with optional pattern and cursor.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: pattern
+          required: false
+          schema:
+            type: string
+            default: '*'
+          description: Redis match pattern.
+        - in: query
+          name: cursor
+          required: false
+          schema:
+            type: string
+            default: '0'
+          description: Redis SCAN cursor.
+        - in: query
+          name: count
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+          description: Number of keys to return per scan.
+      responses:
+        '200':
+          description: Cache keys fetched
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/cache/item:
+    delete:
+      tags: [Cache - Admin]
+      summary: Delete one cache key
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: key
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Full cache key to delete.
+      responses:
+        '200':
+          description: Cache key deleted or not found
+        '400':
+          description: Validation error
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /admin/cache/all:
+    delete:
+      tags: [Cache - Admin]
+      summary: Clear all cache keys
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All cache cleared
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden

@@ -122,7 +122,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml exec postgres ps
 1. **On VPS**: Run `git pull` to get these changes
 2. **Fix current issue**: Run `./diagnose.sh` then `./reset-postgres.sh` if needed
 3. **Test deployment**: Verify everything works
-4. **Update GitHub Actions**: Changes will automatically deploy on next push to `stage` branch
+4. **Update GitHub Actions**: Changes will automatically deploy on next push to `main` branch
 
 ## Prevention
 
