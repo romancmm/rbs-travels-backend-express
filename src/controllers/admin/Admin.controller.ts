@@ -7,7 +7,7 @@ import {
   toggleAdminStatusService,
   updateAdminService,
 } from '@/services/admin/Admin.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 // Admin Users Management - handles admin/staff users only
@@ -17,7 +17,7 @@ import type { RequestHandler } from 'express'
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const result = await listAdminsService(req.query)
-    return success(res, result, 'Admins fetched successfully')
+    return paginated(res, result.items, result, 'Admins fetched successfully')
   } catch (err) {
     next(err)
   }

@@ -11,20 +11,20 @@ import {
   updateSettingByKeyService,
   updateSettingService,
 } from '@/services/setting/Setting.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q, group, isPublic } = req.query
-    const data = await listSettingsService({
+    const result = await listSettingsService({
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
       q: q as string,
       group: group as string,
       isPublic: typeof isPublic === 'string' ? isPublic === 'true' : undefined,
     })
-    return success(res, data, 'Settings fetched')
+    return paginated(res, result.items, result, 'Settings fetched')
   } catch (err) {
     next(err)
   }

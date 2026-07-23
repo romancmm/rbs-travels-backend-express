@@ -5,18 +5,18 @@ import {
   listRolesService,
   updateRoleService,
 } from '@/services/role/Role.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q } = req.query
-    const data = await listRolesService({
+    const result = await listRolesService({
       page: Number(page) || 1,
       perPage: Number(perPage) || 10,
       q: (q as string) || undefined,
     })
-    return success(res, data, 'Roles fetched')
+    return paginated(res, result.items, result, 'Roles fetched')
   } catch (err) {
     next(err)
   }

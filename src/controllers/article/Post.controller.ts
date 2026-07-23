@@ -11,14 +11,14 @@ import {
   incrementPostViewBySlugService,
   incrementPostViewService,
 } from '@/services/article/PostAnalytics.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     // Query params are already validated and transformed by Zod middleware
-    const data = await listPostsService(req.query)
-    return success(res, data, 'Posts fetched')
+    const result = await listPostsService(req.query)
+    return paginated(res, result.items, result, 'Posts fetched')
   } catch (err) {
     next(err)
   }
@@ -29,8 +29,8 @@ export const listPublished: RequestHandler = async (req, res, next) => {
   try {
     // Query params are already validated and transformed by Zod middleware
     // Override isPublished to always be true for public routes
-    const data = await listPostsService({ ...req.query, isPublished: true })
-    return success(res, data, 'Posts fetched')
+    const result = await listPostsService({ ...req.query, isPublished: true })
+    return paginated(res, result.items, result, 'Posts fetched')
   } catch (err) {
     next(err)
   }

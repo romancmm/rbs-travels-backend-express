@@ -5,18 +5,18 @@ import {
   listCategoriesService,
   updateCategoryService,
 } from '@/services/article/Category.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q } = req.query
-    const data = await listCategoriesService({
+    const result = await listCategoriesService({
       page: Number(page) || 1,
       perPage: Number(perPage) || 10,
       q: (q as string) || undefined,
     })
-    return success(res, data, 'Categories fetched')
+    return paginated(res, result.items, result, 'Categories fetched')
   } catch (err) {
     next(err)
   }

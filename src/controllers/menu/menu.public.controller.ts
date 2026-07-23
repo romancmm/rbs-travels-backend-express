@@ -1,5 +1,5 @@
 import menuService from '@/services/menu/menu.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 /**
@@ -9,12 +9,12 @@ export const listMenus: RequestHandler = async (req, res, next) => {
   try {
     const { page, limit } = req.query
 
-    const data = await menuService.getPublishedMenus(
+    const result = await menuService.getPublishedMenus(
       page ? Number(page) : 1,
       limit ? Number(limit) : 10
     )
 
-    return success(res, data, 'Menus fetched successfully')
+    return paginated(res, result.items, result, 'Menus fetched successfully')
   } catch (err) {
     next(err)
   }

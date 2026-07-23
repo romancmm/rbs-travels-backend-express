@@ -1,5 +1,5 @@
 import pageBuilderService from '@/services/page-builder/page-builder.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 /**
@@ -9,7 +9,7 @@ export const listPages: RequestHandler = async (req, res, next) => {
   try {
     const { page, limit, isPublished, search } = req.query
 
-    const data = await pageBuilderService.getAllPages(
+    const result = await pageBuilderService.getAllPages(
       page ? Number(page) : 1,
       limit ? Number(limit) : 10,
       {
@@ -18,7 +18,7 @@ export const listPages: RequestHandler = async (req, res, next) => {
       }
     )
 
-    return success(res, data, 'Pages fetched successfully')
+    return paginated(res, result.items, result, 'Pages fetched successfully')
   } catch (err) {
     next(err)
   }

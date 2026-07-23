@@ -5,18 +5,18 @@ import {
   listPermissionsService,
   updatePermissionService,
 } from '@/services/permission/Permission.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q } = req.query
-    const data = await listPermissionsService({
+    const result = await listPermissionsService({
       page: Number(page) || 1,
       perPage: Number(perPage) || 10,
       q: (q as string) || undefined,
     })
-    return success(res, data, 'Permissions fetched')
+    return paginated(res, result.items, result, 'Permissions fetched')
   } catch (err) {
     next(err)
   }

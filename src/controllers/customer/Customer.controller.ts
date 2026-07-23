@@ -5,19 +5,19 @@ import {
   softDeleteCustomerService,
   updateCustomerService,
 } from '@/services/customer/Customer.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q, isActive } = req.query
-    const data = await listCustomersService({
+    const result = await listCustomersService({
       page: Number(page) || 1,
       perPage: Number(perPage) || 10,
       q: (q as string) || undefined,
       isActive: typeof isActive === 'string' ? isActive === 'true' : undefined,
     })
-    return success(res, data, 'Customers fetched')
+    return paginated(res, result.items, result, 'Customers fetched')
   } catch (err) {
     next(err)
   }

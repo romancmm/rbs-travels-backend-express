@@ -42,6 +42,9 @@ const limiter = rateLimit({
 })
 app.use(limiter)
 
+// Unversioned health endpoint for infra healthchecks (Docker, load balancers, uptime monitors)
+app.get('/health', (_req, res) => res.json({ ok: true }))
+
 // API ROUTES V1
 app.use('/api/v1', routes)
 

@@ -6,13 +6,13 @@ import {
   listProjectsService,
   updateProjectService,
 } from '@/services/project/Project.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q, category, tag, isPublished, isFeatured } = req.query
-    const data = await listProjectsService({
+    const result = await listProjectsService({
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
       q: q as string,
@@ -21,7 +21,7 @@ export const list: RequestHandler = async (req, res, next) => {
       isPublished: typeof isPublished === 'string' ? isPublished === 'true' : undefined,
       isFeatured: typeof isFeatured === 'string' ? isFeatured === 'true' : undefined,
     })
-    return success(res, data, 'Projects fetched')
+    return paginated(res, result.items, result, 'Projects fetched')
   } catch (err) {
     next(err)
   }
@@ -31,7 +31,7 @@ export const list: RequestHandler = async (req, res, next) => {
 export const listPublished: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q, category, tag, isFeatured } = req.query
-    const data = await listProjectsService({
+    const result = await listProjectsService({
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
       q: q as string,
@@ -40,7 +40,7 @@ export const listPublished: RequestHandler = async (req, res, next) => {
       isPublished: true, // Always filter for published on public routes
       isFeatured: typeof isFeatured === 'string' ? isFeatured === 'true' : undefined,
     })
-    return success(res, data, 'Projects fetched')
+    return paginated(res, result.items, result, 'Projects fetched')
   } catch (err) {
     next(err)
   }

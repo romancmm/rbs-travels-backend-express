@@ -1,10 +1,25 @@
 import type { Response } from 'express'
+import { buildPagination } from './paginator'
 
 export const success = (res: Response, data: any, message = 'Success') => {
  return res.status(200).json({
   success: true,
   message,
   data,
+ })
+}
+
+export const paginated = (
+ res: Response,
+ items: any[],
+ pagination: { page: number; perPage: number; total: number },
+ message = 'Data fetched successfully.',
+) => {
+ return res.status(200).json({
+  success: true,
+  message,
+  data: { items },
+  pagination: buildPagination(pagination.page, pagination.perPage, pagination.total, items.length),
  })
 }
 

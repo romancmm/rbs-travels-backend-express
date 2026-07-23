@@ -6,19 +6,19 @@ import {
   listServicesService,
   updateServiceService,
 } from '@/services/service/Service.service'
-import { success } from '@/utils/response'
+import { paginated, success } from '@/utils/response'
 import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q, isPublished } = req.query
-    const data = await listServicesService({
+    const result = await listServicesService({
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
       q: q as string,
       isPublished: typeof isPublished === 'string' ? isPublished === 'true' : undefined,
     })
-    return success(res, data, 'Services fetched')
+    return paginated(res, result.items, result, 'Services fetched')
   } catch (err) {
     next(err)
   }
@@ -28,13 +28,13 @@ export const list: RequestHandler = async (req, res, next) => {
 export const listPublished: RequestHandler = async (req, res, next) => {
   try {
     const { page, perPage, q } = req.query
-    const data = await listServicesService({
+    const result = await listServicesService({
       page: page ? Number(page) : undefined,
       perPage: perPage ? Number(perPage) : undefined,
       q: q as string,
       isPublished: true, // Always filter for published on public routes
     })
-    return success(res, data, 'Services fetched')
+    return paginated(res, result.items, result, 'Services fetched')
   } catch (err) {
     next(err)
   }
