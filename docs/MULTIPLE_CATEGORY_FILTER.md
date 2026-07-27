@@ -73,7 +73,7 @@ GET /api/v1/articles/posts?categorySlugs=technology&categorySlugs=business&categ
 #### Combined Filters
 
 ```bash
-GET /api/v1/articles/posts?categorySlugs=tech&categorySlugs=business&tag=featured&page=1&limit=10
+GET /api/v1/articles/posts?categorySlugs=tech&categorySlugs=business&tag=featured&page=0&limit=10
 ```
 
 ## Implementation Details
@@ -131,7 +131,7 @@ Posts returned include the full `categories` array:
       ...
     }
   ],
-  "page": 1,
+  "page": 0,
   "limit": 10,
   "total": 50
 }

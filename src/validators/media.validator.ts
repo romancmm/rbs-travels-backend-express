@@ -123,7 +123,7 @@ export const searchMediaSchema = z.object({
   path: z.string().optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
-  page: z.coerce.number().int().positive().optional().default(1),
+  page: z.coerce.number().int().min(0).optional().default(0),
   limit: z.coerce.number().int().positive().max(100).optional().default(50),
 })
 

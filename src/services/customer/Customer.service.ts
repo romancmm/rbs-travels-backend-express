@@ -9,7 +9,7 @@ import type {
 } from '@/validators/customer.validator'
 
 export const listCustomersService = async (params: CustomerQueryParams = {}) => {
-  const { page = 1, limit = 10, q, isActive } = params
+  const { page = 0, limit = 10, q, isActive } = params
   const { skip, take } = paginate(page, limit)
 
   const where: any = { isAdmin: false }

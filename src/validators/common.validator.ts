@@ -30,7 +30,7 @@ export const slugSchema = z
 
 // Pagination schemas
 export const paginationQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1).optional(),
+  page: z.coerce.number().int().min(0).default(0).optional(),
   limit: z.coerce.number().int().positive().max(100).default(10).optional(),
   q: z.string().optional(),
 })

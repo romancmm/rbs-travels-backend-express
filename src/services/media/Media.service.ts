@@ -32,8 +32,8 @@ const formatMediaItem = (item: any) => {
 }
 
 export const listMediaService = async (query: MediaListQuery) => {
-  const { page = 1, limit = 50, path = '/', fileType = 'all', withItems = false } = query
-  const skip = (page - 1) * limit
+  const { page = 0, limit = 50, path = '/', fileType = 'all', withItems = false } = query
+  const skip = page * limit
 
   try {
     // List files with comprehensive options
@@ -943,8 +943,8 @@ export const searchMediaService = async (query: {
   limit?: number
 }) => {
   try {
-    const { page = 1, limit = 50, searchQuery, tags, fileType, path, dateFrom, dateTo } = query
-    const skip = (page - 1) * limit
+    const { page = 0, limit = 50, searchQuery, tags, fileType, path, dateFrom, dateTo } = query
+    const skip = page * limit
 
     // Build search query
     const searchOptions: any = {

@@ -12,7 +12,7 @@ export const list: RequestHandler = async (req, res, next) => {
   try {
     const { page, limit, q } = req.query
     const result = await listCategoriesService({
-      page: Number(page) || 1,
+      page: Number(page) || 0,
       limit: Number(limit) || 10,
       q: (q as string) || undefined,
     })

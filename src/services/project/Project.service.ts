@@ -10,7 +10,7 @@ import type {
 } from '@/validators/project.validator'
 
 export const listProjectsService = async (params: ProjectQueryParams = {}) => {
-  const { page = 1, limit = 10, q, category, tag, isPublished, isFeatured } = params
+  const { page = 0, limit = 10, q, category, tag, isPublished, isFeatured } = params
   const { skip, take } = paginate(page, limit)
   const where: any = {}
 

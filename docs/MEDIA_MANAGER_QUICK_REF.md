@@ -8,7 +8,7 @@
 ### List Files
 
 ```bash
-GET /admin/media?path=/&page=1&limit=50
+GET /admin/media?path=/&page=0&limit=50
 ```
 
 ### Search Files

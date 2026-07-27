@@ -10,7 +10,7 @@ export const listPages: RequestHandler = async (req, res, next) => {
     const { page, limit, isPublished, search } = req.query
 
     const result = await pageBuilderService.getAllPages(
-      page ? Number(page) : 1,
+      page ? Number(page) : 0,
       limit ? Number(limit) : 10,
       {
         isPublished: isPublished === 'true' ? true : isPublished === 'false' ? false : undefined,

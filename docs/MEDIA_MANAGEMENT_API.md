@@ -32,13 +32,13 @@ Authorization: Bearer <your_jwt_token>
 Get a paginated list of files and folders with filtering options.
 
 ```http
-GET /admin/media?path=/&page=1&limit=50&fileType=all
+GET /admin/media?path=/&page=0&limit=50&fileType=all
 ```
 
 **Query Parameters:**
 
 - `path` (string, optional): Directory path to browse (default: "/")
-- `page` (integer, optional): Page number (default: 1)
+- `page` (integer, optional): Page number, 0-indexed (default: 0)
 - `limit` (integer, optional): Items per page, max 100 (default: 50)
 - `fileType` (string, optional): Filter by type - "all", "image", "video", "audio", "raw" (default:
   "all")
@@ -69,7 +69,7 @@ GET /admin/media?path=/&page=1&limit=50&fileType=all
   ],
   "folders": [...],
   "files": [...],
-  "page": 1,
+  "page": 0,
   "limit": 50,
   "hasMore": false,
   "totalEstimate": 15,

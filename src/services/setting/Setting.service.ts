@@ -10,7 +10,7 @@ import type {
 import { Prisma } from '@prisma/client'
 
 export const listSettingsService = async (params: SettingQueryParams = {}) => {
-  const { page = 1, limit = 50, q, group, isPublic } = params
+  const { page = 0, limit = 50, q, group, isPublic } = params
   const { skip, take } = paginate(page, limit)
   const where: any = {}
 

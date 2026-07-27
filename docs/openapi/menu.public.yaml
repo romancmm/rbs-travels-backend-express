@@ -13,7 +13,7 @@ paths:
           name: page
           schema:
             type: integer
-            default: 1
+            default: 0
         - in: query
           name: limit
           schema:

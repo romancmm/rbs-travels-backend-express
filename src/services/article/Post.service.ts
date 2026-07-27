@@ -11,7 +11,7 @@ import type {
 
 export const listPostsService = async (params: PostQueryParams = {}) => {
   const {
-    page = 1,
+    page = 0,
     limit = 10,
     q,
     categoryIds,

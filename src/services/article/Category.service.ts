@@ -10,7 +10,7 @@ import type {
 } from '@/validators/article.validator'
 
 export const listCategoriesService = async (params: CategoryQueryParams = {}) => {
-  const { page = 1, limit = 10, q } = params as any
+  const { page = 0, limit = 10, q } = params as any
   const { skip, take } = paginate(page, limit)
   const where: any = {}
   if (q) where.name = { contains: q, mode: 'insensitive' }
@@ -20,7 +20,7 @@ export const listCategoriesService = async (params: CategoryQueryParams = {}) =>
       skip,
       take,
       include: { _count: { select: { posts: true } } },
-      orderBy: { name: 'asc' },
+      orderBy: { createdAt: 'desc' },
     }),
     prisma.category.count({ where }),
   ])

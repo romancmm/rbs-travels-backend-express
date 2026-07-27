@@ -21,7 +21,7 @@ export class PageBuilderService {
    * Performance: Simple query without relations
    */
   async getAllPages(
-    page: number = 1,
+    page: number = 0,
     limit: number = 10,
     filters?: {
       isPublished?: boolean

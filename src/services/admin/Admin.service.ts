@@ -6,7 +6,7 @@ import type { CreateUserInput, UpdateUserInput, UserQueryParams } from '@/valida
 
 // List admin/staff users (User model represents admin users, not customers)
 export const listAdminsService = async (params: UserQueryParams = {}) => {
-  const { page = 1, limit = 10, q, isActive, isAdmin, roleId } = params as any
+  const { page = 0, limit = 10, q, isActive, isAdmin, roleId } = params as any
   const { skip, take } = paginate(page, limit)
   const where: any = {}
 

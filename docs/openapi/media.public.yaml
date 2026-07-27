@@ -77,7 +77,7 @@ paths:
           example: '/blog'
         - in: query
           name: page
-          schema: { type: integer, minimum: 1, default: 1 }
+          schema: { type: integer, minimum: 0, default: 0 }
           description: Page number for pagination
         - in: query
           name: limit

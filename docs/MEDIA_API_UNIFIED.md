@@ -253,7 +253,7 @@ recommended:
 
 ### List Media
 
-**Endpoint:** `GET /admin/media?path=/&page=1&limit=50`
+**Endpoint:** `GET /admin/media?path=/&page=0&limit=50`
 
 ### Search Media
 

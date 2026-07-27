@@ -10,7 +10,7 @@ export const listMenus: RequestHandler = async (req, res, next) => {
     const { page, limit } = req.query
 
     const result = await menuService.getAllMenus(
-      page ? Number(page) : 1,
+      page ? Number(page) : 0,
       limit ? Number(limit) : 10,
     )
 

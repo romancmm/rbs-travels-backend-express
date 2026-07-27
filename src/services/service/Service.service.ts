@@ -10,7 +10,7 @@ import type {
 } from '@/validators/service.validator'
 
 export const listServicesService = async (params: ServiceQueryParams = {}) => {
-  const { page = 1, limit = 10, q, isPublished } = params
+  const { page = 0, limit = 10, q, isPublished } = params
   const { skip, take } = paginate(page, limit)
   const where: any = {}
 

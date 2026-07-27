@@ -22,7 +22,7 @@ export class MenuService {
    */
   // main-menu
 
-  async getAllMenus(page: number = 1, limit: number = 10) {
+  async getAllMenus(page: number = 0, limit: number = 10) {
     const { skip, take } = paginate(page, limit)
 
     const [items, total] = await Promise.all([
@@ -54,7 +54,7 @@ export class MenuService {
   /**
    * Get published menus only (Public API)
    */
-  async getPublishedMenus(page: number = 1, limit: number = 10) {
+  async getPublishedMenus(page: number = 0, limit: number = 10) {
     const { skip, take } = paginate(page, limit)
 
     const [items, total] = await Promise.all([
