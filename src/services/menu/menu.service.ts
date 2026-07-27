@@ -22,8 +22,8 @@ export class MenuService {
    */
   // main-menu
 
-  async getAllMenus(page: number = 1, perPage: number = 10) {
-    const { skip, take } = paginate(page, perPage)
+  async getAllMenus(page: number = 1, limit: number = 10) {
+    const { skip, take } = paginate(page, limit)
 
     const [items, total] = await Promise.all([
       prisma.menu.findMany({
@@ -48,14 +48,14 @@ export class MenuService {
       prisma.menu.count(),
     ])
 
-    return { items, page, perPage, total }
+    return { items, page, limit, total }
   }
 
   /**
    * Get published menus only (Public API)
    */
-  async getPublishedMenus(page: number = 1, perPage: number = 10) {
-    const { skip, take } = paginate(page, perPage)
+  async getPublishedMenus(page: number = 1, limit: number = 10) {
+    const { skip, take } = paginate(page, limit)
 
     const [items, total] = await Promise.all([
       prisma.menu.findMany({
@@ -80,7 +80,7 @@ export class MenuService {
       prisma.menu.count({ where: { isPublished: true } }),
     ])
 
-    return { items, page, perPage, total }
+    return { items, page, limit, total }
   }
 
   /**

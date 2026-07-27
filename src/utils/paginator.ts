@@ -1,19 +1,19 @@
-export const paginate = (page = 1, perPage = 10) => {
- const limit = Math.max(1, perPage)
- const skip = Math.max(0, (page - 1) * limit)
- return { skip, take: limit }
+export const paginate = (page = 1, limit = 10) => {
+ const take = Math.max(1, limit)
+ const skip = Math.max(0, (page - 1) * take)
+ return { skip, take }
 }
 
-export const buildPagination = (page = 1, perPage = 10, total = 0, currentItems = 0) => {
+export const buildPagination = (page = 1, limit = 10, total = 0, currentItems = 0) => {
  page = Number(page) || 1
- perPage = Number(perPage) || 1
+ limit = Number(limit) || 1
  total = Number(total) || 0
  currentItems = Number(currentItems) || 0
 
- const totalPages = Math.ceil(total / perPage)
+ const totalPages = Math.ceil(total / limit)
  return {
   page,
-  limit: perPage,
+  limit,
   totalItems: total,
   totalPages,
   currentItems,

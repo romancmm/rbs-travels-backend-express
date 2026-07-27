@@ -39,7 +39,7 @@ components:
           type: array
           items: { $ref: '#/components/schemas/MediaFile' }
         page: { type: integer }
-        perPage: { type: integer }
+        limit: { type: integer }
         hasMore: { type: boolean }
         totalEstimate: { type: integer }
         currentPath: { type: string }
@@ -122,7 +122,7 @@ components:
           type: array
           items: { $ref: '#/components/schemas/MediaFile' }
         page: { type: integer }
-        perPage: { type: integer }
+        limit: { type: integer }
         hasMore: { type: boolean }
         totalEstimate: { type: integer }
         searchQuery: { type: string }
@@ -153,7 +153,7 @@ paths:
           schema: { type: integer, minimum: 1, default: 1 }
           description: Page number for pagination
         - in: query
-          name: perPage
+          name: limit
           schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
           description: Number of items per page
         - in: query
@@ -293,7 +293,7 @@ paths:
           name: page
           schema: { type: integer, minimum: 1, default: 1 }
         - in: query
-          name: perPage
+          name: limit
           schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
       responses:
         '200':

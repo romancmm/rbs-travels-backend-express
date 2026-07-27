@@ -32,7 +32,7 @@ model Category {
 - ✅ `isPublished` - Boolean
 - ✅ `q` - Search query (title, excerpt, content)
 - ✅ `page` - Page number
-- ✅ `perPage` - Items per page
+- ✅ `limit` - Items per page
 
 #### Public Endpoints (`/api/v1/articles/posts`)
 
@@ -42,7 +42,7 @@ model Category {
 - ✅ `authorId` - Author UUID
 - ✅ `q` - Search query
 - ✅ `page` - Page number
-- ✅ `perPage` - Items per page
+- ✅ `limit` - Items per page
 
 ### Usage Examples
 
@@ -73,7 +73,7 @@ GET /api/v1/articles/posts?categorySlugs=technology&categorySlugs=business&categ
 #### Combined Filters
 
 ```bash
-GET /api/v1/articles/posts?categorySlugs=tech&categorySlugs=business&tag=featured&page=1&perPage=10
+GET /api/v1/articles/posts?categorySlugs=tech&categorySlugs=business&tag=featured&page=1&limit=10
 ```
 
 ## Implementation Details
@@ -132,7 +132,7 @@ Posts returned include the full `categories` array:
     }
   ],
   "page": 1,
-  "perPage": 10,
+  "limit": 10,
   "total": 50
 }
 ```

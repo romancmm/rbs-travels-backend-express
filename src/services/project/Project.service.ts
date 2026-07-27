@@ -10,8 +10,8 @@ import type {
 } from '@/validators/project.validator'
 
 export const listProjectsService = async (params: ProjectQueryParams = {}) => {
-  const { page = 1, perPage = 10, q, category, tag, isPublished, isFeatured } = params
-  const { skip, take } = paginate(page, perPage)
+  const { page = 1, limit = 10, q, category, tag, isPublished, isFeatured } = params
+  const { skip, take } = paginate(page, limit)
   const where: any = {}
 
   if (typeof isPublished === 'boolean') where.isPublished = isPublished
@@ -36,7 +36,7 @@ export const listProjectsService = async (params: ProjectQueryParams = {}) => {
     }),
     prisma.project.count({ where }),
   ])
-  return { items, page, perPage, total }
+  return { items, page, limit, total }
 }
 
 export const getProjectByIdService = async (id: string) => {

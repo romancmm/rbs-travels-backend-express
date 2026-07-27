@@ -6,8 +6,8 @@ import type { CreateUserInput, UpdateUserInput, UserQueryParams } from '@/valida
 
 // List admin/staff users (User model represents admin users, not customers)
 export const listAdminsService = async (params: UserQueryParams = {}) => {
-  const { page = 1, perPage = 10, q, isActive, isAdmin, roleId } = params as any
-  const { skip, take } = paginate(page, perPage)
+  const { page = 1, limit = 10, q, isActive, isAdmin, roleId } = params as any
+  const { skip, take } = paginate(page, limit)
   const where: any = {}
 
   if (typeof isActive === 'boolean') where.isActive = isActive
@@ -44,7 +44,7 @@ export const listAdminsService = async (params: UserQueryParams = {}) => {
 
   // Remove password from all items
   const items = users.map(({ password, ...user }) => user)
-  return { items, page, perPage, total }
+  return { items, page, limit, total }
 }
 
 export const getAdminByIdService = async (id: string) => {

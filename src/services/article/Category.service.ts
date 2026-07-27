@@ -10,8 +10,8 @@ import type {
 } from '@/validators/article.validator'
 
 export const listCategoriesService = async (params: CategoryQueryParams = {}) => {
-  const { page = 1, perPage = 10, q } = params as any
-  const { skip, take } = paginate(page, perPage)
+  const { page = 1, limit = 10, q } = params as any
+  const { skip, take } = paginate(page, limit)
   const where: any = {}
   if (q) where.name = { contains: q, mode: 'insensitive' }
   const [items, total] = await Promise.all([
@@ -24,7 +24,7 @@ export const listCategoriesService = async (params: CategoryQueryParams = {}) =>
     }),
     prisma.category.count({ where }),
   ])
-  return { items, page, perPage, total }
+  return { items, page, limit, total }
 }
 
 export const getCategoryByIdService = async (id: string) => {

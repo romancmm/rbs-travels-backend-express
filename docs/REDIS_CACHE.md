@@ -47,7 +47,7 @@ Cache keys follow this pattern:
 Examples:
 
 - `public:/articles/posts`
-- `public:/articles/posts:{"page":1,"perPage":10}`
+- `public:/articles/posts:{"page":1,"limit":10}`
 - `public:/menus`
 - `public:/pages/slug/home`
 

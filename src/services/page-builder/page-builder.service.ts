@@ -22,14 +22,14 @@ export class PageBuilderService {
    */
   async getAllPages(
     page: number = 1,
-    perPage: number = 10,
+    limit: number = 10,
     filters?: {
       isPublished?: boolean
       isDraft?: boolean
       search?: string
     }
   ) {
-    const { skip, take } = paginate(page, perPage)
+    const { skip, take } = paginate(page, limit)
     const where: Prisma.PageBuilderWhereInput = {}
 
     if (filters?.isPublished !== undefined) {
@@ -71,7 +71,7 @@ export class PageBuilderService {
       prisma.pageBuilder.count({ where }),
     ])
 
-    return { items, page, perPage, total }
+    return { items, page, limit, total }
   }
 
   /**

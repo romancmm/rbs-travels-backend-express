@@ -32,15 +32,15 @@ const formatMediaItem = (item: any) => {
 }
 
 export const listMediaService = async (query: MediaListQuery) => {
-  const { page = 1, perPage = 50, path = '/', fileType = 'all', withItems = false } = query
-  const skip = (page - 1) * perPage
+  const { page = 1, limit = 50, path = '/', fileType = 'all', withItems = false } = query
+  const skip = (page - 1) * limit
 
   try {
     // List files with comprehensive options
     const options: any = {
       path: path || '/', // Root path if not specified
       skip,
-      limit: perPage,
+      limit,
       includeFolder: true, // Include folders in the response
       sort: 'DESC_CREATED', // Sort by creation date, newest first
     }
@@ -87,7 +87,7 @@ export const listMediaService = async (query: MediaListQuery) => {
     const formattedItems = [...formattedFolders, ...formattedFiles]
 
     // ImageKit doesn't provide total count, so we estimate pagination
-    const hasMore = allItems.length === perPage
+    const hasMore = allItems.length === limit
     const totalEstimate = skip + allItems.length + (hasMore ? 1 : 0)
 
     return {
@@ -95,7 +95,7 @@ export const listMediaService = async (query: MediaListQuery) => {
       folders: formattedFolders,
       files: formattedFiles,
       page,
-      perPage,
+      limit,
       hasMore,
       totalEstimate,
       currentPath: path || '/',
@@ -940,16 +940,16 @@ export const searchMediaService = async (query: {
   dateFrom?: string
   dateTo?: string
   page?: number
-  perPage?: number
+  limit?: number
 }) => {
   try {
-    const { page = 1, perPage = 50, searchQuery, tags, fileType, path, dateFrom, dateTo } = query
-    const skip = (page - 1) * perPage
+    const { page = 1, limit = 50, searchQuery, tags, fileType, path, dateFrom, dateTo } = query
+    const skip = (page - 1) * limit
 
     // Build search query
     const searchOptions: any = {
       skip,
-      limit: perPage,
+      limit,
       sort: 'DESC_CREATED',
     }
 
@@ -990,13 +990,13 @@ export const searchMediaService = async (query: {
 
     const formattedFiles = filteredFiles.map(formatMediaItem)
 
-    const hasMore = files.length === perPage
+    const hasMore = files.length === limit
     const totalEstimate = skip + files.length + (hasMore ? 1 : 0)
 
     return {
       items: formattedFiles,
       page,
-      perPage,
+      limit,
       hasMore,
       totalEstimate,
       searchQuery,

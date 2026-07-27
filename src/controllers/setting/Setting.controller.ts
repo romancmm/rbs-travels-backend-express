@@ -16,10 +16,10 @@ import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
-    const { page, perPage, q, group, isPublic } = req.query
+    const { page, limit, q, group, isPublic } = req.query
     const result = await listSettingsService({
       page: page ? Number(page) : undefined,
-      perPage: perPage ? Number(perPage) : undefined,
+      limit: limit ? Number(limit) : undefined,
       q: q as string,
       group: group as string,
       isPublic: typeof isPublic === 'string' ? isPublic === 'true' : undefined,

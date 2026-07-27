@@ -10,10 +10,10 @@ import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
-    const { page, perPage, q } = req.query
+    const { page, limit, q } = req.query
     const result = await listRolesService({
       page: Number(page) || 1,
-      perPage: Number(perPage) || 10,
+      limit: Number(limit) || 10,
       q: (q as string) || undefined,
     })
     return paginated(res, result.items, result, 'Roles fetched')

@@ -4,8 +4,8 @@ import { paginate } from '@/utils/paginator'
 import type { CreateRoleInput, RoleQueryParams, UpdateRoleInput } from '@/validators/rbac.validator'
 
 export const listRolesService = async (params: RoleQueryParams = {}) => {
-  const { page = 1, perPage = 10, q } = params as any
-  const { skip, take } = paginate(page, perPage)
+  const { page = 1, limit = 10, q } = params as any
+  const { skip, take } = paginate(page, limit)
   const where: any = {}
   if (q) where.name = { contains: q, mode: 'insensitive' }
   const [items, total] = await Promise.all([
@@ -18,7 +18,7 @@ export const listRolesService = async (params: RoleQueryParams = {}) => {
     }),
     prisma.role.count({ where }),
   ])
-  return { items, page, perPage, total }
+  return { items, page, limit, total }
 }
 
 export const getRoleByIdService = async (id: string) => {

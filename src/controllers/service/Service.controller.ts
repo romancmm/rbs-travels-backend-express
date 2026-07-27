@@ -11,10 +11,10 @@ import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
-    const { page, perPage, q, isPublished } = req.query
+    const { page, limit, q, isPublished } = req.query
     const result = await listServicesService({
       page: page ? Number(page) : undefined,
-      perPage: perPage ? Number(perPage) : undefined,
+      limit: limit ? Number(limit) : undefined,
       q: q as string,
       isPublished: typeof isPublished === 'string' ? isPublished === 'true' : undefined,
     })
@@ -27,10 +27,10 @@ export const list: RequestHandler = async (req, res, next) => {
 // Public list - only show published services
 export const listPublished: RequestHandler = async (req, res, next) => {
   try {
-    const { page, perPage, q } = req.query
+    const { page, limit, q } = req.query
     const result = await listServicesService({
       page: page ? Number(page) : undefined,
-      perPage: perPage ? Number(perPage) : undefined,
+      limit: limit ? Number(limit) : undefined,
       q: q as string,
       isPublished: true, // Always filter for published on public routes
     })

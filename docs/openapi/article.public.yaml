@@ -53,7 +53,7 @@ paths:
           name: page
           schema: { type: integer, minimum: 1 }
         - in: query
-          name: perPage
+          name: limit
           schema: { type: integer, minimum: 1, maximum: 100 }
         - in: query
           name: q
@@ -95,7 +95,7 @@ paths:
                     type: array
                     items: { $ref: '#/components/schemas/BlogPost' }
                   page: { type: integer }
-                  perPage: { type: integer }
+                  limit: { type: integer }
                   total: { type: integer }
   /articles/posts/{id}:
     get:
@@ -138,7 +138,7 @@ paths:
           name: page
           schema: { type: integer, minimum: 1 }
         - in: query
-          name: perPage
+          name: limit
           schema: { type: integer, minimum: 1, maximum: 100 }
         - in: query
           name: q
@@ -156,7 +156,7 @@ paths:
                     type: array
                     items: { $ref: '#/components/schemas/BlogCategory' }
                   page: { type: integer }
-                  perPage: { type: integer }
+                  limit: { type: integer }
                   total: { type: integer }
   /articles/categories/{id}:
     get:

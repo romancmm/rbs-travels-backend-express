@@ -52,7 +52,7 @@ operations, bulk actions, search, and filtering.
 List files and folders with pagination and filtering
 
 ```bash
-GET /admin/media?path=/images&page=1&perPage=50&fileType=image
+GET /admin/media?path=/images&page=1&limit=50&fileType=image
 ```
 
 #### GET `/admin/media/structure`

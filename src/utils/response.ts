@@ -12,14 +12,14 @@ export const success = (res: Response, data: any, message = 'Success') => {
 export const paginated = (
  res: Response,
  items: any[],
- pagination: { page: number; perPage: number; total: number },
+ pagination: { page: number; limit: number; total: number },
  message = 'Data fetched successfully.',
 ) => {
  return res.status(200).json({
   success: true,
   message,
   data: { items },
-  pagination: buildPagination(pagination.page, pagination.perPage, pagination.total, items.length),
+  pagination: buildPagination(pagination.page, pagination.limit, pagination.total, items.length),
  })
 }
 

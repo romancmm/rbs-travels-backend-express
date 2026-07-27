@@ -10,10 +10,10 @@ import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
-    const { page, perPage, q, isActive } = req.query
+    const { page, limit, q, isActive } = req.query
     const result = await listCustomersService({
       page: Number(page) || 1,
-      perPage: Number(perPage) || 10,
+      limit: Number(limit) || 10,
       q: (q as string) || undefined,
       isActive: typeof isActive === 'string' ? isActive === 'true' : undefined,
     })

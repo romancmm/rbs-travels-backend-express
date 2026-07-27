@@ -39,7 +39,7 @@ components:
           type: array
           items: { $ref: '#/components/schemas/MediaFile' }
         page: { type: integer }
-        perPage: { type: integer }
+        limit: { type: integer }
         hasMore: { type: boolean }
         totalEstimate: { type: integer }
         currentPath: { type: string }
@@ -80,7 +80,7 @@ paths:
           schema: { type: integer, minimum: 1, default: 1 }
           description: Page number for pagination
         - in: query
-          name: perPage
+          name: limit
           schema: { type: integer, minimum: 1, maximum: 100, default: 50 }
           description: Number of items per page
         - in: query
@@ -145,7 +145,7 @@ paths:
                         createdAt: '2025-01-15T11:45:00Z'
                         tags: ['blog', 'gallery']
                     page: 1
-                    perPage: 50
+                    limit: 50
                     hasMore: false
                     totalEstimate: 2
                     currentPath: '/blog'

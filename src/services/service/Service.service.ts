@@ -10,8 +10,8 @@ import type {
 } from '@/validators/service.validator'
 
 export const listServicesService = async (params: ServiceQueryParams = {}) => {
-  const { page = 1, perPage = 10, q, isPublished } = params
-  const { skip, take } = paginate(page, perPage)
+  const { page = 1, limit = 10, q, isPublished } = params
+  const { skip, take } = paginate(page, limit)
   const where: any = {}
 
   if (typeof isPublished === 'boolean') where.isPublished = isPublished
@@ -32,7 +32,7 @@ export const listServicesService = async (params: ServiceQueryParams = {}) => {
     }),
     prisma.service.count({ where }),
   ])
-  return { items, page, perPage, total }
+  return { items, page, limit, total }
 }
 
 export const getServiceByIdService = async (id: string) => {

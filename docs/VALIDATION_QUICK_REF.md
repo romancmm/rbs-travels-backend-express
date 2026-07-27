@@ -102,7 +102,7 @@ export const updatePost = async (id: string, data: UpdatePostInput) => {
 
 - `idParamSchema` - UUID validation for `:id` params
 - `slugParamSchema` - Slug validation for `:slug` params
-- `paginationQuerySchema` - Page, perPage, q (search)
+- `paginationQuerySchema` - Page, limit, q (search)
 - `emailSchema` - Email validation
 - `passwordSchema` - Strong password validation
 - `uuidSchema` - UUID validation

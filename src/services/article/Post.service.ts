@@ -12,7 +12,7 @@ import type {
 export const listPostsService = async (params: PostQueryParams = {}) => {
   const {
     page = 1,
-    perPage = 10,
+    limit = 10,
     q,
     categoryIds,
     categorySlugs,
@@ -20,7 +20,7 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
     isPublished,
     authorId,
   } = params
-  const { skip, take } = paginate(page, perPage)
+  const { skip, take } = paginate(page, limit)
   const where: any = {}
 
   if (typeof isPublished === 'boolean') where.isPublished = isPublished
@@ -79,7 +79,7 @@ export const listPostsService = async (params: PostQueryParams = {}) => {
     }),
     prisma.post.count({ where }),
   ])
-  return { items, page, perPage, total }
+  return { items, page, limit, total }
 }
 
 export const getPostByIdService = async (id: string) => {

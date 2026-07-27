@@ -10,8 +10,8 @@ import type {
 import { Prisma } from '@prisma/client'
 
 export const listSettingsService = async (params: SettingQueryParams = {}) => {
-  const { page = 1, perPage = 50, q, group, isPublic } = params
-  const { skip, take } = paginate(page, perPage)
+  const { page = 1, limit = 50, q, group, isPublic } = params
+  const { skip, take } = paginate(page, limit)
   const where: any = {}
 
   if (typeof isPublic === 'boolean') where.isPublic = isPublic
@@ -32,7 +32,7 @@ export const listSettingsService = async (params: SettingQueryParams = {}) => {
     }),
     prisma.setting.count({ where }),
   ])
-  return { items, page, perPage, total }
+  return { items, page, limit, total }
 }
 
 export const getSettingByKeyService = async (key: string) => {

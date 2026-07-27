@@ -11,10 +11,10 @@ import type { RequestHandler } from 'express'
 
 export const list: RequestHandler = async (req, res, next) => {
   try {
-    const { page, perPage, q, category, tag, isPublished, isFeatured } = req.query
+    const { page, limit, q, category, tag, isPublished, isFeatured } = req.query
     const result = await listProjectsService({
       page: page ? Number(page) : undefined,
-      perPage: perPage ? Number(perPage) : undefined,
+      limit: limit ? Number(limit) : undefined,
       q: q as string,
       category: category as string,
       tag: tag as string,
@@ -30,10 +30,10 @@ export const list: RequestHandler = async (req, res, next) => {
 // Public list - only show published projects
 export const listPublished: RequestHandler = async (req, res, next) => {
   try {
-    const { page, perPage, q, category, tag, isFeatured } = req.query
+    const { page, limit, q, category, tag, isFeatured } = req.query
     const result = await listProjectsService({
       page: page ? Number(page) : undefined,
-      perPage: perPage ? Number(perPage) : undefined,
+      limit: limit ? Number(limit) : undefined,
       q: q as string,
       category: category as string,
       tag: tag as string,

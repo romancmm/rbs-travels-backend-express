@@ -9,8 +9,8 @@ import type {
 } from '@/validators/customer.validator'
 
 export const listCustomersService = async (params: CustomerQueryParams = {}) => {
-  const { page = 1, perPage = 10, q, isActive } = params
-  const { skip, take } = paginate(page, perPage)
+  const { page = 1, limit = 10, q, isActive } = params
+  const { skip, take } = paginate(page, limit)
 
   const where: any = { isAdmin: false }
   if (typeof isActive === 'boolean') where.isActive = isActive
@@ -27,7 +27,7 @@ export const listCustomersService = async (params: CustomerQueryParams = {}) => 
   ])
 
   const data = items.map(({ password, ...u }) => u)
-  return { items: data, page, perPage, total }
+  return { items: data, page, limit, total }
 }
 
 export const getCustomerByIdService = async (id: string) => {

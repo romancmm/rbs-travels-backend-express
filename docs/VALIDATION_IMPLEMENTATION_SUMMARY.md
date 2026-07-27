@@ -30,7 +30,7 @@ Shared validation schemas:
 - `emailSchema` - Email validation
 - `passwordSchema` - Strong password (8+ chars, uppercase, lowercase, number)
 - `slugSchema` - URL-safe slugs
-- `paginationQuerySchema` - Page, perPage, search query
+- `paginationQuerySchema` - Page, limit, search query
 - `idParamSchema` - ID URL parameter
 - `slugParamSchema` - Slug URL parameter
 - `booleanQuerySchema` - Boolean query params

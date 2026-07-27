@@ -124,7 +124,7 @@ export const login: RequestHandler = async (req, res) => {
 - `emailSchema` - Email validation
 - `passwordSchema` - Strong password validation
 - `slugSchema` - URL-safe slug validation
-- `paginationQuerySchema` - Pagination parameters (page, perPage, q)
+- `paginationQuerySchema` - Pagination parameters (page, limit, q)
 - `idParamSchema` - ID parameter validation
 - `slugParamSchema` - Slug parameter validation
 - `booleanQuerySchema` - Boolean query params
