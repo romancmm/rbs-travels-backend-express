@@ -1,5 +1,9 @@
+import CacheService from '@/services/cache.service'
 import imagekit from '@/utils/imagekit'
 import type { MediaListQuery } from '@/validators/media.validator'
+
+// Public media list/structure responses are cached (see routes/public.ts) — bust them on any mutation
+const invalidateMediaCache = () => CacheService.invalidatePattern('public:/media*')
 
 // Helper function to extract only necessary fields
 const formatMediaItem = (item: any) => {
@@ -165,6 +169,8 @@ export const createFolderService = async (folderName: string, parentPath: string
       parentFolderPath: normalizedParentPath,
     })
 
+    await invalidateMediaCache()
+
     return {
       success: true,
       folder: result,
@@ -237,6 +243,8 @@ export const renameFolderService = async (oldPath: string, newFolderName: string
     // Delete old folder (only if empty or you've moved all contents)
     await imagekit.deleteFolder(normalizedOldPath)
 
+    await invalidateMediaCache()
+
     return {
       success: true,
       oldPath: normalizedOldPath,
@@ -267,6 +275,8 @@ export const updateFileService = async (
     }
 
     const result = await imagekit.updateFileDetails(fileId, updateOptions)
+
+    await invalidateMediaCache()
 
     return {
       success: true,
@@ -324,6 +334,8 @@ export const deleteFileService = async (fileId: string) => {
 
     const result = await imagekit.deleteFile(fileId)
 
+    await invalidateMediaCache()
+
     return {
       success: true,
       fileId,
@@ -344,6 +356,7 @@ export const deleteItemService = async (id: string, force: boolean = false) => {
       const fileDetails = await imagekit.getFileDetails(id)
       if (fileDetails) {
         const result = await imagekit.deleteFile(id)
+        await invalidateMediaCache()
         return {
           success: true,
           type: 'file',
@@ -435,6 +448,8 @@ export const deleteFolderService = async (folderPath: string) => {
     }
 
     const result = await imagekit.deleteFolder(normalizedPath)
+
+    await invalidateMediaCache()
 
     return {
       success: true,
@@ -544,6 +559,8 @@ export const deleteFolderWithContentsService = async (
     // Finally delete the main folder
     await imagekit.deleteFolder(normalizedPath)
 
+    await invalidateMediaCache()
+
     return {
       success: true,
       folderPath: normalizedPath,
@@ -578,6 +595,8 @@ export const moveFileService = async (fileId: string, destinationPath: string) =
       destinationPath: normalizedPath,
     })
 
+    await invalidateMediaCache()
+
     return {
       success: true,
       file: formatMediaItem(result),
@@ -607,6 +626,8 @@ export const copyFileService = async (fileId: string, destinationPath: string) =
       sourceFilePath: fileDetails.filePath,
       destinationPath: normalizedPath,
     })
+
+    await invalidateMediaCache()
 
     return {
       success: true,
@@ -705,6 +726,8 @@ export const moveFolderService = async (sourcePath: string, destinationPath: str
       destinationPath: normalizedDest,
     })
 
+    await invalidateMediaCache()
+
     return {
       success: true,
       folder: result,
@@ -729,6 +752,8 @@ export const copyFolderService = async (sourcePath: string, destinationPath: str
       sourceFolderPath: normalizedSource,
       destinationPath: normalizedDest,
     })
+
+    await invalidateMediaCache()
 
     return {
       success: true,
@@ -760,6 +785,8 @@ export const bulkDeleteFilesService = async (fileIds: string[]) => {
 
     const successful = results.filter((r) => r.status === 'fulfilled').length
     const failed = results.filter((r) => r.status === 'rejected').length
+
+    if (successful > 0) await invalidateMediaCache()
 
     return {
       success: true,
@@ -797,6 +824,8 @@ export const bulkMoveFilesService = async (fileIds: string[], destinationPath: s
 
     const successful = results.filter((r) => r.status === 'fulfilled').length
     const failed = results.filter((r) => r.status === 'rejected').length
+
+    if (successful > 0) await invalidateMediaCache()
 
     return {
       success: true,
@@ -836,6 +865,8 @@ export const bulkCopyFilesService = async (fileIds: string[], destinationPath: s
     const successful = results.filter((r) => r.status === 'fulfilled').length
     const failed = results.filter((r) => r.status === 'rejected').length
 
+    if (successful > 0) await invalidateMediaCache()
+
     return {
       success: true,
       totalFiles: fileIds.length,
@@ -872,6 +903,8 @@ export const bulkAddTagsService = async (fileIds: string[], tags: string[]) => {
     const successful = results.filter((r) => r.status === 'fulfilled').length
     const failed = results.filter((r) => r.status === 'rejected').length
 
+    if (successful > 0) await invalidateMediaCache()
+
     return {
       success: true,
       totalFiles: fileIds.length,
@@ -907,6 +940,8 @@ export const bulkRemoveTagsService = async (fileIds: string[], tags: string[]) =
 
     const successful = results.filter((r) => r.status === 'fulfilled').length
     const failed = results.filter((r) => r.status === 'rejected').length
+
+    if (successful > 0) await invalidateMediaCache()
 
     return {
       success: true,

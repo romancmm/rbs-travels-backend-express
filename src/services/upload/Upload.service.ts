@@ -1,4 +1,8 @@
+import CacheService from '@/services/cache.service'
 import imagekit from '@/utils/imagekit'
+
+// Public media list/structure responses are cached (see routes/public.ts) — bust them on any mutation
+const invalidateMediaCache = () => CacheService.invalidatePattern('public:/media*')
 
 export const getUploadAuthParamsService = () => {
   // ImageKit SDK generates authentication parameters for client-side upload
@@ -17,6 +21,7 @@ export const uploadFileToImageKitService = async (options: {
     fileName,
     folder,
   })
+  await invalidateMediaCache()
   return res
 }
 
@@ -39,6 +44,7 @@ export const uploadMultipleFilesToImageKitService = async (options: {
   )
 
   const results = await Promise.all(uploadPromises)
+  await invalidateMediaCache()
   return results.map((res) => res.url)
 }
 
@@ -48,6 +54,7 @@ export const uploadMultipleFilesToImageKitService = async (options: {
 export const deleteFilesFromImageKitService = async (fileIds: string[]) => {
   const deletePromises = fileIds.map((fileId) => imagekit.deleteFile(fileId))
   await Promise.all(deletePromises)
+  await invalidateMediaCache()
   return { deleted: fileIds.length }
 }
 

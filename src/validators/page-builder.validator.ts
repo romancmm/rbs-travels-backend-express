@@ -162,9 +162,9 @@ export const listPageBuildersQuerySchema = z.object({
   page: z
     .string()
     .transform((val) => parseInt(val, 10))
-    .pipe(z.number().int().min(1))
+    .pipe(z.number().int().min(0))
     .optional()
-    .default(() => 1),
+    .default(() => 0),
   limit: z
     .string()
     .transform((val) => parseInt(val, 10))
