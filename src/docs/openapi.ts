@@ -41,7 +41,7 @@ function buildOpenApiSpec(): AnyObj {
     // Fallback minimal spec so /docs still loads
     return {
       openapi: '3.1.0',
-      info: { title: 'Travel Agency API', version: '1.0.0' },
+      info: { title: 'Dynamic CMS API', version: '1.0.0' },
       servers: [{ url: '/api/v1' }],
       paths: {},
     }
@@ -50,10 +50,10 @@ function buildOpenApiSpec(): AnyObj {
   const spec = parts.reduce((acc, cur) => deepMerge(acc, cur), {
     openapi: '3.1.0',
     info: {
-      title: 'Travel Agency API',
+      title: 'Dynamic CMS API',
       version: '1.0.0',
       description:
-        'Comprehensive API for travel agency management system with article management, menu builder, and more.',
+        'Comprehensive API for Dynamic CMS management system with article management, menu builder, and more.',
     },
     servers: [{ url: '/api/v1' }],
     paths: {},

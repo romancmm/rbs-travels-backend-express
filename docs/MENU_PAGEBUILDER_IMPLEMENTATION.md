@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully implemented Menu Management and Page Builder CMS system for the travel agency backend
+Successfully implemented Menu Management and Page Builder CMS system for the Dynamic CMS backend
 with complete CRUD operations, validation, and RBAC permissions.
 
 ## What Was Fixed
@@ -235,8 +235,8 @@ curl -X POST http://localhost:4000/api/v1/admin/pages \
       }
     ],
     "seo": {
-      "title": "About Us - Travel Agency",
-      "description": "Learn about our travel agency"
+      "title": "About Us - Dynamic CMS",
+      "description": "Learn about our Dynamic CMS"
     },
     "isPublished": true
   }'

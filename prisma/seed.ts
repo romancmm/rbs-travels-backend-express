@@ -299,7 +299,7 @@ async function main() {
     create: {
       title: 'Home Page',
       slug: 'home',
-      description: 'Welcome to our travel agency',
+      description: 'Welcome to our Dynamic CMS',
       content: {
         sections: [
           {
@@ -325,7 +325,7 @@ async function main() {
                         type: 'heading',
                         order: 0,
                         props: {
-                          text: 'Welcome to Your Travel Agency',
+                          text: 'Welcome to Your Dynamic CMS',
                           level: 'h1',
                           align: 'center',
                           color: '#000000',
@@ -357,7 +357,7 @@ async function main() {
       isPublished: true,
       publishedAt: new Date(),
       seo: {
-        title: 'Home - Your Travel Agency',
+        title: 'Home - Your Dynamic CMS',
         description: 'Explore amazing destinations with us',
         keywords: ['travel', 'tours', 'vacation'],
       },
@@ -444,7 +444,7 @@ Happy travels!
         publishedAt: new Date(),
         authorId: authorUser.id,
         seo: {
-          title: '10 Essential Travel Tips for Beginners | Your Travel Agency',
+          title: '10 Essential Travel Tips for Beginners | Your Dynamic CMS',
           description:
             'Starting your travel journey? Here are 10 essential tips every beginner traveler should know.',
           keywords: ['travel tips', 'beginner travel', 'travel guide'],
@@ -490,7 +490,7 @@ Start planning your European adventure today!
         publishedAt: new Date(),
         authorId: authorUser.id,
         seo: {
-          title: 'Top 5 European Destinations for 2024 | Your Travel Agency',
+          title: 'Top 5 European Destinations for 2024 | Your Dynamic CMS',
           description:
             'Discover the most beautiful and exciting European destinations to visit in 2024.',
           keywords: ['europe travel', 'european destinations', 'travel 2024'],
@@ -542,7 +542,7 @@ Adventure awaits in the Swiss Alps!
         publishedAt: new Date(),
         authorId: authorUser.id,
         seo: {
-          title: 'Hiking Adventures in the Swiss Alps | Your Travel Agency',
+          title: 'Hiking Adventures in the Swiss Alps | Your Dynamic CMS',
           description:
             'Experience breathtaking mountain views and challenging trails in the Swiss Alps.',
           keywords: ['swiss alps', 'hiking', 'mountain adventures', 'switzerland travel'],
@@ -596,7 +596,7 @@ You can travel Southeast Asia for as little as $30-40 per day!
         publishedAt: new Date(),
         authorId: authorUser.id,
         seo: {
-          title: 'Budget Travel Guide to Southeast Asia | Your Travel Agency',
+          title: 'Budget Travel Guide to Southeast Asia | Your Dynamic CMS',
           description:
             'Explore Southeast Asia without breaking the bank with our comprehensive budget travel guide.',
           keywords: ['budget travel', 'southeast asia', 'backpacking', 'cheap travel'],

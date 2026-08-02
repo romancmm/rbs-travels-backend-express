@@ -76,7 +76,7 @@ paths:
                       type:
                         type: string
                         enum:
-                          - category-articles
+                          - category-blog
                           - single-article
                           - page
                           - gallery

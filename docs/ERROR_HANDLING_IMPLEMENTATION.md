@@ -6,8 +6,8 @@
 ## Overview
 
 Successfully implemented centralized error handling across **all 15+ service files** in the RBS
-Travel Agency backend. All database errors and business logic errors now return user-friendly
-messages with appropriate HTTP status codes.
+Dynamic CMS backend. All database errors and business logic errors now return user-friendly messages
+with appropriate HTTP status codes.
 
 ---
 
@@ -38,17 +38,14 @@ key violation | 400 | "Invalid reference: Related entity does not exist" | | P20
    - 7 methods updated: list, get, create, update, delete, toggle status, assign roles
    - Email duplication now returns: "User with this email already exists"
 2. **Customer Service** (`src/services/customer/Customer.service.ts`)
-
    - 5 methods updated: list, get, create, update, soft delete
    - Validation error messages improved
 
 3. **Auth Service - Customer** (`src/services/auth/Auth.service.ts`)
-
    - 7 methods updated: register, login, refresh, logout, profile, reset password, change password
    - Invalid credentials return 401 with "Invalid email or password"
 
 4. **Auth Service - Admin** (`src/services/auth/adminAuth.service.ts`)
-
    - 2 methods updated: register, login
    - Admin authentication errors properly handled
 
@@ -62,17 +59,14 @@ key violation | 400 | "Invalid reference: Related entity does not exist" | | P20
 ### ✅ Content Management
 
 6. **Article Post Service** (`src/services/article/Post.service.ts`)
-
    - 6 methods updated: list, get by ID, get by slug, create, update, delete
    - Post not found returns 404 with clear message
 
 7. **Article Category Service** (`src/services/article/Category.service.ts`)
-
    - 5 methods updated: list, get, create, update, delete
    - Category not found errors handled
 
 8. **Page Service** (`src/services/page/Page.service.ts`)
-
    - 5 methods updated: list, get, create, update, delete
    - Page CRUD operations with proper error handling
 
@@ -89,7 +83,6 @@ key violation | 400 | "Invalid reference: Related entity does not exist" | | P20
 ### ✅ Business Features
 
 10. **Project Service** (`src/services/project/Project.service.ts`)
-
     - 6 methods updated: list, get by ID, get by slug, create, update, delete
     - Project not found returns 404
 
@@ -113,7 +106,6 @@ key violation | 400 | "Invalid reference: Related entity does not exist" | | P20
 ### ✅ RBAC (Role-Based Access Control)
 
 13. **Permission Service** (`src/services/permission/Permission.service.ts`)
-
     - 5 methods updated: list, get, create, update, delete
     - **Example transformation:**
       - Before: `Unique constraint failed on the fields: (name)`

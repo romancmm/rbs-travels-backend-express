@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // Menu Item Type Enum
 export const MenuItemTypeEnum = z.enum([
-  'category-articles',
+  'category-blog',
   'single-article',
   'page',
   'gallery',
@@ -48,12 +48,12 @@ const menuItemSchema: z.ZodType<any> = z.lazy(() =>
       children: z.array(menuItemSchema).optional(),
     })
     .superRefine((data, ctx) => {
-      // Category-articles requires array of references
-      if (data.type === 'category-articles') {
+      // category-blog requires array of references
+      if (data.type === 'category-blog') {
         if (!Array.isArray(data.reference) || data.reference.length === 0) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'At least one category is required for category-articles type',
+            message: 'At least one category is required for category-blog type',
             path: ['reference'],
           })
         }
@@ -162,12 +162,12 @@ export const createMenuItemBodySchema = z
     meta: z.record(z.string(), z.any()).optional(),
   })
   .superRefine((data, ctx) => {
-    // Category-articles requires array of references
-    if (data.type === 'category-articles') {
+    // category-blog requires array of references
+    if (data.type === 'category-blog') {
       if (!Array.isArray(data.reference) || data.reference.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'At least one category is required for category-articles type',
+          message: 'At least one category is required for category-blog type',
           path: ['reference'],
         })
       }
@@ -239,12 +239,12 @@ export const updateMenuItemBodySchema = z
   .superRefine((data, ctx) => {
     // Only validate if type is being updated together with required fields
 
-    // Category-articles validation
-    if (data.type === 'category-articles' && data.reference !== undefined) {
+    // category-blog validation
+    if (data.type === 'category-blog' && data.reference !== undefined) {
       if (!Array.isArray(data.reference) || data.reference.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: 'At least one category is required for category-articles type',
+          message: 'At least one category is required for category-blog type',
           path: ['reference'],
         })
       }

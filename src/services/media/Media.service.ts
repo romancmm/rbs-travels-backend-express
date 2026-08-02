@@ -1,17 +1,59 @@
 import CacheService from '@/services/cache.service'
-import imagekit from '@/utils/imagekit'
+import imagekit, { scopeToProjectRoot, unscopeFromProjectRoot } from '@/utils/imagekit'
 import type { MediaListQuery } from '@/validators/media.validator'
 
 // Public media list/structure responses are cached (see routes/public.ts) — bust them on any mutation
 const invalidateMediaCache = () => CacheService.invalidatePattern('public:/media*')
 
+const BULK_JOB_POLL_INTERVAL_MS = 1000
+
+// moveFolder/copyFolder only submit a job (they resolve to { jobId }) - the actual move/copy
+// happens asynchronously on ImageKit's side. Poll until ImageKit itself confirms completion
+// before we tell the client it succeeded, otherwise a subsequent list call can race the job.
+// The SDK types getBulkJobStatus as Promise<IKResponse<void>>, but the real ImageKit API
+// returns { jobId, type, status: 'Pending' | 'Completed' | ... } - hence the cast below.
+const waitForBulkJobCompletion = async (jobId: string): Promise<void> => {
+  for (;;) {
+    const status = (await imagekit.getBulkJobStatus(jobId)) as unknown as { status?: string }
+    if (status?.status === 'Completed') return
+    if (status?.status === 'Failed') {
+      throw new Error(`ImageKit bulk job ${jobId} failed`)
+    }
+    await new Promise((resolve) => setTimeout(resolve, BULK_JOB_POLL_INTERVAL_MS))
+  }
+}
+
+// ImageKit has no getFolderDetails(folderId) API, so resolving a folderId to its path means
+// searching the tree. A single listFiles({path: root}) call only returns DIRECT children of
+// that path — it does NOT see grandchildren — so a folder nested two+ levels deep would never
+// be found by a root-only search. This walks the tree so nested folders resolve correctly too.
+const findFolderPathById = async (
+  folderId: string,
+  searchPath: string = scopeToProjectRoot('/')
+): Promise<string | null> => {
+  const items = await imagekit.listFiles({ path: searchPath, includeFolder: true, limit: 1000 })
+
+  const match = items.find((item: any) => item.type === 'folder' && item.folderId === folderId)
+  if (match) return (match as any).folderPath
+
+  const subfolders = items.filter((item: any) => item.type === 'folder')
+  for (const sub of subfolders) {
+    const found = await findFolderPathById(folderId, (sub as any).folderPath)
+    if (found) return found
+  }
+
+  return null
+}
+
 // Helper function to extract only necessary fields
-const formatMediaItem = (item: any) => {
+// Paths are de-prefixed back to root-relative here so every list/search/move/copy
+// response stays consistent regardless of this deployment's IMAGEKIT_ROOT_FOLDER scoping.
+export const formatMediaItem = (item: any) => {
   if (item.type === 'folder') {
     return {
       type: 'folder',
       name: item.name,
-      folderPath: item.folderPath,
+      folderPath: unscopeFromProjectRoot(item.folderPath),
       folderId: item.folderId,
       createdAt: item.createdAt,
     }
@@ -24,7 +66,7 @@ const formatMediaItem = (item: any) => {
     name: item.name,
     url: item.url,
     thumbnail: item.thumbnail,
-    filePath: item.filePath,
+    filePath: unscopeFromProjectRoot(item.filePath),
     fileType: item.fileType,
     size: item.size,
     width: item.width,
@@ -42,7 +84,7 @@ export const listMediaService = async (query: MediaListQuery) => {
   try {
     // List files with comprehensive options
     const options: any = {
-      path: path || '/', // Root path if not specified
+      path: scopeToProjectRoot(path || '/'), // Root path if not specified
       skip,
       limit,
       includeFolder: true, // Include folders in the response
@@ -72,7 +114,7 @@ export const listMediaService = async (query: MediaListQuery) => {
         formattedFolders.map(async (folder: any) => {
           try {
             const folderItems = await imagekit.listFiles({
-              path: folder.folderPath,
+              path: scopeToProjectRoot(folder.folderPath),
               limit: 4,
               sort: 'DESC_CREATED',
             })
@@ -113,9 +155,9 @@ export const listMediaService = async (query: MediaListQuery) => {
 
 export const getMediaLibraryStructureService = async () => {
   try {
-    // Get all files and folders from root
+    // Get all files and folders from this deployment's project root
     const allFiles = await imagekit.listFiles({
-      path: '/',
+      path: scopeToProjectRoot('/'),
       includeFolder: true,
       limit: 1000, // Get more items to see the full structure
       sort: 'DESC_CREATED',
@@ -142,38 +184,52 @@ export const getMediaLibraryStructureService = async () => {
 
 export const createFolderService = async (folderName: string, parentPath: string = '/') => {
   try {
-    // Ensure proper path formatting
+    // Ensure proper path formatting (kept root-relative — this is what gets echoed back)
     const normalizedParentPath = parentPath.startsWith('/') ? parentPath : `/${parentPath}`
     const fullPath =
       normalizedParentPath === '/' ? `/${folderName}` : `${normalizedParentPath}/${folderName}`
 
+    // Scoped variants — only these get sent to the ImageKit SDK
+    const scopedParentPath = scopeToProjectRoot(normalizedParentPath)
+    const scopedFullPath = scopeToProjectRoot(fullPath)
+
     // Check if folder already exists
     const existingItems = await imagekit.listFiles({
-      path: normalizedParentPath,
+      path: scopedParentPath,
       includeFolder: true,
       limit: 1000,
     })
 
     const folderExists = existingItems.some(
       (item: any) =>
-        item.type === 'folder' && (item.name === folderName || item.folderPath === fullPath)
+        item.type === 'folder' && (item.name === folderName || item.folderPath === scopedFullPath)
     )
 
     if (folderExists) {
       throw new Error(`Folder "${folderName}" already exists in "${normalizedParentPath}"`)
     }
 
-    // Create the folder
-    const result = await imagekit.createFolder({
+    // Create the folder - resolves to an empty IKResponse<void> (no folderId), so look
+    // the real created folder up right after (createFolder is synchronous; this is only
+    // to retrieve fields the write response itself never included).
+    await imagekit.createFolder({
       folderName: folderName,
-      parentFolderPath: normalizedParentPath,
+      parentFolderPath: scopedParentPath,
     })
+    const createdItems = await imagekit.listFiles({
+      path: scopedParentPath,
+      includeFolder: true,
+      limit: 1000,
+    })
+    const created = createdItems.find(
+      (item: any) => item.type === 'folder' && item.folderPath === scopedFullPath
+    )
 
     await invalidateMediaCache()
 
     return {
       success: true,
-      folder: result,
+      folder: created ? formatMediaItem(created) : null,
       path: fullPath,
       message: `Folder "${folderName}" created successfully`,
     }
@@ -186,14 +242,18 @@ export const createFolderService = async (folderName: string, parentPath: string
 
 export const renameFolderService = async (oldPath: string, newFolderName: string) => {
   try {
-    // Normalize paths
+    // Normalize paths (kept root-relative — these are what get echoed back)
     const normalizedOldPath = oldPath.startsWith('/') ? oldPath : `/${oldPath}`
     const parentPath = normalizedOldPath.substring(0, normalizedOldPath.lastIndexOf('/')) || '/'
     const newPath = parentPath === '/' ? `/${newFolderName}` : `${parentPath}/${newFolderName}`
 
+    // Scoped variants — only these get sent to the ImageKit SDK
+    const scopedOldPath = scopeToProjectRoot(normalizedOldPath)
+    const scopedParentPath = scopeToProjectRoot(parentPath)
+
     // Check if new folder name already exists in the same parent directory
     const existingItems = await imagekit.listFiles({
-      path: parentPath,
+      path: scopedParentPath,
       includeFolder: true,
       limit: 1000,
     })
@@ -202,7 +262,7 @@ export const renameFolderService = async (oldPath: string, newFolderName: string
       (item: any) =>
         item.type === 'folder' &&
         item.name === newFolderName &&
-        item.folderPath !== normalizedOldPath // Don't count the current folder
+        item.folderPath !== scopedOldPath // Don't count the current folder
     )
 
     if (folderExists) {
@@ -217,12 +277,12 @@ export const renameFolderService = async (oldPath: string, newFolderName: string
     // Create new folder
     await imagekit.createFolder({
       folderName: newFolderName,
-      parentFolderPath: parentPath,
+      parentFolderPath: scopedParentPath,
     })
 
     // Get all files in the old folder
     const folderContents = await imagekit.listFiles({
-      path: normalizedOldPath,
+      path: scopedOldPath,
       includeFolder: true,
       limit: 1000,
     })
@@ -241,7 +301,7 @@ export const renameFolderService = async (oldPath: string, newFolderName: string
     await Promise.all(movePromises)
 
     // Delete old folder (only if empty or you've moved all contents)
-    await imagekit.deleteFolder(normalizedOldPath)
+    await imagekit.deleteFolder(scopedOldPath)
 
     await invalidateMediaCache()
 
@@ -274,13 +334,15 @@ export const updateFileService = async (
       updateOptions.tags = updateData.tags
     }
 
+    // updateFileDetails already resolves to the full, updated FileObject - no extra
+    // fetch needed, just shape it consistently with every other response.
     const result = await imagekit.updateFileDetails(fileId, updateOptions)
 
     await invalidateMediaCache()
 
     return {
       success: true,
-      file: result,
+      file: formatMediaItem({ ...result, type: 'file' }),
       message: 'File updated successfully',
     }
   } catch (err: any) {
@@ -393,35 +455,21 @@ export const deleteFolderService = async (folderPath: string) => {
     let normalizedPath = folderPath
 
     if (isFolderId) {
-      // If it's a folderId, we need to get the folder details first to get the path
-      try {
-        // ImageKit doesn't have a direct getFolderDetails, so we need to list all folders
-        const allFolders = await imagekit.listFiles({
-          path: '/',
-          includeFolder: true,
-          limit: 1000,
-        })
-
-        const folder = allFolders.find(
-          (item: any) => item.type === 'folder' && item.folderId === folderPath
-        )
-
-        if (!folder) {
-          throw new Error(`Folder with ID "${folderPath}" not found`)
-        }
-
-        normalizedPath = (folder as any).folderPath
-      } catch (err) {
-        console.error('Error finding folder by ID:', err)
+      // Search the whole tree (not just the root level) so nested subfolders resolve too.
+      const foundPath = await findFolderPathById(folderPath)
+      if (!foundPath) {
         throw new Error(`Folder with ID "${folderPath}" not found`)
       }
+      normalizedPath = unscopeFromProjectRoot(foundPath)
     } else {
       normalizedPath = folderPath.startsWith('/') ? folderPath : `/${folderPath}`
     }
 
+    const scopedPath = scopeToProjectRoot(normalizedPath)
+
     // Check if folder exists and get its contents
     const folderContents = await imagekit.listFiles({
-      path: normalizedPath,
+      path: scopedPath,
       includeFolder: true,
       limit: 1000,
     })
@@ -447,7 +495,7 @@ export const deleteFolderService = async (folderPath: string) => {
       }
     }
 
-    const result = await imagekit.deleteFolder(normalizedPath)
+    const result = await imagekit.deleteFolder(scopedPath)
 
     await invalidateMediaCache()
 
@@ -474,27 +522,12 @@ export const deleteFolderWithContentsService = async (
     let normalizedPath = folderPath
 
     if (isFolderId) {
-      // If it's a folderId, we need to get the folder details first to get the path
-      try {
-        const allFolders = await imagekit.listFiles({
-          path: '/',
-          includeFolder: true,
-          limit: 1000,
-        })
-
-        const folder = allFolders.find(
-          (item: any) => item.type === 'folder' && item.folderId === folderPath
-        )
-
-        if (!folder) {
-          throw new Error(`Folder with ID "${folderPath}" not found`)
-        }
-
-        normalizedPath = (folder as any).folderPath
-      } catch (err) {
-        console.error('Error finding folder by ID:', err)
+      // Search the whole tree (not just the root level) so nested subfolders resolve too.
+      const foundPath = await findFolderPathById(folderPath)
+      if (!foundPath) {
         throw new Error(`Folder with ID "${folderPath}" not found`)
       }
+      normalizedPath = unscopeFromProjectRoot(foundPath)
     } else {
       normalizedPath = folderPath.startsWith('/') ? folderPath : `/${folderPath}`
     }
@@ -504,7 +537,10 @@ export const deleteFolderWithContentsService = async (
       return await deleteFolderService(normalizedPath)
     }
 
-    // Get all contents recursively
+    const scopedPath = scopeToProjectRoot(normalizedPath)
+
+    // Get all contents recursively. This walk stays entirely in ImageKit's own absolute
+    // (already-scoped) path domain since it recurses on paths returned by listFiles itself.
     const getAllContents = async (path: string): Promise<any[]> => {
       const contents = await imagekit.listFiles({
         path,
@@ -525,7 +561,7 @@ export const deleteFolderWithContentsService = async (
       return allItems
     }
 
-    const allContents = await getAllContents(normalizedPath)
+    const allContents = await getAllContents(scopedPath)
 
     // Delete all files first
     const files = allContents.filter((item: any) => item.type === 'file')
@@ -557,7 +593,7 @@ export const deleteFolderWithContentsService = async (
     }
 
     // Finally delete the main folder
-    await imagekit.deleteFolder(normalizedPath)
+    await imagekit.deleteFolder(scopedPath)
 
     await invalidateMediaCache()
 
@@ -589,18 +625,20 @@ export const moveFileService = async (fileId: string, destinationPath: string) =
       throw new Error(`File with ID "${fileId}" not found`)
     }
 
-    // ImageKit move operation
-    const result = await imagekit.moveFile({
+    // ImageKit move operation - resolves to an empty IKResponse<void>, so fetch the
+    // real (already-complete, since this call is synchronous) file details afterward.
+    await imagekit.moveFile({
       sourceFilePath: fileDetails.filePath,
-      destinationPath: normalizedPath,
+      destinationPath: scopeToProjectRoot(normalizedPath),
     })
+    const updated = await imagekit.getFileDetails(fileId)
 
     await invalidateMediaCache()
 
     return {
       success: true,
-      file: formatMediaItem(result),
-      oldPath: fileDetails.filePath,
+      file: formatMediaItem({ ...updated, type: 'file' }),
+      oldPath: unscopeFromProjectRoot(fileDetails.filePath),
       newPath: normalizedPath,
       message: `File "${fileDetails.name}" moved successfully`,
     }
@@ -621,18 +659,23 @@ export const copyFileService = async (fileId: string, destinationPath: string) =
       throw new Error(`File with ID "${fileId}" not found`)
     }
 
-    // ImageKit copy operation
-    const result = await imagekit.copyFile({
+    // ImageKit copy operation - resolves to an empty IKResponse<void>, so fetch the
+    // real (already-complete, since this call is synchronous) file details afterward.
+    await imagekit.copyFile({
       sourceFilePath: fileDetails.filePath,
-      destinationPath: normalizedPath,
+      destinationPath: scopeToProjectRoot(normalizedPath),
     })
+    // The copy is a new file with its own fileId - find it by its known destination path.
+    const copiedPath = scopeToProjectRoot(normalizedPath)
+    const destItems = await imagekit.listFiles({ path: copiedPath, includeFolder: false, limit: 1000 })
+    const copiedFile = destItems.find((item: any) => item.name === fileDetails.name)
 
     await invalidateMediaCache()
 
     return {
       success: true,
-      file: formatMediaItem(result),
-      originalPath: fileDetails.filePath,
+      file: copiedFile ? formatMediaItem({ ...copiedFile, type: 'file' }) : null,
+      originalPath: unscopeFromProjectRoot(fileDetails.filePath),
       copyPath: normalizedPath,
       message: `File "${fileDetails.name}" copied successfully`,
     }
@@ -706,7 +749,7 @@ export const getFileDetailsService = async (fileId: string) => {
 
     return {
       success: true,
-      file: fileDetails,
+      file: { ...fileDetails, filePath: unscopeFromProjectRoot(fileDetails.filePath) },
     }
   } catch (err: any) {
     console.error('Get file details error:', err)
@@ -720,11 +763,13 @@ export const moveFolderService = async (sourcePath: string, destinationPath: str
     const normalizedSource = sourcePath.startsWith('/') ? sourcePath : `/${sourcePath}`
     const normalizedDest = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
 
-    // ImageKit move folder operation
+    // ImageKit move folder operation - this only submits a job; wait for it to actually
+    // complete before responding, otherwise a subsequent list call can race the move.
     const result = await imagekit.moveFolder({
-      sourceFolderPath: normalizedSource,
-      destinationPath: normalizedDest,
+      sourceFolderPath: scopeToProjectRoot(normalizedSource),
+      destinationPath: scopeToProjectRoot(normalizedDest),
     })
+    await waitForBulkJobCompletion(result.jobId)
 
     await invalidateMediaCache()
 
@@ -747,11 +792,13 @@ export const copyFolderService = async (sourcePath: string, destinationPath: str
     const normalizedSource = sourcePath.startsWith('/') ? sourcePath : `/${sourcePath}`
     const normalizedDest = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
 
-    // ImageKit copy folder operation
+    // ImageKit copy folder operation - this only submits a job; wait for it to actually
+    // complete before responding, otherwise a subsequent list call can race the copy.
     const result = await imagekit.copyFolder({
-      sourceFolderPath: normalizedSource,
-      destinationPath: normalizedDest,
+      sourceFolderPath: scopeToProjectRoot(normalizedSource),
+      destinationPath: scopeToProjectRoot(normalizedDest),
     })
+    await waitForBulkJobCompletion(result.jobId)
 
     await invalidateMediaCache()
 
@@ -810,15 +857,16 @@ export const bulkDeleteFilesService = async (fileIds: string[]) => {
 export const bulkMoveFilesService = async (fileIds: string[], destinationPath: string) => {
   try {
     const normalizedPath = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+    const scopedPath = scopeToProjectRoot(normalizedPath)
 
     const results = await Promise.allSettled(
       fileIds.map(async (fileId) => {
         const fileDetails = await imagekit.getFileDetails(fileId)
-        const result = await imagekit.moveFile({
+        await imagekit.moveFile({
           sourceFilePath: fileDetails.filePath,
-          destinationPath: normalizedPath,
+          destinationPath: scopedPath,
         })
-        return { fileId, name: fileDetails.name, success: true }
+        return { fileId, name: fileDetails.name, newPath: normalizedPath, success: true }
       })
     )
 
@@ -836,6 +884,7 @@ export const bulkMoveFilesService = async (fileIds: string[], destinationPath: s
       results: results.map((r, index) => ({
         fileId: fileIds[index],
         success: r.status === 'fulfilled',
+        newPath: r.status === 'fulfilled' ? r.value.newPath : undefined,
         error: r.status === 'rejected' ? r.reason?.message : undefined,
       })),
       message: `Bulk move completed: ${successful} successful, ${failed} failed`,
@@ -850,15 +899,16 @@ export const bulkMoveFilesService = async (fileIds: string[], destinationPath: s
 export const bulkCopyFilesService = async (fileIds: string[], destinationPath: string) => {
   try {
     const normalizedPath = destinationPath.startsWith('/') ? destinationPath : `/${destinationPath}`
+    const scopedPath = scopeToProjectRoot(normalizedPath)
 
     const results = await Promise.allSettled(
       fileIds.map(async (fileId) => {
         const fileDetails = await imagekit.getFileDetails(fileId)
-        const result = await imagekit.copyFile({
+        await imagekit.copyFile({
           sourceFilePath: fileDetails.filePath,
-          destinationPath: normalizedPath,
+          destinationPath: scopedPath,
         })
-        return { fileId, name: fileDetails.name, success: true }
+        return { fileId, name: fileDetails.name, newPath: normalizedPath, success: true }
       })
     )
 
@@ -876,6 +926,7 @@ export const bulkCopyFilesService = async (fileIds: string[], destinationPath: s
       results: results.map((r, index) => ({
         fileId: fileIds[index],
         success: r.status === 'fulfilled',
+        newPath: r.status === 'fulfilled' ? r.value.newPath : undefined,
         error: r.status === 'rejected' ? r.reason?.message : undefined,
       })),
       message: `Bulk copy completed: ${successful} successful, ${failed} failed`,
@@ -1003,10 +1054,9 @@ export const searchMediaService = async (query: {
       searchOptions.fileType = fileType
     }
 
-    // Add path filter
-    if (path) {
-      searchOptions.path = path.startsWith('/') ? path : `/${path}`
-    }
+    // Always scope the search to this deployment's project root — omitting `path` must
+    // never fall back to an unscoped, whole-account search.
+    searchOptions.path = scopeToProjectRoot(path || '/')
 
     console.log('🔍 Search Options:', searchOptions)
 

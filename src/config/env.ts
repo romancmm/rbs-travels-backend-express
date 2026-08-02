@@ -17,3 +17,9 @@ export const IMAGEKIT_PRIVATE_KEY = process.env.IMAGEKIT_PRIVATE_KEY || ''
 export const IMAGEKIT_ID = process.env.IMAGEKIT_ID || 'po5udmmiz'
 export const IMAGEKIT_URL_ENDPOINT =
   process.env.IMAGEKIT_URL_ENDPOINT || `https://ik.imagekit.io/${IMAGEKIT_ID}`
+
+// Optional. Scopes this deployment's ImageKit operations under one top-level folder
+// within a shared ImageKit account (e.g. "client-acme"), so multiple projects that
+// reuse this same codebase can share a single ImageKit account without seeing each
+// other's files. Leave unset to use the account's true root (today's behavior).
+export const IMAGEKIT_ROOT_FOLDER = process.env.IMAGEKIT_ROOT_FOLDER || ''

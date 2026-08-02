@@ -1,5 +1,6 @@
 import CacheService from '@/services/cache.service'
-import imagekit from '@/utils/imagekit'
+import { formatMediaItem } from '@/services/media/Media.service'
+import imagekit, { scopeToProjectRoot } from '@/utils/imagekit'
 
 // Public media list/structure responses are cached (see routes/public.ts) — bust them on any mutation
 const invalidateMediaCache = () => CacheService.invalidatePattern('public:/media*')
@@ -19,15 +20,24 @@ export const uploadFileToImageKitService = async (options: {
   const res = await imagekit.upload({
     file,
     fileName,
-    folder,
+    folder: scopeToProjectRoot(folder),
   })
   await invalidateMediaCache()
-  return res
+  // upload() already returns the full, confirmed file record (it's synchronous) - shape it
+  // the same as every list/search response so the frontend can merge it in without a refetch.
+  // Note: UploadResponse names the thumbnail field differently (thumbnailUrl vs thumbnail)
+  // and doesn't include createdAt at all - normalize both before formatting.
+  return formatMediaItem({
+    ...res,
+    type: 'file',
+    thumbnail: res.thumbnailUrl,
+    createdAt: new Date().toISOString(),
+  })
 }
 
 /**
  * Upload multiple files to ImageKit
- * Returns array of URLs
+ * Returns an array of formatted media items (same shape as list/search results)
  */
 export const uploadMultipleFilesToImageKitService = async (options: {
   files: Array<{ buffer: Buffer; filename: string }>
@@ -39,13 +49,20 @@ export const uploadMultipleFilesToImageKitService = async (options: {
     imagekit.upload({
       file: file.buffer,
       fileName: file.filename,
-      folder,
+      folder: scopeToProjectRoot(folder),
     })
   )
 
   const results = await Promise.all(uploadPromises)
   await invalidateMediaCache()
-  return results.map((res) => res.url)
+  return results.map((res) =>
+    formatMediaItem({
+      ...res,
+      type: 'file',
+      thumbnail: res.thumbnailUrl,
+      createdAt: new Date().toISOString(),
+    })
+  )
 }
 
 /**

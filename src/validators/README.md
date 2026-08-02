@@ -1,7 +1,7 @@
 # Validation System
 
-This directory contains all Zod validation schemas and TypeScript types for the Travel Agency
-backend API.
+This directory contains all Zod validation schemas and TypeScript types for the Dynamic CMS backend
+API.
 
 ## Overview
 

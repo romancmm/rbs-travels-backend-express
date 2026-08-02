@@ -4,7 +4,7 @@
  */
 
 export type MenuItemType =
-  | 'category-articles' // Category listing page (multiple categories via references[])
+  | 'category-blog' // Category listing page (multiple categories via references[])
   | 'single-article' // Single article/post (via reference)
   | 'page' // Single page (via reference)
   | 'gallery' // Gallery (via reference)
@@ -19,7 +19,7 @@ export interface MenuItem {
   title: string
   slug: string
   type: MenuItemType
-  reference: string | string[] | null // String for single entity OR Array for category-articles
+  reference: string | string[] | null // String for single entity OR Array for category-blog
   url: string | null // URL for custom/external links or resolved URL
   icon?: string | null
   bgImage?: string | null
@@ -39,7 +39,7 @@ export interface CreateMenuItemInput {
   title: string
   slug?: string
   type: MenuItemType
-  reference?: string | string[] | null // String for single entity OR Array for category-articles
+  reference?: string | string[] | null // String for single entity OR Array for category-blog
   url?: string
   icon?: string
   bgImage?: string | null
@@ -56,7 +56,7 @@ export interface UpdateMenuItemInput {
   title?: string
   slug?: string
   type?: MenuItemType
-  reference?: string | string[] | null // String for single entity OR Array for category-articles
+  reference?: string | string[] | null // String for single entity OR Array for category-blog
   url?: string
   icon?: string
   bgImage?: string | null
@@ -108,7 +108,7 @@ export const isEntityMenuItem = (item: MenuItem): boolean => {
 }
 
 export const isCategoryArticlesMenuItem = (item: MenuItem): boolean => {
-  return item.type === 'category-articles'
+  return item.type === 'category-blog'
 }
 
 export const isExternalMenuItem = (item: MenuItem): boolean => {
@@ -129,10 +129,10 @@ export const hasChildren = (item: MenuItem): boolean => {
 export const validateMenuItem = (item: CreateMenuItemInput): string[] => {
   const errors: string[] = []
 
-  // Category-articles requires array of references
-  if (item.type === 'category-articles') {
+  // category-blog requires array of references
+  if (item.type === 'category-blog') {
     if (!Array.isArray(item.reference) || item.reference.length === 0) {
-      errors.push('At least one category is required for category-articles type')
+      errors.push('At least one category is required for category-blog type')
     }
   }
 
@@ -167,8 +167,8 @@ export const getMenuItemUrl = (item: MenuItem): string | null => {
   // Return existing URL if set (for custom-link and external-link)
   if (item.url) return item.url
 
-  // Category-articles: construct URL from reference array
-  if (item.type === 'category-articles' && Array.isArray(item.reference)) {
+  // category-blog: construct URL from reference array
+  if (item.type === 'category-blog' && Array.isArray(item.reference)) {
     if (item.reference.length > 0) {
       // If single category, link to that category
       if (item.reference.length === 1) {

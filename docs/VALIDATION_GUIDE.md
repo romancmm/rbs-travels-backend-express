@@ -1,6 +1,6 @@
 # Validation Implementation Guide
 
-This guide shows how to integrate the new Zod validation system into your existing Travel Agency
+This guide shows how to integrate the new Zod validation system into your existing Dynamic CMS
 backend.
 
 ## ✅ What's Been Created

@@ -72,7 +72,7 @@ export const upload = async (req: Request, res: Response, next: NextFunction) =>
     }
 
     // Determine if single or multiple file upload
-    let newUrls: string[] = []
+    let newFiles: Array<Record<string, any>> = []
 
     if (singleFile) {
       // Single file upload
@@ -81,10 +81,10 @@ export const upload = async (req: Request, res: Response, next: NextFunction) =>
         fileName: singleFile.originalname,
         folder,
       })
-      newUrls = [result.url]
+      newFiles = [result]
     } else if (multipleFiles && multipleFiles.length > 0) {
       // Multiple files upload
-      newUrls = await uploadMultipleFilesToImageKitService({
+      newFiles = await uploadMultipleFilesToImageKitService({
         files: multipleFiles.map((f) => ({
           buffer: f.buffer,
           filename: f.originalname,
@@ -100,13 +100,18 @@ export const upload = async (req: Request, res: Response, next: NextFunction) =>
       })
     }
 
+    const newUrls = newFiles.map((f) => f.url)
+
     // Combine existing (not deleted) with newly uploaded URLs
     const finalUrls = [...existing, ...newUrls]
 
     return res.status(201).json({
       success: true,
       urls: finalUrls,
-      uploaded: newUrls.length,
+      // Full, confirmed metadata for newly uploaded files (same shape as GET /media items),
+      // so the frontend can merge them into its list state without a refetch.
+      files: newFiles,
+      uploaded: newFiles.length,
       deleted: deletes.length,
     })
   } catch (err) {

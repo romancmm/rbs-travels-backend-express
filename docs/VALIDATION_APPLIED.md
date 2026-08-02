@@ -407,7 +407,7 @@ src/api/
 
 ## Summary
 
-🎉 **Validation is now fully implemented across your entire Travel Agency backend!**
+🎉 **Validation is now fully implemented across your entire Dynamic CMS backend!**
 
 Every route now has:
 

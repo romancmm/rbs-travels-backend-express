@@ -16,7 +16,7 @@ routes.use(cacheMiddleware(1800))
 
 // health & root (must be before sub-routers to avoid conflicts)
 routes.get('/health', (_req, res) => res.json({ ok: true }))
-routes.get('/', (_req, res) => res.send('🚀 Travel Agency API running'))
+routes.get('/', (_req, res) => res.send('🚀 Dynamic CMS API running'))
 
 routes.use('/pages', pageBuilderPublicRoutes)
 routes.use('/menus', menuPublicRoutes)

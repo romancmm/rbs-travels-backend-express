@@ -71,7 +71,7 @@ export const swaggerOptions = {
     #auth-indicator.authenticated { background: #49cc90; }
   `,
   customJs: '/swagger-auth.js',
-  customSiteTitle: 'Travel Agency API Documentation',
+  customSiteTitle: 'Dynamic CMS API Documentation',
 }
 
 // Swagger UI setup

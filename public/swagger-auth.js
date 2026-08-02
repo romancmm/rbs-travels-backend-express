@@ -41,8 +41,8 @@
     // Check if this is a login endpoint
     const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
     if (url && (
-      url.includes('/auth/admin/login') || 
-      url.includes('/auth/customer/login') ||
+      url.includes('/auth/admin/login') ||
+      url.includes('/auth/login') ||
       url.includes('/admin/auth/login')
     )) {
       try {
@@ -70,28 +70,52 @@
     return response;
   };
 
+  // Check whether Swagger UI's redux store actually marked the scheme as authorized
+  function isSchemeAuthorized(schemeName) {
+    try {
+      const authorized = window.ui.authSelectors && window.ui.authSelectors.authorized && window.ui.authSelectors.authorized();
+      return !!(authorized && typeof authorized.get === 'function' && authorized.get(schemeName));
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Auto-authorize with token in Swagger UI
   function autoAuthorize(token) {
     // Method 1: Try to use Swagger UI's preauthorizeApiKey if available
+    // NOTE: for an `http`/`bearer` security scheme, Swagger UI/swagger-client prepends
+    // "Bearer " itself when building the Authorization header, so the value handed
+    // here must be the raw token — passing "Bearer <token>" double-prefixes it and
+    // the scheme never actually shows as authorized.
     if (window.ui && typeof window.ui.preauthorizeApiKey === 'function') {
-      window.ui.preauthorizeApiKey('bearerAuth', `Bearer ${token}`);
-      console.log('✅ Token applied via preauthorizeApiKey');
+      window.ui.preauthorizeApiKey('bearerAuth', token);
+
       setTimeout(() => {
-        alert('✅ Authentication token saved!\n\nYou can now access protected endpoints.\nThe token will persist across page refreshes.');
+        if (isSchemeAuthorized('bearerAuth')) {
+          console.log('✅ Token applied via preauthorizeApiKey');
+          alert('✅ Authentication token saved!\n\nYou can now access protected endpoints.\nThe token will persist across page refreshes.');
+        } else {
+          console.error('❌ preauthorizeApiKey did not authorize "bearerAuth" — falling back to UI interaction');
+          authorizeViaUiInteraction(token);
+        }
       }, 300);
       return;
     }
 
-    // Method 2: Simulate clicking authorize button and filling in token
+    authorizeViaUiInteraction(token);
+  }
+
+  // Method 2: Simulate clicking authorize button and filling in token
+  function authorizeViaUiInteraction(token) {
     const authBtn = document.querySelector('.btn.authorize.unlocked');
     if (authBtn) {
       authBtn.click();
-      
+
       setTimeout(() => {
         const input = document.querySelector('input[name="bearerAuth"]');
         if (input) {
-          input.value = `Bearer ${token}`;
-          
+          input.value = token;
+
           // Click authorize button in modal
           const modalAuthBtn = document.querySelector('.auth-btn-wrapper .btn.modal-btn.auth.authorize');
           if (modalAuthBtn) {
@@ -101,7 +125,7 @@
               // Close modal
               const closeBtn = document.querySelector('.close-modal');
               if (closeBtn) closeBtn.click();
-              
+
               alert('✅ Authentication token saved!\n\nYou can now access protected endpoints.\nThe token will persist across page refreshes.');
             }, 300);
           }
