@@ -11,7 +11,12 @@ import { Router } from 'express'
 
 const routes = Router()
 
-// Apply cache middleware to all public routes (5 minutes TTL)
+// /upload/auth issues a fresh, single-use token+signature pair with a short expiry on every
+// call (see imagekit's signature lib) - it must be mounted before the cache middleware so a
+// cached response never hands out a stale/expired signature to later uploads.
+routes.use('/upload', uploadPublicRoutes)
+
+// Apply cache middleware to the remaining public routes (30 minutes TTL)
 routes.use(cacheMiddleware(1800))
 
 // health & root (must be before sub-routers to avoid conflicts)
@@ -24,7 +29,6 @@ routes.use('/articles', articlePublicRoutes)
 routes.use('/services', servicePublicRoutes)
 routes.use('/projects', projectPublicRoutes)
 routes.use('/settings', settingPublicRoutes)
-routes.use('/upload', uploadPublicRoutes)
 routes.use('/media', mediaPublicRoutes)
 
 export default routes

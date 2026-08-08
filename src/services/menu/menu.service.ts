@@ -16,6 +16,11 @@ import { handleSlug } from '../../utils/slug.util'
  * ============================================
  */
 
+// Public menu responses are cached (see routes/public.ts) — bust them on any mutation
+// that changes menu metadata or menu items, since regenerateCache() only refreshes
+// the DB's itemsCache column and never touches the Redis-backed public cache.
+const invalidateMenuCache = () => CacheService.invalidatePattern('public:/menus*')
+
 export class MenuService {
   /**
    * Get all menus (Admin API)
@@ -288,7 +293,7 @@ export class MenuService {
     })
 
     // Invalidate menu cache
-    await CacheService.invalidatePattern('public:/menus*')
+    await invalidateMenuCache()
 
     return menu
   }
@@ -331,7 +336,7 @@ export class MenuService {
     })
 
     // Invalidate menu cache
-    await CacheService.invalidatePattern('public:/menus*')
+    await invalidateMenuCache()
 
     return updated
   }
@@ -350,7 +355,7 @@ export class MenuService {
     await prisma.menu.delete({ where: { id } })
 
     // Invalidate menu cache
-    await CacheService.invalidatePattern('public:/menus*')
+    await invalidateMenuCache()
   }
 
   /**
@@ -416,6 +421,7 @@ export class MenuService {
 
     // Regenerate cache
     await this.regenerateCache(duplicate.id)
+    await invalidateMenuCache()
 
     return this.getMenu(duplicate.id)
   }
@@ -490,6 +496,7 @@ export class MenuService {
 
     // Regenerate cache
     await this.regenerateCache(menuId)
+    await invalidateMenuCache()
 
     return item
   }
@@ -564,6 +571,7 @@ export class MenuService {
 
     // Regenerate cache
     await this.regenerateCache(menuId)
+    await invalidateMenuCache()
 
     return updated
   }
@@ -585,6 +593,7 @@ export class MenuService {
 
     // Regenerate cache
     await this.regenerateCache(menuId)
+    await invalidateMenuCache()
   }
 
   /**
@@ -609,6 +618,7 @@ export class MenuService {
 
     // Regenerate cache
     await this.regenerateCache(menuId)
+    await invalidateMenuCache()
   }
 
   /**
